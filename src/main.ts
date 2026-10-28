@@ -614,13 +614,13 @@ function texUrl(c: Card, size: "high" | "low"): string {
   if (!c.image) return "";
   if (c.image.startsWith("2M6P")) {
     if (__IMAGE_BASE__) return `${__IMAGE_BASE__}${c.image}.jpg`;
-    // the official CDN doesn't allow WebGL use from other sites; TCGdex mirrors the set with CORS.
-    // TCGdex has no art for the Classic Collection, so small copies ship with the site.
-    if (c.id.startsWith("cl-")) return `cards/${c.image}.jpg`;
-    const t = tcgdexIdFor30th(c.id);
-    if (!t) return "";
-    const m = t.match(/^(30th(?:-c)?)-(\d+)$/)!;
-    return `https://assets.tcgdex.net/en/me/${m[1]}/${m[2]}/${size}.webp`;
+    // The official CDN doesn't allow 3D (WebGL) use from other sites, and TCGdex is missing
+    // art for a third of this set, so small copies of the bundled set ship with the site.
+    // Large views try TCGdex's sharper image first and fall back to the local copy.
+    const local = `cards/${c.image}.jpg`;
+    const t = size === "high" ? tcgdexIdFor30th(c.id) : undefined;
+    const m = t?.match(/^(30th)-(\d+)$/);
+    return m ? `https://assets.tcgdex.net/en/me/${m[1]}/${m[2]}/high.webp ${local}` : local;
   }
   // the official gallery CDN only allows its own site to use images in WebGL; 3D shows a labelled card until TCGdex has the art
   if (/\.(png|jpe?g)$/i.test(c.image)) return "";

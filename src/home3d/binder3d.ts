@@ -147,8 +147,14 @@ const imgCache = new Map<string, Promise<HTMLImageElement | null>>();
 function loadImg(url: string): Promise<HTMLImageElement | null> {
   if (!url) return Promise.resolve(null);
   if (!imgCache.has(url)) imgCache.set(url, new Promise((res) => {
-    const i = new Image(); i.crossOrigin = "anonymous"; i.decoding = "async";
-    i.onload = () => res(i); i.onerror = () => res(null); i.src = url;
+    const urls = url.split(" ").filter(Boolean); // fallbacks separated by spaces
+    const tryNext = () => {
+      const u = urls.shift();
+      if (!u) return res(null);
+      const i = new Image(); i.crossOrigin = "anonymous"; i.decoding = "async";
+      i.onload = () => res(i); i.onerror = tryNext; i.src = u;
+    };
+    tryNext();
   }));
   return imgCache.get(url)!;
 }

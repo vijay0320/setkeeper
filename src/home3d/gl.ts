@@ -229,15 +229,21 @@ export function cardBack(): HTMLCanvasElement {
 }
 
 /** Card image → texture; falls back to a lettered placeholder if the image can't load. */
+/** Load a card image. `url` may list fallbacks separated by spaces: each is tried in turn. */
 export function loadCardImage(url: string, label: string): Promise<HTMLImageElement | HTMLCanvasElement> {
+  const urls = url.split(" ").filter(Boolean);
   return new Promise((resolve) => {
-    if (!url) return resolve(placeholder(label));
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.decoding = "async";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(placeholder(label));
-    img.src = url;
+    const tryNext = () => {
+      const u = urls.shift();
+      if (!u) return resolve(placeholder(label));
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.decoding = "async";
+      img.onload = () => resolve(img);
+      img.onerror = tryNext;
+      img.src = u;
+    };
+    tryNext();
   });
 }
 
