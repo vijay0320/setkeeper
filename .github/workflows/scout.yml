@@ -1,0 +1,43 @@
+name: Price, grading and new-set scout
+on:
+  schedule:
+    - cron: "17 10 * * *"   # daily, 3:17 am Pacific
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Card prices
+        run: node scripts/scout.ts
+        continue-on-error: true
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+      - name: Grading tiers (PSA, Beckett, CGC, TAG)
+        run: node scripts/grading-scout.ts
+        continue-on-error: true
+      - name: New sets from the official card galleries
+        run: |
+          # tcg.pokemon.com has a bot check; the scout falls back to headless Chromium if plain requests are blocked
+          npm i --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
+          node scripts/gallery-scout.ts
+        continue-on-error: true
+      - name: Commit and redeploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "setkeeper-scout"
+          git config user.email "scout@users.noreply.github.com"
+          git add data/listings data/grading data/galleries
+          if git diff --cached --quiet; then echo "Nothing changed"; exit 0; fi
+          git commit -m "Update prices, grading tiers and sets $(date -u +%F)"
+          git push
+          # pushes made by this workflow don't trigger other workflows, so start the deploy directly
+          gh workflow run pages.yml --ref main

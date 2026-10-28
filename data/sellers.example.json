@@ -1,0 +1,21 @@
+{
+  "_readme": "Copy to data/sellers.json and list the shops you buy from. Each Shopify shop needs its domain, the collection handle that holds the set's singles (from the shop's URL, e.g. /collections/<handle>), and its real shipping terms in its own currency. Check each shop's terms of service before scraping it; the scout fetches each page once per run with a delay.",
+  "shopify": [
+    {
+      "id": "example-shop",
+      "name": "Example Card Shop",
+      "domain": "example-card-shop.ca",
+      "collection": "pokemon-30th-celebration-singles",
+      "currency": "CAD",
+      "country": "CA",
+      "shipping": { "base": 5.0, "freeOver": 75 }
+    }
+  ],
+  "ebay": {
+    "enabled": true,
+    "marketplace": "EBAY_CA",
+    "deliveryCountry": "CA",
+    "perCard": 30,
+    "sellerCountries": ["CA", "US"]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "SetKeeper",
+  "short_name": "SetKeeper",
+  "description": "Pokémon TCG set tracker with card scanning, price checks and centering grades.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#eef0f4",
+  "theme_color": "#9a6c14",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SetKeeper</title>
+<meta name="description" content="A binder for every Pokémon TCG set you collect, with card scanning, fair prices, a cart optimizer and grading tools.">
+<meta name="theme-color" content="#1f3a5f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Caveat:wght@500&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!--APP-->
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><b>SetKeeper</b><span id="set-name"></span></div>
+    <nav aria-label="Sections"></nav>
+    <div class="prog" aria-label="Set progress"><span class="track" id="progress-bar"><i></i></span><b id="progress-text"></b></div>
+  </div>
+</header>
+<main id="main"></main>
+<nav class="bottom" aria-label="Sections"></nav>
+<dialog id="sheet" aria-label="Card details"></dialog>
+<div id="toast" role="status" hidden></div>
+<!--/APP-->
+<script type="module" src="app.js"></script>
+</body>
+</html>
