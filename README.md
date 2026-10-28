@@ -65,6 +65,22 @@ The scout's adapters are tested against recorded response formats (`npm test`), 
 
 Push to `main`. The included workflow (`.github/workflows/pages.yml`) runs the tests, builds `dist/` and publishes it. In the repo settings, set **Pages → Source** to **GitHub Actions** once.
 
+## Sync and backup
+
+Everything is saved in the browser first, so the app works offline and without an account. **Data → Sync & backup** adds:
+
+- **Backup file:** one JSON file with your binders and card data; restore it on any device.
+- **Sign-in and sync (optional):** sign in with an emailed link (no password) and your data syncs between devices through [Supabase](https://supabase.com). Each collector's data is one row in a Postgres table protected by row-level security, so nobody else can read it. Only your own data is uploaded; card databases and caches stay on the device. When the same thing is edited on two devices, the most recent change wins.
+
+To turn sync on for your deployment:
+
+1. Create a free project at supabase.com (pick a Canadian region if you're in Canada).
+2. **SQL Editor → New query**, paste `supabase/setup.sql`, **Run**.
+3. **Authentication → URL Configuration:** set Site URL to your site (e.g. `https://you.github.io/setkeeper/`) and add it under Redirect URLs.
+4. **Project Settings → API:** copy the Project URL and the `anon` public key into the GitHub repo under **Settings → Secrets and variables → Actions → Variables** as `SUPABASE_URL` and `SUPABASE_ANON_KEY`, then re-run the deploy.
+
+The anon key is meant to be public; row-level security is what protects the data. The daily scout calls a `keepalive` function so a free project isn't paused for inactivity. Supabase's built-in email sender allows only a few sign-in emails an hour; for more users, add your own SMTP under Authentication → Emails.
+
 ## Sets
 
 **Daily scout.** `.github/workflows/scout.yml` runs `scripts/gallery-scout.ts` every day: it reads tcg.pokemon.com/en-us/all-galleries/, each gallery page and its `cards.json`, matches each set to TCGdex by name, updates `data/galleries/index.json` and redeploys. tcg.pokemon.com has a bot check, so if plain requests are challenged the scout loads the pages in headless Chromium (Playwright). Run it yourself with `npm run gallery-scout`.

@@ -24,6 +24,10 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+        env:
+          # optional sign-in and sync; leave unset for a local-only app
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

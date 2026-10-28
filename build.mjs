@@ -21,6 +21,9 @@ const options = {
   define: {
     __ARTIFACT__: String(artifact),
     __IMAGE_BASE__: JSON.stringify(artifact ? "cards/" : ""),
+    // Supabase project for optional sign-in and sync (public values; the database is protected by row-level security)
+    __SUPABASE_URL__: JSON.stringify(artifact ? "" : process.env.SUPABASE_URL ?? ""),
+    __SUPABASE_ANON_KEY__: JSON.stringify(artifact ? "" : process.env.SUPABASE_ANON_KEY ?? ""),
   },
   logLevel: "info",
 };

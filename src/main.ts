@@ -1,3 +1,4 @@
+import { initSync, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
 import setData from "../data/sets/30th-celebration.json";
 import fpData from "../data/sets/30th-celebration.fingerprints.json";
 import type { Card, CardSet, Collection, Entry, Priority, Status } from "./lib/types.ts";
@@ -1467,9 +1468,10 @@ function data(): Node {
     masthead({
       kicker: "Data", title: "Your data, your device.",
       lede: "Bring in your spreadsheet, export to Google Sheets, load seller prices, and set the rules SetKeeper uses to judge a price.",
-      meta: [["Cards tracked", String(Object.keys(col.entries).length)], ["Stored", "This browser"], ["Account", "None needed"], ["Last saved", new Date(col.updatedAt).toLocaleDateString("en-CA", { month: "short", day: "numeric" })]],
+      meta: [["Cards tracked", String(Object.keys(col.entries).length)], ["Stored", syncState.email ? "This browser + cloud" : "This browser"], ["Account", syncState.email ? "Signed in" : "None needed"], ["Last saved", new Date(col.updatedAt).toLocaleDateString("en-CA", { month: "short", day: "numeric" })]],
       scene: null,
     }),
+    syncPanel(download),
     h("div", { class: "panel" }, h("h2", {}, "Import"),
       h("p", { class: "hint" }, "Bring in your tracker spreadsheet (.xlsx or a CSV from Google Sheets) or a SetKeeper backup. Cards are matched by section and card number; imported values replace what's here for those cards."),
       file, h("label", { class: "btn", for: "import-file" }, "Choose file"), msg),
@@ -1820,8 +1822,64 @@ function packLog(sessions: PackSession[], totalPacks: number): Node {
       h("button", { class: "linkish del", "aria-label": "Delete this entry", onclick: () => { col.packs = (col.packs ?? []).filter((y) => y.id !== x.id); persist(); render(); } }, "Delete")))) : null);
 }
 
+// ---------- sync & backup ----------
+function syncPanel(download: (text: string, name: string, type: string) => () => void): Node {
+  const panel = h("div", { class: "panel sync-panel" });
+  const stamp = () => new Date().toISOString().slice(0, 10);
+  const restoreInput = h("input", { id: "restore-file", type: "file", accept: ".json,application/json", class: "sr-only",
+    onchange: async (e: Event) => {
+      const f = (e.target as HTMLInputElement).files?.[0];
+      if (!f) return;
+      try { restore(await f.text()); toast("Backup restored"); setTimeout(() => location.reload(), 600); }
+      catch (err) { toast((err as Error).message); }
+    } });
+  const backupRow = h("div", { class: "row" },
+    h("button", { class: "btn ghost", onclick: download(backupText(), `setkeeper-backup-${stamp()}.json`, "application/json") }, "Download a backup"),
+    restoreInput, h("label", { class: "btn ghost", for: "restore-file" }, "Restore a backup"),
+    hasPreSyncCopy() ? h("button", { class: "linkish", onclick: download(preSyncText(), `setkeeper-before-first-sync.json`, "application/json") }, "Copy of this device before the first sync") : "");
+  const draw = () => {
+    const kids: (Node | string)[] = [h("h2", {}, "Sync & backup")];
+    if (!syncEnabled) {
+      kids.push(h("p", { class: "hint" }, "Everything you enter is saved in this browser. Download a backup now and then, and restore it on another device or after clearing your browser."));
+    } else if (!syncState.email) {
+      const email = h("input", { id: "sync-email", type: "email", autocomplete: "email", placeholder: "you@example.com", "aria-label": "Email" }) as HTMLInputElement;
+      const msg = h("p", { class: "hint", role: "status" }, syncState.error);
+      kids.push(
+        h("p", { class: "hint" }, "Sign in to keep your binders on all your devices and safe in the cloud. No password: we email you a sign-in link. Your collection keeps working offline either way."),
+        h("form", { class: "row", onsubmit: async (e: Event) => {
+          e.preventDefault();
+          if (!email.validity.valid || !email.value) { msg.textContent = "Enter your email address."; return; }
+          msg.textContent = "Sending…";
+          try { await sendLink(email.value); msg.textContent = `Check ${email.value} for a sign-in link from SetKeeper. Open it on this device.`; }
+          catch (err) { msg.textContent = (err as Error).message; }
+        } }, email, h("button", { class: "btn", type: "submit" }, "Email me a sign-in link")),
+        msg);
+    } else {
+      const when = syncState.last ? new Date(syncState.last).toLocaleString("en-CA", { dateStyle: "medium", timeStyle: "short" }) : "not yet";
+      kids.push(
+        h("p", {}, h("b", {}, syncState.email), " · ", syncState.busy ? "syncing…" : `last synced ${when}`),
+        syncState.error ? h("p", { class: "hint warn", role: "status" }, syncState.error) : "",
+        h("p", { class: "hint" }, "Changes sync a few seconds after you make them and when you open the app on another device. Only your own data is uploaded: binders, card statuses, notes, prices and imported listings."),
+        h("div", { class: "row" },
+          h("button", { class: "btn", disabled: syncState.busy, onclick: async () => { if (await syncNow()) location.reload(); } }, "Sync now"),
+          h("button", { class: "btn ghost", onclick: () => void signOut().then(render) }, "Sign out"),
+          (() => { let armed = false; const b = h("button", { class: "linkish del", onclick: async () => {
+            if (!armed) { armed = true; b.textContent = "Tap again: deletes the cloud copy, keeps this device's data"; return; }
+            await deleteCloudCopy(); toast("Cloud copy deleted"); render();
+          } }, "Delete my cloud copy"); return b; })()));
+    }
+    kids.push(h("h3", {}, "Backup file"), h("p", { class: "hint" }, "One file with all your binders and card data. Keep it somewhere safe; restoring replaces what's on this device."), backupRow);
+    panel.replaceChildren(...kids);
+  };
+  syncState.onChange = () => { if (panel.isConnected) draw(); };
+  draw();
+  return panel;
+}
+
 // ---------- boot ----------
 async function boot() {
+  initSync(() => location.reload());
+  void persistStorage();
   const brand = document.querySelector(".brand") as HTMLElement;
   brand.addEventListener("click", () => { location.hash = "#home"; scrollTo({ top: 0 }); });
   brand.setAttribute("role", "link"); brand.tabIndex = 0;

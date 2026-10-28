@@ -30,6 +30,12 @@ jobs:
           npm i --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
           node scripts/gallery-scout.ts
         continue-on-error: true
+      - name: Keep the Supabase project awake
+        if: ${{ vars.SUPABASE_URL != '' }}
+        run: |
+          curl -fsS -X POST "${{ vars.SUPABASE_URL }}/rest/v1/rpc/keepalive" \
+            -H "apikey: ${{ vars.SUPABASE_ANON_KEY }}" -H "Content-Type: application/json" -d '{}'
+        continue-on-error: true
       - name: Commit and redeploy
         env:
           GH_TOKEN: ${{ github.token }}
