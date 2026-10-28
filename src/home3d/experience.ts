@@ -93,10 +93,15 @@ export function mountFilm(root: El, data: FilmData): () => void {
   const tex = new Map<string, WebGLTexture>();
   const uniq = new Map<string, FilmCard>();
   for (const c of [data.hero, ...data.chase, ...data.page, data.scan]) uniq.set(c.id, c);
+  // The loader waits only for the dozen cards the first scenes need; the 200-card wall
+  // further down the film streams in behind it and appears when it's ready.
   let loaded = 0;
-  const total = uniq.size + 1;
-  const bump = () => { loaded++; count.textContent = String(Math.round((100 * loaded) / total)); };
-  const ready = Promise.all([...uniq.values()].map(async (c) => { tex.set(c.id, r.textureFromCanvas(await loadCardImage(c.tex, c.name))); bump(); }));
+  const total = uniq.size;
+  const bump = () => { loaded++; count.textContent = String(Math.min(100, Math.round((100 * loaded) / total))); };
+  const ready = Promise.allSettled([...uniq.values()].map(async (c) => {
+    try { tex.set(c.id, r.textureFromCanvas(await loadCardImage(c.tex, c.name))); } catch { tex.set(c.id, r.textureFromCanvas(placeholder(c.name))); }
+    bump();
+  }));
   let wallTex: WebGLTexture | null = null;
   let wallRects: [number, number, number, number][] = [];
   const cols = Math.min(20, Math.max(8, Math.ceil(Math.sqrt(data.wall.length * 1.6))));
@@ -104,8 +109,7 @@ export function mountFilm(root: El, data: FilmData): () => void {
     const a = atlas(imgs, cols);
     wallTex = r.textureFromCanvas(a.canvas);
     wallRects = a.rects;
-    bump();
-  });
+  }).catch(() => { /* the wall is decoration; the film works without it */ });
   // pocket page texture
   const pageCanvas = document.createElement("canvas");
   pageCanvas.width = 640; pageCanvas.height = 880;
@@ -121,10 +125,11 @@ export function mountFilm(root: El, data: FilmData): () => void {
   const pageTex = r.textureFromCanvas(pageCanvas);
   const blank = r.textureFromCanvas(placeholder(""));
 
-  Promise.all([ready, wallReady]).then(() => {
-    loader.classList.add("done");
-    setTimeout(() => loader.remove(), 900);
-  });
+  // open as soon as the first scenes are ready, and never keep anyone waiting more than 4 s on a slow connection
+  let opened = false;
+  const open = () => { if (opened) return; opened = true; loader.classList.add("done"); setTimeout(() => loader.remove(), 900); };
+  void ready.then(open);
+  setTimeout(open, 4000);
 
   // ---------- input ----------
   let target = 0, p = 0, mx = 0, my = 0, smx = 0, smy = 0;

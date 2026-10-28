@@ -103,7 +103,8 @@ async function activateSet(setId: string) {
   if (setId === BUNDLED.id) {
     applySet(BUNDLED, BUNDLED_REFS);
     const c = loadCatalog(BUNDLED.id);
-    if (!c?.enrichedAt || Date.now() - Date.parse(c.enrichedAt) > 3 * 86400000) refreshPrices(BUNDLED);
+    // prices load in the background once the page has had a few seconds to draw
+    if (!c?.enrichedAt || Date.now() - Date.parse(c.enrichedAt) > 3 * 86400000) setTimeout(() => refreshPrices(BUNDLED), 5000);
     return;
   }
   const gp = findPart(GALLERIES, setId);
