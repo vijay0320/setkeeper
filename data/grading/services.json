@@ -238,7 +238,7 @@
   "log": [
     "PSA: couldn't read https://www.psacard.com/services/tradingcardgrading (HTTP 403); kept data from 2026-10-16",
     "Beckett: couldn't read https://www.beckett.com/grading (HTTP 403); kept data from 2026-10-15",
-    "CGC: Bulk: $17 → $500; Economy: $20 → $1; Standard: $55 → $3; Express: $100 → $10; WalkThrough: $300 → $100",
-    "TAG: Value: limited → open"
+    "CGC: no changes",
+    "TAG: no changes"
   ]
 }
