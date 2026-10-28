@@ -173,3 +173,16 @@ export function restore(text: string) {
 export async function persistStorage(): Promise<boolean> {
   try { return (await navigator.storage?.persisted?.()) || (await navigator.storage?.persist?.()) || false; } catch { return false; }
 }
+
+/** Newest price snapshot the scout saved for a set. Signed-in collectors only; the history stays private. */
+export async function latestListings(setId: string): Promise<unknown | null> {
+  if (!syncEnabled) return null;
+  const s = await session();
+  if (!s) return null;
+  const res = await fetch(`${__SUPABASE_URL__.replace(/\/$/, "")}/rest/v1/rpc/latest_listings`, {
+    method: "POST",
+    headers: { apikey: __SUPABASE_ANON_KEY__, Authorization: `Bearer ${s.access_token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_set: setId }),
+  });
+  return res.ok ? res.json() : null;
+}

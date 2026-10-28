@@ -1,4 +1,4 @@
-import { initSync, onSyncChange, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
+import { latestListings, initSync, onSyncChange, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
 import setData from "../data/sets/30th-celebration.json";
 import fpData from "../data/sets/30th-celebration.fingerprints.json";
 import type { Card, CardSet, Collection, Entry, Priority, Status } from "./lib/types.ts";
@@ -1500,12 +1500,10 @@ async function ensureMarket() {
   if (market.snapshot || scoutTried || __ARTIFACT__) return;
   scoutTried = true;
   try {
-    const res = await fetch(`listings/${SET.id}.json`, { cache: "no-cache" });
-    if (res.ok) {
-      const snap = (await res.json()) as MarketSnapshot;
-      if (snap.listings?.length) { market = { ...market, source: "scout", snapshot: snap }; if (currentView() === "buy") render(); }
-    }
-  } catch { /* no scout data published */ }
+    // only the newest snapshot is readable; the price history stays private in Supabase
+    const snap = await latestListings(SET.id) as MarketSnapshot | null;
+    if (snap?.listings?.length) { market = { ...market, source: "scout", snapshot: snap }; if (currentView() === "buy") render(); }
+  } catch { /* no scout data available */ }
 }
 
 function useSample() {

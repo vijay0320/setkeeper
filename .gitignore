@@ -4,3 +4,7 @@ dist-artifact/
 .cache/
 *.log
 .DS_Store
+# price history and the private shop list never go in the public repo
+data/listings/*
+!data/listings/sample.json
+data/sellers.json

@@ -40,3 +40,26 @@ begin
 end $$;
 revoke execute on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Price history (the scout's daily snapshots). Private: row-level security is on
+-- and there are no policies, so only the service role used by the GitHub Action can
+-- read or write the table. Signed-in collectors get just the newest snapshot per set
+-- through latest_listings(); the history itself is never exposed, and requiring sign-in
+-- stops anonymous scripts from rebuilding the history by polling every day.
+create table if not exists public.price_snapshots (
+  id          bigserial primary key,
+  set_id      text not null,
+  fetched_at  timestamptz not null default now(),
+  snapshot    jsonb not null
+);
+create index if not exists price_snapshots_set_time on public.price_snapshots (set_id, fetched_at desc);
+alter table public.price_snapshots enable row level security;
+revoke all on public.price_snapshots from anon, authenticated;
+
+create or replace function public.latest_listings(p_set text) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select snapshot from public.price_snapshots where set_id = p_set order by fetched_at desc limit 1
+$$;
+revoke execute on function public.latest_listings(text) from public;
+grant execute on function public.latest_listings(text) to authenticated;

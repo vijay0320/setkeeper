@@ -35,9 +35,7 @@ function writeHtml() {
     writeFileSync(`${out}/index.html`, html);
     writeFileSync(`${out}/styles.css`, css);
     cpSync("public", out, { recursive: true });
-    // price snapshots written by the scout (sample data is bundled separately)
-    mkdirSync(`${out}/listings`, { recursive: true });
-    for (const f of readdirSync("data/listings")) if (f.endsWith(".json") && f !== "sample.json") cpSync(`data/listings/${f}`, `${out}/listings/${f}`);
+    // price snapshots are not published as files; the app reads the newest one from Supabase
     mkdirSync(`${out}/grading`, { recursive: true });
     cpSync("data/grading/services.json", `${out}/grading/services.json`);
     mkdirSync(`${out}/galleries`, { recursive: true });

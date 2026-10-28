@@ -55,7 +55,7 @@ Requires Node 22.18 or newer (TypeScript runs natively, no transpile step for te
 
 The Buy tab needs listings. Three ways to get them:
 
-1. **Price scout (automatic).** Copy `data/sellers.example.json` to `data/sellers.json` and list the shops you buy from: Shopify shops (most Canadian card shops) by domain and collection handle, with their real shipping terms. For eBay, create a free developer app at developer.ebay.com and add `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` as repository secrets. `.github/workflows/scout.yml` runs daily, writes `data/listings/<set>.json` and commits it; the site picks it up on the next deploy. Run it locally with `node scripts/scout.ts`.
+1. **Price scout (automatic).** The daily GitHub Action collects in-stock singles from Shopify card shops (most Canadian shops) and, with API keys, eBay. Put your shop list (same format as `data/sellers.example.json`) in the repo secret `SCOUT_SELLERS`, and the Supabase service-role key in the secret `SUPABASE_SERVICE_ROLE_KEY`. Each day's prices are stored in a private Supabase table; the price history is never committed to this public repo, and signed-in users can read only the newest prices. Run `node scripts/scout.ts` locally to write `data/listings/<set>.json` (git-ignored) instead.
 2. **Listings sheet.** Import a CSV or .xlsx on the Data tab with columns Seller, Card #, Price, Qty, Condition, Shipping, Free over, Currency, URL.
 3. **Sample data.** Fictional sellers and prices, to see how it works.
 
