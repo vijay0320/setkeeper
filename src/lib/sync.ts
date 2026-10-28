@@ -32,6 +32,13 @@ export function merge(local: Blob, remote: Blob | null): { merged: Blob; toLocal
   return { merged: { v: 1, keys }, toLocal, toRemote };
 }
 
+/** First sync on a device: where the cloud already has a key, the cloud's version wins. */
+export function deferToRemote(local: Blob, remote: Blob): Blob {
+  const keys: Blob["keys"] = {};
+  for (const [k, e] of Object.entries(local.keys)) keys[k] = remote.keys[k] ? { v: e.v, t: Math.min(e.t, remote.keys[k].t - 1) } : e;
+  return { v: 1, keys };
+}
+
 /** Snapshot of syncable keys in a storage, stamped with their last-write times. */
 export function snapshot(store: Storage, times: Record<string, number>): Blob {
   const keys: Blob["keys"] = {};

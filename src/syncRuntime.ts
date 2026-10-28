@@ -1,7 +1,7 @@
 // Wires sync into the app: stamps every write of the collector's data, pushes changes a
 // few seconds after they happen, and pulls changes from other devices when the app is
 // opened or comes back to the foreground. Imported first by main.ts so it sees every write.
-import { SyncApi, merge, snapshot, sessionFromHash, claims, syncable, backupFile, readBackup, type Session, type Blob } from "./lib/sync.ts";
+import { SyncApi, merge, deferToRemote, snapshot, sessionFromHash, claims, syncable, backupFile, readBackup, type Session, type Blob } from "./lib/sync.ts";
 
 declare const __SUPABASE_URL__: string;
 declare const __SUPABASE_ANON_KEY__: string;
@@ -20,7 +20,7 @@ let applying = false;
 let timer = 0;
 
 // ---------- stamp every write ----------
-const origSet = Storage.prototype.setItem, origRemove = Storage.prototype.removeItem;
+const origSet = Storage.prototype.setItem, origRemove = Storage.prototype.removeItem, origGet = Storage.prototype.getItem;
 function stamp(key: string) {
   if (applying || !syncable(key)) return;
   const t = read<Record<string, number>>(TIMES, {});
@@ -29,8 +29,18 @@ function stamp(key: string) {
   schedule();
 }
 try {
-  Storage.prototype.setItem = function (k: string, v: string) { origSet.call(this, k, v); if (this === localStorage) stamp(k); };
-  Storage.prototype.removeItem = function (k: string) { origRemove.call(this, k); if (this === localStorage) stamp(k); };
+  // Only real changes count: the app re-saves settings and defaults while it starts up, and
+  // those rewrites must not look newer than edits made on another device.
+  Storage.prototype.setItem = function (k: string, v: string) {
+    const mine = this === localStorage, before = mine ? origGet.call(this, k) : null;
+    origSet.call(this, k, v);
+    if (mine && before !== v) stamp(k);
+  };
+  Storage.prototype.removeItem = function (k: string) {
+    const mine = this === localStorage, had = mine && origGet.call(this, k) != null;
+    origRemove.call(this, k);
+    if (had) stamp(k);
+  };
 } catch { /* storage unavailable: nothing to sync */ }
 
 function localBlob(): Blob {
@@ -101,7 +111,10 @@ export async function syncNow(): Promise<boolean> {
     const first = !read<string>(LAST, "");
     if (first) write(PRE, backupFile(localBlob())); // keep this device's data before the first merge
     const remote = await api.pull(s);
-    const { merged, toLocal, toRemote } = merge(localBlob(), remote?.blob ?? null);
+    // A device joining for the first time takes the cloud copy wherever both have data
+    // (its own data was saved above and can be downloaded from the Data tab).
+    const local = first && remote ? deferToRemote(localBlob(), remote.blob) : localBlob();
+    const { merged, toLocal, toRemote } = merge(local, remote?.blob ?? null);
     if (toLocal.length) apply(merged, toLocal);
     if (toRemote.length || !remote) await api.push(s, merged);
     state.last = new Date().toISOString(); write(LAST, state.last);

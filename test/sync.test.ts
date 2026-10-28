@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { merge, syncable, sessionFromHash, claims, SyncApi, readBackup, backupFile, snapshot, type Blob } from "../src/lib/sync.ts";
+import { merge, deferToRemote, syncable, sessionFromHash, claims, SyncApi, readBackup, backupFile, snapshot, type Blob } from "../src/lib/sync.ts";
 
 const B = (o: Record<string, [string, number]>): Blob => ({ v: 1, keys: Object.fromEntries(Object.entries(o).map(([k, [v, t]]) => [k, { v, t }])) });
 
@@ -66,4 +66,14 @@ test("backup files round-trip and refuse other files", () => {
   const back = readBackup(JSON.stringify(backupFile(blob)));
   assert.deepEqual(Object.keys(back.keys), ["setkeeper:v1:shelf"]);
   assert.throws(() => readBackup('{"hello":1}'), /isn't a SetKeeper backup/);
+});
+
+test("a device's first sync takes the cloud copy where both have data", () => {
+  // the phone re-saved its empty defaults while starting up, so they look newer
+  const phone = B({ "setkeeper:v1:shelf": ["empty", 900], "setkeeper:v1:30th-celebration": ["{}", 900], "setkeeper:v1:phone-only": ["p", 900] });
+  const cloud = B({ "setkeeper:v1:shelf": ["laptop", 500], "setkeeper:v1:30th-celebration": ['{"001":"have"}', 500] });
+  const { merged, toLocal, toRemote } = merge(deferToRemote(phone, cloud), cloud);
+  assert.equal(merged.keys["setkeeper:v1:30th-celebration"].v, '{"001":"have"}');
+  assert.deepEqual(toLocal.sort(), ["setkeeper:v1:30th-celebration", "setkeeper:v1:shelf"]);
+  assert.deepEqual(toRemote, ["setkeeper:v1:phone-only"]);
 });
