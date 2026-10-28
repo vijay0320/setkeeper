@@ -936,3 +936,7 @@ table.slabs label.inline span { font-size: 0.72rem; color: var(--muted); }
 .landed-lines { display: grid; grid-template-columns: max-content max-content; gap: 2px 18px; margin: 4px 0 10px; font-size: 0.88rem; color: var(--muted); }
 .landed-lines dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 #landed-sources ul { margin: 6px 0 0; padding-left: 1.2em; font-size: 0.88rem; }
+.verdict .door { display: block; margin-top: 6px; font-weight: 400; }
+.shop-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 10px; }
+.shop-list li { display: grid; grid-template-columns: auto auto 1fr auto; gap: 4px 10px; align-items: baseline; font-size: 0.9rem; }
+@media (max-width: 640px) { .shop-list li { grid-template-columns: auto 1fr; } .shop-list li > span:not(.badge) { grid-column: 1 / -1; } }

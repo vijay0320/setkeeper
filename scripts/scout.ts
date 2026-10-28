@@ -33,7 +33,11 @@ const sellers = new Map<string, Seller>();
 for (const store of cfg.shopify ?? []) {
   try {
     const ls = await fetchShopify(store, set);
-    sellers.set(store.id, { id: store.id, name: store.name, country: store.country, currency: store.currency, kind: "store", url: `https://${store.domain}`, shipping: store.shipping });
+    sellers.set(store.id, {
+      id: store.id, name: store.name, country: store.country, currency: store.currency, kind: "store", url: `https://${store.domain}`, shipping: store.shipping,
+      ...(store.province ? { province: store.province } : {}), ...(store.carrier ? { carrier: store.carrier } : {}),
+      ...(store.taxAt ? { taxAt: store.taxAt } : {}), ...(store.chargesPst != null ? { chargesPst: store.chargesPst } : {}),
+    });
     snap.listings.push(...ls);
     snap.sources!.push({ name: store.name, ok: true, listings: ls.length });
     console.log(`${store.name}: ${ls.length} listings`);

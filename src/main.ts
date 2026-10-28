@@ -21,6 +21,8 @@ import servicesData from "../data/grading/services.json";
 import galleriesData from "../data/galleries/index.json";
 import landedRules from "../data/landed/rules.json";
 import fxData from "../data/landed/fx.json";
+import storesData from "../data/stores/stores.json";
+import { landedCost } from "./lib/landed.ts";
 import { PROVINCES, importLimit, type LandedRules, type Province } from "./lib/landed.ts";
 import { gallerySet, findPart, gallerySetId, partName, shortName, galleryUrl, type GalleryIndex, type DbSet } from "./lib/galleries.ts";
 import { analysePacks, observedRates, DEFAULT_MODEL, type PackSession } from "./lib/packs.ts";
@@ -862,7 +864,9 @@ function openCard(id: string) {
     const x = entry(id);
     const pc = checkPrice(x.priceSeen, marketOf(id), col.settings);
     verdict.className = `verdict v-${pc.verdict}`;
-    verdict.replaceChildren(h("strong", {}, VERDICT_LABEL[pc.verdict]), " ", pc.note);
+    const st = findStore(x.store);
+    verdict.replaceChildren(h("strong", {}, VERDICT_LABEL[pc.verdict]), " ", pc.note,
+      st && x.priceSeen ? h("span", { class: "door" }, " ", storeLanded(x.priceSeen, st).text, " ", h("a", { href: st.policy, target: "_blank", rel: "noopener" }, "Shipping policy")) : "");
   }
   refreshVerdict();
   const seg = h("div", { class: "seg", role: "radiogroup", "aria-label": "Status" },
@@ -887,7 +891,8 @@ function openCard(id: string) {
         h("div", { class: "fields" },
           seg,
           h("div", { class: "two" }, field("Priority", prio), field("Copies owned", numIn("qty", "1"))),
-          h("div", { class: "two" }, field("Store / seller", txtIn("store")), field("Date seen", txtIn("seenOn", "date"))),
+          h("div", { class: "two" }, field("Store / seller", (() => { const i = txtIn("store"); i.setAttribute("list", "store-list"); i.addEventListener("change", refreshVerdict); return i; })()), field("Date seen", txtIn("seenOn", "date"))),
+          h("datalist", { id: "store-list" }, ...STORES.stores.map((x) => h("option", { value: x.name }))),
           h("div", { class: "two" }, field("Asking price (CAD)", numIn("priceSeen")), field(AUTO[id] != null ? `Market value (TCGplayer ≈ ${formatCAD(AUTO[id])})` : "Market value (CAD)", numIn("market"))),
           verdict,
           h("p", { class: "lookup" }, "Look up market value: ",
@@ -1495,6 +1500,32 @@ function data(): Node {
     h("p", { class: "fine" }, `Card list and images: ${SET.sources[0]}. Unofficial fan tool, not affiliated with The Pokémon Company. Your data stays in this browser.`));
 }
 
+// ---------- Canadian shop directory (name, province, published shipping) ----------
+interface StoreInfo {
+  id: string; name: string; url: string; country: string; currency: string; province?: Province; summary: string; policy: string;
+  shipping?: { base?: number; freeOver?: number; tiers?: { under?: number; cards?: number; cost: number }[] };
+}
+/** Shipping for one card at this price, from the shop's published rules (undefined when not published). */
+function storeShipping(st: StoreInfo, price: number): number | undefined {
+  const sh = st.shipping;
+  if (!sh) return undefined;
+  if (sh.freeOver != null && price >= sh.freeOver) return 0;
+  const tier = sh.tiers?.find((t) => (t.under != null ? price < t.under : t.cards != null ? 1 <= t.cards : false));
+  return tier?.cost ?? sh.base;
+}
+const STORES = (storesData as unknown as { checkedAt: string; stores: StoreInfo[] });
+const norm = (x: string) => x.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]/g, "");
+const findStore = (name?: string) => (name ? STORES.stores.find((x) => norm(x.name).startsWith(norm(name)) || norm(name).startsWith(norm(x.name)) || norm(name) === x.id) : undefined);
+/** What one card bought alone at a directory shop costs at your door, or why we can't say. */
+function storeLanded(price: number, st: StoreInfo): { total?: number; text: string } {
+  const B = buyer();
+  const ship = storeShipping(st, price);
+  const l = landedCost({ country: st.country, currency: st.currency, ...(st.province ? { province: st.province } : {}) }, price, ship ?? 0, { province: B.province, rules: RULES, fxFee: B.fxFee });
+  const tax = l.lines.map((x) => `${x.label} ${formatCAD(x.amount)}`).join(" + ");
+  if (ship == null) return { text: `At ${st.name}: ${formatCAD(l.total)} with ${tax || "no tax"}, plus shipping (they show it at checkout${st.shipping?.freeOver ? `; free from ${formatCAD(st.shipping.freeOver)}` : ""}).` };
+  return { total: l.total, text: `At your door from ${st.name}: ${formatCAD(l.total)} (${formatCAD(price)} + ${ship ? `${formatCAD(ship)} shipping` : "free shipping"}${tax ? ` + ${tax}` : ""}, shipped to ${RULES.provinces[B.province].name}).${ship && st.shipping?.freeOver ? ` Free shipping from ${formatCAD(st.shipping.freeOver)}.` : ""}` };
+}
+
 // ---------- Buy (cart optimizer across sellers) ----------
 const RULES = landedRules as unknown as LandedRules;
 interface BuyerPrefs { province: Province; fxFee: number; landed: boolean }
@@ -1596,7 +1627,8 @@ function buy(): Node {
     h("details", { class: "panel", id: "landed-sources" },
       h("summary", {}, h("b", {}, "Landed-cost rules and sources"), ` · checked ${RULES.checkedAt}`),
       h("p", { class: "hint" }, "Trading cards enter Canada duty-free and aren't on the 2026 surtax list on US goods, so imports pay sales tax but no duty. eBay collects tax at checkout only for Canadian sellers; US eBay sellers are taxed at the border like any import. Splitting one order into several shipments to stay under the limits doesn't count."),
-      h("ul", {}, ...RULES.sources.map((x) => h("li", {}, h("a", { href: x.url, target: "_blank", rel: "noopener" }, x.name))))));
+      h("ul", {}, ...RULES.sources.map((x) => h("li", {}, h("a", { href: x.url, target: "_blank", rel: "noopener" }, x.name))))),
+    shopsPanel());
   if (plan.deferred.length) wrap.append(h("div", { class: "panel" },
     h("h2", {}, `Wait on these (${plan.deferred.length})`),
     h("p", { class: "hint" }, "Buying them now would cost more in shipping than they're worth. They'll join a cart once you're ordering from that seller anyway."),
@@ -1605,6 +1637,15 @@ function buy(): Node {
     h("summary", {}, h("b", {}, `Not available at a fair price (${plan.unavailable.length})`)),
     h("ul", { class: "reasons" }, ...plan.unavailable.map((d) => h("li", {}, h("b", {}, d.label), " — ", d.reason)))));
   return wrap;
+}
+
+function shopsPanel(): Node {
+  return h("details", { class: "panel shops" },
+    h("summary", {}, h("b", {}, `Card shops (${STORES.stores.length})`), ` · shipping policies checked ${STORES.checkedAt}`),
+    h("p", { class: "hint" }, "Established shops that sell singles to Canadian collectors. Pick one as the \"Store / seller\" on a card and SetKeeper shows what that card costs at your door."),
+    h("ul", { class: "shop-list" }, ...STORES.stores.map((x) => h("li", {},
+      h("b", {}, h("a", { href: x.url, target: "_blank", rel: "noopener" }, x.name)), h("span", { class: "badge" }, x.province ?? x.country),
+      h("span", {}, x.summary), h("a", { href: x.policy, target: "_blank", rel: "noopener" }, "Policy")))));
 }
 
 function cartSummary(plan: CartPlan, wanted: number) {

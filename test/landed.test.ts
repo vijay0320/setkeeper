@@ -73,3 +73,15 @@ test("cart optimiser picks the cheaper landed option, not the cheaper sticker pr
   assert.ok(landed.orders.every((o) => o.seller.id === "ca"));
   assert.equal(landed.extrasTotal, 7.8);
 });
+
+test("shop directory entries are complete and use known provinces", () => {
+  const d = JSON.parse(readFileSync("data/stores/stores.json", "utf8")) as { stores: { id: string; name: string; url: string; country: string; currency: string; province?: string; policy: string; summary: string }[] };
+  const ids = new Set<string>();
+  for (const s of d.stores) {
+    assert.ok(!ids.has(s.id), `duplicate ${s.id}`); ids.add(s.id);
+    assert.match(s.url, /^https:\/\//); assert.match(s.policy, /^https:\/\//);
+    assert.ok(s.summary.length > 20, s.id);
+    if (s.country === "CA") assert.ok(PROVINCES.includes(s.province as never), `${s.id} province`);
+    assert.ok(["CAD", "USD"].includes(s.currency), s.id);
+  }
+});

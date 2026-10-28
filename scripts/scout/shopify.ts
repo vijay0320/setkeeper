@@ -12,6 +12,12 @@ export interface ShopifyStore {
   currency: "CAD" | "USD";
   shipping: { base: number; perExtra?: number; freeOver?: number };
   country: string;
+  // landed-cost hints passed through to the app (see src/lib/landed.ts)
+  province?: import("../../src/lib/landed.ts").Province;
+  carrier?: "post" | "courier";
+  taxAt?: "checkout" | "border" | "none";
+  chargesPst?: boolean;
+  note?: string;
 }
 
 interface Product { title: string; handle: string; variants: { title: string; price: string; available?: boolean; inventory_quantity?: number }[] }

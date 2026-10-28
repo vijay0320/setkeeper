@@ -1,0 +1,182 @@
+{
+ "checkedAt": "2026-10-28",
+ "note": "Established shops that sell Pokémon TCG singles to Canadian collectors, with each shop's published shipping policy. Collected by reading the shops' public policy pages; no inventory is scraped. Rates a shop only shows at checkout are left out.",
+ "stores": [
+  {
+   "id": "401games",
+   "name": "401 Games",
+   "url": "https://store.401games.ca",
+   "province": "ON",
+   "shipping": {
+    "base": 3,
+    "freeOver": 30
+   },
+   "summary": "Singles-only orders: $3 untracked lettermail, free lettermail from $30, free expedited from $100 (singles) or $175.",
+   "policy": "https://store.401games.ca/pages/new-shipping-policy-faq",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "danireon",
+   "name": "Danireon Cards & Games",
+   "url": "https://www.danireon.com",
+   "province": "ON",
+   "summary": "Untracked bubble mailers and tracked options; rates shown at checkout. Optional shipping insurance. Ships in up to 7 business days.",
+   "policy": "https://www.danireon.com/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "facetoface",
+   "name": "Face to Face Games",
+   "url": "https://www.facetofacegames.com",
+   "province": "QC",
+   "shipping": {
+    "freeOver": 200
+   },
+   "summary": "Untracked first-class mail for small orders (rate at checkout); free expedited on Canadian orders $200+.",
+   "policy": "https://facetofacegames.com/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "fusiongaming",
+   "name": "Fusion Gaming",
+   "url": "https://fusiongamingonline.com",
+   "province": "MB",
+   "summary": "Singles-only untracked letter mail and Canada Post Standard; rates shown at checkout.",
+   "policy": "https://fusiongamingonline.com/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "hobbiesville",
+   "name": "Hobbiesville",
+   "url": "https://hobbiesville.com",
+   "province": "ON",
+   "shipping": {
+    "freeOver": 175
+   },
+   "summary": "Canada Post; free on orders $175+. Paid rates shown at checkout.",
+   "policy": "https://www.hobbiesville.com/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "remicardtrader",
+   "name": "Rémi Card Trader",
+   "url": "https://remicardtrader.ca",
+   "province": "QC",
+   "shipping": {
+    "base": 15,
+    "freeOver": 175
+   },
+   "summary": "Tracked, $15 flat in Canada ($100 to the territories); free from $175. Ships within 1 business day.",
+   "policy": "https://remicardtrader.ca/en/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "untouchables",
+   "name": "Untouchables Comics, Cards & Games",
+   "url": "https://untouchables.ca",
+   "province": "ON",
+   "shipping": {
+    "base": 11.95,
+    "freeOver": 200
+   },
+   "summary": "$11.95 Canada Post Expedited (tracked), no lettermail option; free from $200 before tax.",
+   "policy": "https://untouchables.ca/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "pokejeux",
+   "name": "Poké Jeux",
+   "url": "https://www.pokejeux.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "QC",
+   "shipping": {
+    "freeOver": 200
+   },
+   "summary": "Pokémon specialist in Boucherville. Untracked letter mail or tracked shipping (rates at checkout); free UPS on $200+ before tax.",
+   "policy": "https://www.pokejeux.ca/policies/shipping-policy"
+  },
+  {
+   "id": "deckoutgaming",
+   "name": "Deck Out Gaming",
+   "url": "https://deckoutgaming.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "shipping": {
+    "base": 14.99,
+    "freeOver": 250,
+    "tiers": [
+     {
+      "under": 60,
+      "cost": 14.99
+     },
+     {
+      "under": 250,
+      "cost": 11.99
+     }
+    ]
+   },
+   "summary": "Tracked parcel $14.99 under $60, $11.99 for $60–$249.99, free from $250. Untracked bubble mailer also offered.",
+   "policy": "https://deckoutgaming.ca/policies/shipping-policy"
+  },
+  {
+   "id": "kanzengames",
+   "name": "KanZen Games",
+   "url": "https://kanzengames.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "shipping": {
+    "base": 1.49,
+    "freeOver": 300,
+    "tiers": [
+     {
+      "cards": 1,
+      "cost": 1.49
+     },
+     {
+      "cards": 17,
+      "cost": 2.89
+     },
+     {
+      "cards": 30,
+      "cost": 4.98
+     }
+    ]
+   },
+   "summary": "Singles: $1.49 letter mail, $2.89 bubble mail (up to 17 cards), $4.98 (up to 30), all untracked. Free on $300+.",
+   "policy": "https://kanzengames.com/policies/shipping-policy"
+  },
+  {
+   "id": "gameknight",
+   "name": "GameKnight Games",
+   "url": "https://gameknight.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "MB",
+   "shipping": {
+    "base": 3,
+    "freeOver": 200
+   },
+   "summary": "Singles-only orders: $3 flat untracked letter mail; free (expedited) from $200 before tax.",
+   "policy": "https://gameknight.ca/pages/shipping-delivery-and-pickup"
+  },
+  {
+   "id": "coolstuffinc",
+   "name": "CoolStuffInc",
+   "url": "https://www.coolstuffinc.com",
+   "country": "US",
+   "currency": "USD",
+   "summary": "US store that ships to Canada; international rates quoted at checkout, customs handled case by case. ($2.99 singles / free over $30 applies to the US only.)",
+   "policy": "https://www.coolstuffinc.com/page/1100"
+  }
+ ]
+}
