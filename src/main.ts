@@ -614,7 +614,9 @@ function texUrl(c: Card, size: "high" | "low"): string {
   if (!c.image) return "";
   if (c.image.startsWith("2M6P")) {
     if (__IMAGE_BASE__) return `${__IMAGE_BASE__}${c.image}.jpg`;
-    // the official CDN doesn't allow WebGL use from other sites; TCGdex mirrors the set with CORS
+    // the official CDN doesn't allow WebGL use from other sites; TCGdex mirrors the set with CORS.
+    // TCGdex has no art for the Classic Collection, so small copies ship with the site.
+    if (c.id.startsWith("cl-")) return `cards/${c.image}.jpg`;
     const t = tcgdexIdFor30th(c.id);
     if (!t) return "";
     const m = t.match(/^(30th(?:-c)?)-(\d+)$/)!;

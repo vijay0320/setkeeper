@@ -472,6 +472,23 @@ export function binder3d(o: Binder3DOptions): HTMLElement | null {
   let mx = 0, my = 0;
 
   const twoUp = () => canvas.clientWidth >= 720;
+  // On narrow screens one page fills the view: read the left page, slide across to the
+  // right page, then turn. side = which page of the open spread is in view.
+  let side: "left" | "right" = "right";
+  let pan = 0.5, panGoal = 0.5, lastPan = 0; // camera centre in page widths (-0.5 left page, 0.5 right page)
+  const setSide = (s2: "left" | "right") => { side = s2; panGoal = s2 === "left" ? -0.5 : 0.5; needsDraw = true; renderBar(); };
+  function forward() {
+    if (!twoUp() && f >= 2 && side === "left") { setSide("right"); swish(1.6); return; }
+    const before = f;
+    next();
+    if (!twoUp() && f > before && f >= 2) setSide("left");
+  }
+  function back() {
+    if (!twoUp() && f >= 2 && side === "right") { setSide("left"); swish(1.6); return; }
+    const before = f;
+    prev();
+    if (!twoUp() && f < before) setSide("right");
+  }
   const sheetThick = 0.0045;
   const yRight = (count: number) => 0.016 + count * sheetThick;
   const leftCount = () => Math.max(0, f - 1);
@@ -513,6 +530,7 @@ export function binder3d(o: Binder3DOptions): HTMLElement | null {
     const target = page <= 1 ? 1 : Math.min(leafCount, Math.floor(page / 2) + 1);
     void leaf;
     if (target > f) next(target - f); else if (target < f) prev(f - target);
+    if (!twoUp()) setSide(page % 2 === 0 && target >= 2 ? "left" : "right");
   }
   function open() {
     if (f > 0 || zipping) return;
@@ -544,7 +562,7 @@ export function binder3d(o: Binder3DOptions): HTMLElement | null {
       const dW = span / (2 * tn * aspect), dH = (L.H * 1.12 * Math.sin(tilt) + 0.06) / (2 * tn);
       return { d: Math.max(dW, dH) * 1.2, cx };
     };
-    const a = fit(spanClosed, COVER_W / 2), b = fit(spanOpen, twoUp() ? 0 : L.W / 2);
+    const a = fit(spanClosed, COVER_W / 2), b = fit(spanOpen, twoUp() ? 0 : pan * L.W);
     const k = easeInOut(camT);
     const d = lerp(a.d, b.d, k), cx = lerp(a.cx, b.cx, k);
     cam = [cx + mx * 0.05, d * Math.sin(tilt), d * Math.cos(tilt) + 0.02 - my * 0.03];
@@ -620,34 +638,42 @@ export function binder3d(o: Binder3DOptions): HTMLElement | null {
       if (complete) { t.to = forward ? Math.PI : 0; }
       else { t.to = forward ? 0 : Math.PI; f += forward ? -1 : 1; }
       settle(t); save();
+      if (!twoUp() && complete) setSide(forward ? "left" : "right");
       canvas.style.cursor = "grab";
       return;
     }
+    // on a phone, a sideways swipe slides between the two pages of a spread (or turns)
+    const sx = e.clientX - d.x;
+    if (!twoUp() && f > 0 && Math.abs(sx) > 40 && Math.abs(sx) > Math.abs(e.clientY - d.y)) { if (sx < 0) forward(); else back(); return; }
     if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) return;
     if (f === 0) { open(); return; }
     const p = pick(e.clientX, e.clientY);
     if (!p) return;
     const idx = pocketAt(p);
     if (idx != null) { const it = o.items[idx]; if (it.kind === "add") o.onAdd?.(); else o.onCard(idx); return; }
-    if (p.v >= 0 && p.v <= 1 && p.u <= 1.05) { if (p.side === "right") next(); else prev(); }
+    if (p.v >= 0 && p.v <= 1 && p.u <= 1.05) {
+      if (twoUp()) { if (p.side === "right") next(); else prev(); }
+      else if (p.x >= pan * L.W) forward(); else back();
+    }
   };
   canvas.addEventListener("pointerup", up);
   canvas.addEventListener("pointercancel", up);
   canvas.addEventListener("pointerleave", () => { mx = 0; my = 0; needsDraw = true; });
   canvas.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight") { e.preventDefault(); next(); }
-    else if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
+    if (e.key === "ArrowRight") { e.preventDefault(); forward(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
     else if ((e.key === "Enter" || e.key === " ") && f === 0) { e.preventDefault(); open(); }
   });
 
   // ---------------------------------------------------------------- bar
   function renderBar() {
-    const label = f === 0 ? "Zipped" : f === 1 ? (twoUp() ? "Inside cover · page 1" : "Page 1")
-      : twoUp() ? `Pages ${2 * (f - 1)}${2 * f - 1 <= pages ? `–${2 * f - 1}` : ""} of ${pages}` : `Page ${Math.min(pages, 2 * f - 1)} of ${pages}`;
+    const one = !twoUp(), here = one && f >= 2 && side === "left" ? 2 * (f - 1) : 2 * f - 1;
+    const label = f === 0 ? "Zipped" : f === 1 ? (one ? "Page 1" : "Inside cover · page 1")
+      : one ? `Page ${Math.min(pages, here)} of ${pages}` : `Pages ${2 * (f - 1)}${2 * f - 1 <= pages ? `–${2 * f - 1}` : ""} of ${pages}`;
     bar.replaceChildren(
-      btn("‹", "Previous page", () => prev(), f <= 1),
+      btn("‹", "Previous page", () => back(), f <= 1 && (!one || side === "right")),
       el("span", "b3-label", label),
-      btn("›", "Next page", () => next(), f === 0 || f >= leafCount),
+      btn("›", "Next page", () => forward(), f === 0 || (f >= leafCount && (!one || side === "right") ) || (one && here >= pages)),
       o.jumps?.length ? (() => {
         const s = document.createElement("select");
         s.className = "b3-jump"; s.setAttribute("aria-label", "Jump to a section");
@@ -716,6 +742,8 @@ export function binder3d(o: Binder3DOptions): HTMLElement | null {
       needsDraw = true;
     }
     if (Math.abs(camT - camGoal) > 1e-3) { camT = lerp(camT, camGoal, 0.06); needsDraw = true; }
+    const dtp = Math.min(0.1, (now - (lastPan || now)) / 1000); lastPan = now;
+    if (Math.abs(pan - panGoal) > 1e-3) { pan = lerp(pan, panGoal, 1 - Math.exp(-dtp * 9)); needsDraw = true; } else pan = panGoal;
     if (!needsDraw) return;
     needsDraw = false;
     // size
