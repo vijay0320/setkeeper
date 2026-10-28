@@ -11,6 +11,7 @@
    "galleryId": "2M6P",
    "assetPath": "me-expansions",
    "logo": "https://d1i787aglh9bmb.cloudfront.net/assets/img/global/cards/en-us/thirty.png",
+   "firstSeen": "2026-10-28",
    "filters": {
     "seeall": "See All",
     "pokemon-ex": "Pokémon EX",
@@ -23,17 +24,16 @@
     {
      "version": "cards",
      "count": 158,
-     "tcgdex": null,
      "categories": {
       "pokemon-ex": "1-2,15,21,53-54,64,66,70-71,90,92,102,109,129,147-158",
       "special-art": "129-158",
       "pikachu-rare": "23-52",
       "classic-collection": "1-30",
       "futuristic-rare": "157-158"
-     }
+     },
+     "tcgdex": "30th"
     }
-   ],
-   "firstSeen": "2026-10-28"
+   ]
   },
   {
    "slug": "pitch-black",
@@ -42,6 +42,7 @@
    "galleryId": "KD5B",
    "assetPath": "me-expansions",
    "logo": "https://d1i787aglh9bmb.cloudfront.net/assets/img/global/cards/en-us/me05.png",
+   "firstSeen": "2026-10-28",
    "filters": {
     "seeall": "See All",
     "mega-evolution-pokemon": "Mega Evolution Pokémon",
@@ -51,14 +52,13 @@
     {
      "version": "cards",
      "count": 120,
-     "tcgdex": "me05",
      "categories": {
       "mega-evolution-pokemon": "8,27,31,38,48,65,98-99,101,103,114-116,120",
       "special-art": "85-120"
-     }
+     },
+     "tcgdex": "me05"
     }
-   ],
-   "firstSeen": "2026-10-28"
+   ]
   },
   {
    "slug": "chaos-rising",

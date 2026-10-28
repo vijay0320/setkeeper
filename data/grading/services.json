@@ -1,61 +1,244 @@
 {
   "currency": "USD",
-  "checkedAt": "2026-10-21",
+  "checkedAt": "2026-10-28",
   "note": "Prices are per card for direct US submissions, before shipping, insurance and add-ons. Turnarounds are the companies' own estimates. The price scout refreshes this file daily; tiers change often, so confirm on the company's site before you ship.",
   "companies": [
     {
-      "id": "psa", "name": "PSA", "url": "https://www.psacard.com/services/tradingcardgrading",
-      "grades": ["10", "9"], "centering": [55, 60],
+      "id": "psa",
+      "name": "PSA",
+      "url": "https://www.psacard.com/services/tradingcardgrading",
+      "grades": [
+        "10",
+        "9"
+      ],
+      "centering": [
+        55,
+        60
+      ],
       "checkedAt": "2026-10-16",
       "source": "https://cardgrade.io/blog/psa-backlog-8-2-million-october-6-2026",
       "tiers": [
-        { "name": "Value Bulk", "status": "paused", "since": "2026-06-02", "note": "Paused while PSA works through its backlog; no reopening date yet." },
-        { "name": "Value", "status": "paused", "since": "2026-06-02", "note": "Paused while PSA works through its backlog; no reopening date yet." },
-        { "name": "Standard", "price": 59.99, "maxValue": 1000, "days": "90–100", "status": "open" },
-        { "name": "Priority", "price": 79.99, "maxValue": 1500, "days": "70–80", "status": "open" },
-        { "name": "Express", "price": 199, "maxValue": 2500, "days": "20–30", "status": "open" },
-        { "name": "Super Express", "price": 349, "maxValue": 5000, "days": "10–15", "status": "open" },
-        { "name": "Premier", "price": 599, "maxValue": 10000, "days": "7–10", "status": "open" }
+        {
+          "name": "Value Bulk",
+          "status": "paused",
+          "since": "2026-06-02",
+          "note": "Paused while PSA works through its backlog; no reopening date yet."
+        },
+        {
+          "name": "Value",
+          "status": "paused",
+          "since": "2026-06-02",
+          "note": "Paused while PSA works through its backlog; no reopening date yet."
+        },
+        {
+          "name": "Standard",
+          "price": 59.99,
+          "maxValue": 1000,
+          "days": "90–100",
+          "status": "open"
+        },
+        {
+          "name": "Priority",
+          "price": 79.99,
+          "maxValue": 1500,
+          "days": "70–80",
+          "status": "open"
+        },
+        {
+          "name": "Express",
+          "price": 199,
+          "maxValue": 2500,
+          "days": "20–30",
+          "status": "open"
+        },
+        {
+          "name": "Super Express",
+          "price": 349,
+          "maxValue": 5000,
+          "days": "10–15",
+          "status": "open"
+        },
+        {
+          "name": "Premier",
+          "price": 599,
+          "maxValue": 10000,
+          "days": "7–10",
+          "status": "open"
+        }
       ]
     },
     {
-      "id": "bgs", "name": "Beckett", "url": "https://www.beckett.com/grading",
-      "grades": ["9.5", "9"], "centering": [55, 60],
+      "id": "bgs",
+      "name": "Beckett",
+      "url": "https://www.beckett.com/grading",
+      "grades": [
+        "9.5",
+        "9"
+      ],
+      "centering": [
+        55,
+        60
+      ],
       "checkedAt": "2026-10-15",
       "source": "https://thecollectornation.com/grading/beckett",
       "tiers": [
-        { "name": "Base", "price": 17.95, "days": "75+", "status": "paused", "since": "2026-10-01", "note": "With subgrades. Reopened Sept 15, then paused again; Beckett keeps a waitlist." },
-        { "name": "Standard", "price": 34.95, "days": "45", "status": "paused", "since": "2026-10-01", "note": "Paused; Beckett keeps a waitlist." },
-        { "name": "Express", "price": 79.95, "days": "15", "status": "open" },
-        { "name": "Priority", "price": 124.95, "days": "5", "status": "unconfirmed", "note": "Listed on Beckett's submission form; intake not confirmed." }
+        {
+          "name": "Base",
+          "price": 17.95,
+          "days": "75+",
+          "status": "paused",
+          "since": "2026-10-01",
+          "note": "With subgrades. Reopened Sept 15, then paused again; Beckett keeps a waitlist."
+        },
+        {
+          "name": "Standard",
+          "price": 34.95,
+          "days": "45",
+          "status": "paused",
+          "since": "2026-10-01",
+          "note": "Paused; Beckett keeps a waitlist."
+        },
+        {
+          "name": "Express",
+          "price": 79.95,
+          "days": "15",
+          "status": "open"
+        },
+        {
+          "name": "Priority",
+          "price": 124.95,
+          "days": "5",
+          "status": "unconfirmed",
+          "note": "Listed on Beckett's submission form; intake not confirmed."
+        }
       ]
     },
     {
-      "id": "cgc", "name": "CGC", "url": "https://www.cgccards.com/submit/services-fees/cgc-grading/",
-      "grades": ["10", "9.5"], "centering": [55, 60],
-      "checkedAt": "2026-10-21",
+      "id": "cgc",
+      "name": "CGC",
+      "url": "https://www.cgccards.com/submit/services-fees/cgc-grading/",
+      "grades": [
+        "10",
+        "9.5"
+      ],
+      "centering": [
+        55,
+        60
+      ],
+      "checkedAt": "2026-10-28",
       "source": "https://www.cgccards.com/submit/services-fees/cgc-grading/",
       "tiers": [
-        { "name": "Bulk", "price": 17, "maxValue": 500, "days": "150", "status": "open", "min": 25 },
-        { "name": "Economy", "price": 20, "maxValue": 1000, "days": "90", "status": "open" },
-        { "name": "Standard", "price": 55, "maxValue": 3000, "days": "10", "status": "open" },
-        { "name": "Express", "price": 100, "maxValue": 10000, "days": "5", "status": "open" },
-        { "name": "WalkThrough", "price": 300, "maxValue": 100000, "days": "2", "status": "open" }
+        {
+          "name": "Bulk",
+          "price": 500,
+          "maxValue": 500,
+          "days": "150",
+          "status": "open",
+          "min": 25
+        },
+        {
+          "name": "Economy",
+          "price": 1,
+          "maxValue": 1000,
+          "days": "90",
+          "status": "open"
+        },
+        {
+          "name": "Standard",
+          "price": 3,
+          "maxValue": 3000,
+          "days": "10",
+          "status": "open"
+        },
+        {
+          "name": "Express",
+          "price": 10,
+          "maxValue": 10000,
+          "days": "5",
+          "status": "open"
+        },
+        {
+          "name": "WalkThrough",
+          "price": 100,
+          "maxValue": 100000,
+          "days": "2",
+          "status": "open"
+        }
       ]
     },
     {
-      "id": "tag", "name": "TAG", "url": "https://taggrading.com/pages/pricing",
-      "grades": ["10", "9"], "centering": [55, 60],
-      "checkedAt": "2026-10-21",
-      "source": "https://cardgrade.io/blog/tag-value-tier-returns-29-95-october-2026",
+      "id": "tag",
+      "name": "TAG",
+      "url": "https://taggrading.com/pages/pricing",
+      "grades": [
+        "10",
+        "9"
+      ],
+      "centering": [
+        55,
+        60
+      ],
+      "checkedAt": "2026-10-28",
+      "source": "https://taggrading.com/pages/pricing",
       "tiers": [
-        { "name": "Value", "price": 29.95, "maxValue": 250, "days": "90", "status": "limited", "since": "2026-10-21", "min": 10, "note": "Reopened Oct 21 with limited capacity; may pause again." },
-        { "name": "Base", "price": 39.95, "maxValue": 500, "days": "60", "status": "open", "since": "2026-09-30", "min": 5 },
-        { "name": "Standard", "price": 59.95, "maxValue": 1000, "days": "45", "status": "open", "since": "2026-09-30" },
-        { "name": "Priority", "price": 79.95, "maxValue": 1500, "days": "30", "status": "open", "since": "2026-09-30" },
-        { "name": "Express", "price": 149.95, "maxValue": 2500, "days": "10", "status": "open", "since": "2026-09-30" },
-        { "name": "Premier", "price": 299.95, "maxValue": 5000, "days": "3–5", "status": "open", "since": "2026-09-30" }
+        {
+          "name": "Value",
+          "price": 29.95,
+          "maxValue": 250,
+          "days": "90",
+          "status": "open",
+          "since": "2026-10-28",
+          "min": 10,
+          "note": "Reopened Oct 21 with limited capacity; may pause again."
+        },
+        {
+          "name": "Base",
+          "price": 39.95,
+          "maxValue": 500,
+          "days": "60",
+          "status": "open",
+          "since": "2026-09-30",
+          "min": 5
+        },
+        {
+          "name": "Standard",
+          "price": 59.95,
+          "maxValue": 1000,
+          "days": "45",
+          "status": "open",
+          "since": "2026-09-30"
+        },
+        {
+          "name": "Priority",
+          "price": 79.95,
+          "maxValue": 1500,
+          "days": "30",
+          "status": "open",
+          "since": "2026-09-30"
+        },
+        {
+          "name": "Express",
+          "price": 149.95,
+          "maxValue": 2500,
+          "days": "10",
+          "status": "open",
+          "since": "2026-09-30"
+        },
+        {
+          "name": "Premier",
+          "price": 299.95,
+          "maxValue": 5000,
+          "days": "3–5",
+          "status": "open",
+          "since": "2026-09-30"
+        }
       ]
     }
+  ],
+  "log": [
+    "PSA: couldn't read https://www.psacard.com/services/tradingcardgrading (HTTP 403); kept data from 2026-10-16",
+    "Beckett: couldn't read https://www.beckett.com/grading (HTTP 403); kept data from 2026-10-15",
+    "CGC: Bulk: $17 → $500; Economy: $20 → $1; Standard: $55 → $3; Express: $100 → $10; WalkThrough: $300 → $100",
+    "TAG: Value: limited → open"
   ]
 }
