@@ -18,10 +18,11 @@
     "gallery-scout": "node scripts/gallery-scout.ts",
     "sample-listings": "node scripts/make-sample-listings.ts"
   },
-  "engines": { "node": ">=22.18" },
+  "engines": {
+    "node": ">=22.18"
+  },
   "devDependencies": {
     "esbuild": "^0.25.0",
-    "sharp": "^0.34.0",
     "typescript": "^5.8.0",
     "@types/node": "^22.0.0"
   }

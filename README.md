@@ -67,9 +67,11 @@ Push to `main`. The included workflow (`.github/workflows/pages.yml`) runs the t
 
 ## Sets
 
+**Daily scout.** `.github/workflows/scout.yml` runs `scripts/gallery-scout.ts` every day: it reads tcg.pokemon.com/en-us/all-galleries/, each gallery page and its `cards.json`, matches each set to TCGdex by name, updates `data/galleries/index.json` and redeploys. tcg.pokemon.com has a bot check, so if plain requests are challenged the scout loads the pages in headless Chromium (Playwright). Run it yourself with `npm run gallery-scout`.
+
 Any set can be added from the shelf. The app loads its card list from TCGdex, then fetches rarity and TCGplayer market prices for every card in the background (about 2–3 seconds for a 240-card set) and caches them for three days. Market prices fill in wherever you haven't typed your own, so the planner, cart optimizer, packs and grading tools work straight away. The first time you scan a new set, the app downloads its card images once and learns their fingerprints on your device.
 
-To bundle a set like 30th Celebration (works offline, curated sections), add `data/sets/<set-id>.json` and run `npm run fingerprints -- <set-id>`.
+To bundle a set like 30th Celebration (works offline, curated sections), add `data/sets/<set-id>.json` and run `npm run fingerprints -- <set-id>`. That script and the two `eval:` scripts need the image library sharp, which isn't installed by default: run `npm i --no-save sharp@latest` first.
 
 ## Project layout
 
@@ -98,7 +100,6 @@ No accounts, no tracking, no server. Your collection is saved in your browser's 
 
 ## Disclaimer
 
-**Daily scout.** `.github/workflows/scout.yml` runs `scripts/gallery-scout.ts` every day: it reads tcg.pokemon.com/en-us/all-galleries/, each gallery page and its `cards.json`, matches each set to TCGdex by name, updates `data/galleries/index.json` and redeploys. tcg.pokemon.com has a bot check, so if plain requests are challenged the scout loads the pages in headless Chromium (Playwright). Run it yourself with `npm run gallery-scout`.
 
 Unofficial fan project, not affiliated with or endorsed by The Pokémon Company, Nintendo, Creatures or Game Freak. Card names and images are © their owners; the app displays images from the official card gallery and does not redistribute them. Centering estimates are a guide, not a grade.
 
