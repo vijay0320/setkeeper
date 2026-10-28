@@ -904,3 +904,20 @@ table.slabs label.inline span { font-size: 0.72rem; color: var(--muted); }
 .set-row .gal-logo { width: 34px; height: 46px; object-fit: contain; }
 .pill-new { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: #141414; color: #e9e8e4; font: 600 10px/1.6 Archivo, Helvetica, Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; vertical-align: middle; }
 .gallery-note { max-width: 70ch; margin: 0 0 14px; }
+
+/* ---------- account ---------- */
+#account { flex: none; display: flex; align-items: center; margin-left: 14px; }
+.acct-btn { font: 500 14px Archivo, Helvetica, Arial, sans-serif; border: 1px solid var(--ink, #141414); border-radius: 999px; background: transparent; color: inherit; padding: 7px 14px; cursor: pointer; min-height: 36px; }
+.acct-btn.signed { position: relative; width: 36px; height: 36px; padding: 0; display: grid; place-items: center; background: var(--ink, #141414); color: var(--paper, #e9e8e4); }
+.acct-btn.signed .acct-dot { position: absolute; right: -1px; bottom: -1px; border: 2px solid var(--paper, #e9e8e4); }
+.acct-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #2f8f5b; flex: none; }
+.tone-busy .acct-dot { background: #c99a2e; animation: acct-pulse 1s ease-in-out infinite; }
+.tone-warn .acct-dot { background: #b8432f; }
+.acct-status { display: flex; align-items: center; gap: 8px; }
+.hint.small { font-size: 0.8rem; }
+@keyframes acct-pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .tone-busy .acct-dot { animation: none; } }
+@media (max-width: 719px) { #account { margin-left: 8px; } }
+.top-right { justify-self: end; display: flex; align-items: center; gap: 14px; min-width: 0; }
+.top-right #account { margin-left: 0; }
+@media (max-width: 760px) { .top-right { gap: 10px; } .top-right .prog .track { display: none; } }

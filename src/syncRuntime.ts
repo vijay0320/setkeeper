@@ -15,7 +15,11 @@ const DELETED = ""; // a key removed on one device is removed everywhere
 const read = <T>(k: string, d: T): T => { try { const v = localStorage.getItem(k); return v ? (JSON.parse(v) as T) : d; } catch { return d; } };
 const write = (k: string, v: unknown) => { try { origSet.call(localStorage, k, JSON.stringify(v)); } catch { /* full or blocked */ } };
 
-export const state = { email: "", last: read<string>(LAST, ""), busy: false, error: "", onChange: () => {} };
+export const state = { email: "", last: read<string>(LAST, ""), busy: false, error: "" };
+const listeners = new Set<() => void>();
+/** Get told whenever sign-in or sync status changes. Returns an unsubscribe function. */
+export function onSyncChange(fn: () => void) { listeners.add(fn); return () => listeners.delete(fn); }
+const notify = () => { for (const fn of listeners) { try { fn(); } catch { /* a view went away */ } } };
 let applying = false;
 let timer = 0;
 
@@ -64,7 +68,7 @@ function apply(blob: Blob, keys: string[]) {
 }
 
 // ---------- session ----------
-function saveSession(s: Session | null) { if (s) write(SESS, s); else origRemove.call(localStorage, SESS); state.email = s?.email ?? ""; }
+function saveSession(s: Session | null) { if (s) write(SESS, s); else origRemove.call(localStorage, SESS); state.email = s?.email ?? ""; notify(); }
 async function session(): Promise<Session | null> {
   let s = read<Session | null>(SESS, null);
   if (!s || !api) return null;
@@ -90,9 +94,14 @@ export function initSync(onRemoteChange: () => void) {
   state.email = read<Session | null>(SESS, null)?.email ?? "";
   if (!state.email) return;
   void syncNow().then((changed) => { if (changed) onRemoteChange(); });
-  document.addEventListener("visibilitychange", () => {
-    void syncNow().then((changed) => { if (changed && document.visibilityState === "visible") onRemoteChange(); });
-  });
+  // Automatic sync: when the app comes back to the screen, when the connection returns, and
+  // every minute while it's open. Skipped while a card sheet or form is in use, so a change
+  // from another device never lands under the collector's fingers.
+  const busyHere = () => !!document.querySelector("dialog[open]") || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? "");
+  const pull = () => { if (state.email && !busyHere()) void syncNow().then((changed) => { if (changed) onRemoteChange(); }); };
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pull(); else void syncNow(); });
+  addEventListener("online", pull);
+  setInterval(() => { if (document.visibilityState === "visible") pull(); }, 60_000);
 }
 
 function schedule() {
@@ -105,8 +114,8 @@ function schedule() {
 export async function syncNow(): Promise<boolean> {
   if (!api || state.busy) return false;
   const s = await session();
-  if (!s) { state.onChange(); return false; }
-  state.busy = true; state.error = ""; state.onChange();
+  if (!s) { notify(); return false; }
+  state.busy = true; state.error = ""; notify();
   try {
     const first = !read<string>(LAST, "");
     if (first) write(PRE, backupFile(localBlob())); // keep this device's data before the first merge
@@ -122,7 +131,7 @@ export async function syncNow(): Promise<boolean> {
   } catch (e) {
     state.error = navigator.onLine ? `Couldn't sync: ${(e as Error).message}` : "Offline: changes are saved here and will sync when you're back online.";
     return false;
-  } finally { state.busy = false; state.onChange(); }
+  } finally { state.busy = false; notify(); }
 }
 
 export async function sendLink(email: string) {
@@ -135,7 +144,7 @@ export async function signOut() {
   saveSession(null);
   origRemove.call(localStorage, LAST);
   state.last = "";
-  state.onChange();
+  notify();
 }
 export async function deleteCloudCopy() {
   const s = await session();

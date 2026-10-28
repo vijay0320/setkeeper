@@ -1,4 +1,4 @@
-import { initSync, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
+import { initSync, onSyncChange, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
 import setData from "../data/sets/30th-celebration.json";
 import fpData from "../data/sets/30th-celebration.fingerprints.json";
 import type { Card, CardSet, Collection, Entry, Priority, Status } from "./lib/types.ts";
@@ -1842,26 +1842,17 @@ function syncPanel(download: (text: string, name: string, type: string) => () =>
     if (!syncEnabled) {
       kids.push(h("p", { class: "hint" }, "Everything you enter is saved in this browser. Download a backup now and then, and restore it on another device or after clearing your browser."));
     } else if (!syncState.email) {
-      const email = h("input", { id: "sync-email", type: "email", autocomplete: "email", placeholder: "you@example.com", "aria-label": "Email" }) as HTMLInputElement;
-      const msg = h("p", { class: "hint", role: "status" }, syncState.error);
       kids.push(
         h("p", { class: "hint" }, "Sign in to keep your binders on all your devices and safe in the cloud. No password: we email you a sign-in link. Your collection keeps working offline either way."),
-        h("form", { class: "row", onsubmit: async (e: Event) => {
-          e.preventDefault();
-          if (!email.validity.valid || !email.value) { msg.textContent = "Enter your email address."; return; }
-          msg.textContent = "Sending…";
-          try { await sendLink(email.value); msg.textContent = `Check ${email.value} for a sign-in link from SetKeeper. Open it on this device.`; }
-          catch (err) { msg.textContent = (err as Error).message; }
-        } }, email, h("button", { class: "btn", type: "submit" }, "Email me a sign-in link")),
-        msg);
+        h("button", { class: "btn", onclick: signInDialog }, "Sign in"),
+        syncState.error ? h("p", { class: "hint warn", role: "status" }, syncState.error) : "");
     } else {
       const when = syncState.last ? new Date(syncState.last).toLocaleString("en-CA", { dateStyle: "medium", timeStyle: "short" }) : "not yet";
       kids.push(
         h("p", {}, h("b", {}, syncState.email), " · ", syncState.busy ? "syncing…" : `last synced ${when}`),
         syncState.error ? h("p", { class: "hint warn", role: "status" }, syncState.error) : "",
-        h("p", { class: "hint" }, "Changes sync a few seconds after you make them and when you open the app on another device. Only your own data is uploaded: binders, card statuses, notes, prices and imported listings."),
+        h("p", { class: "hint" }, "Sync is automatic: a few seconds after each change, when you come back to the app, and every minute while it's open. Only your own data is uploaded: binders, card statuses, notes, prices and imported listings."),
         h("div", { class: "row" },
-          h("button", { class: "btn", disabled: syncState.busy, onclick: async () => { if (await syncNow()) location.reload(); } }, "Sync now"),
           h("button", { class: "btn ghost", onclick: () => void signOut().then(render) }, "Sign out"),
           (() => { let armed = false; const b = h("button", { class: "linkish del", onclick: async () => {
             if (!armed) { armed = true; b.textContent = "Tap again: deletes the cloud copy, keeps this device's data"; return; }
@@ -1871,14 +1862,77 @@ function syncPanel(download: (text: string, name: string, type: string) => () =>
     kids.push(h("h3", {}, "Backup file"), h("p", { class: "hint" }, "One file with all your binders and card data. Keep it somewhere safe; restoring replaces what's on this device."), backupRow);
     panel.replaceChildren(...kids);
   };
-  syncState.onChange = () => { if (panel.isConnected) draw(); };
+  const off = onSyncChange(() => { if (panel.isConnected) draw(); else off(); });
   draw();
   return panel;
 }
 
+// ---------- account (header) ----------
+function syncLabel(): { text: string; tone: "ok" | "busy" | "warn" } {
+  if (syncState.busy) return { text: "Syncing…", tone: "busy" };
+  if (syncState.error) return { text: syncState.error, tone: "warn" };
+  if (!syncState.last) return { text: "Waiting to sync", tone: "busy" };
+  return { text: `Synced ${new Date(syncState.last).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit" })}`, tone: "ok" };
+}
+function renderAccount() {
+  const slot = document.querySelector("#account");
+  if (!slot) return;
+  if (!syncEnabled) { slot.replaceChildren(); return; }
+  if (!syncState.email) { slot.replaceChildren(h("button", { class: "acct-btn", onclick: signInDialog }, "Sign in")); return; }
+  const st = syncLabel();
+  slot.replaceChildren(h("button", { class: `acct-btn signed tone-${st.tone}`, title: `${syncState.email} · ${st.text}`, "aria-label": `Account: ${syncState.email}. ${st.text}`, onclick: accountDialog },
+    h("span", { class: "acct-dot", "aria-hidden": "true" }), h("span", { class: "acct-initial", "aria-hidden": "true" }, syncState.email[0]?.toUpperCase() ?? "?")));
+}
+function signInDialog() {
+  const dlg = $("#sheet") as HTMLDialogElement;
+  const email = h("input", { id: "signin-email", type: "email", autocomplete: "email", required: true, placeholder: "you@example.com", "aria-label": "Email" }) as HTMLInputElement;
+  const msg = h("p", { class: "hint", role: "status" }, syncState.error);
+  const send = h("button", { class: "btn", type: "submit" }, "Email me a sign-in link");
+  dlg.replaceChildren(h("form", { method: "dialog", class: "sheet-inner" },
+    h("header", { class: "sheet-head" }, h("div", {}, h("p", { class: "eyebrow" }, "Account"), h("h2", {}, "Sign in")),
+      h("button", { class: "close", value: "close", "aria-label": "Close" }, "×")),
+    h("div", { class: "sheet-pad" },
+      h("p", { class: "hint" }, "No password. Enter your email and open the link we send you on this device. Your binders then sync automatically across your phone, tablet and computer."),
+      h("div", { class: "row", onsubmit: (e: Event) => e.preventDefault() }, email, send), msg)));
+  send.onclick = async (e: Event) => {
+    e.preventDefault();
+    if (!email.validity.valid) { msg.textContent = "Enter your email address."; email.focus(); return; }
+    send.setAttribute("disabled", ""); msg.textContent = "Sending…";
+    try { await sendLink(email.value); msg.textContent = `Check ${email.value} for a sign-in link and open it on this device. You can close this window.`; }
+    catch (err) { msg.textContent = (err as Error).message; send.removeAttribute("disabled"); }
+  };
+  dlg.onclose = null;
+  dlg.showModal();
+  email.focus();
+}
+function accountDialog() {
+  const dlg = $("#sheet") as HTMLDialogElement;
+  const body = h("div", { class: "sheet-pad" });
+  const draw = () => {
+    const st = syncLabel();
+    body.replaceChildren(
+      h("p", {}, h("b", {}, syncState.email)),
+      h("p", { class: `acct-status tone-${st.tone}`, role: "status" }, h("span", { class: "acct-dot", "aria-hidden": "true" }), st.text),
+      h("p", { class: "hint" }, "Your binders sync automatically: a few seconds after each change, when you come back to the app, and every minute while it's open. Changes made offline sync when you're back online."),
+      h("div", { class: "row" },
+        h("button", { class: "btn ghost", onclick: () => void signOut().then(() => { dlg.close(); toast("Signed out. Your data stays on this device."); }) }, "Sign out"),
+        h("a", { class: "btn ghost", href: "#data", onclick: () => dlg.close() }, "Backup & more")),
+      h("p", { class: "hint small" }, "Signing out keeps everything on this device; it just stops syncing here."));
+  };
+  const off = onSyncChange(() => { if (dlg.open) draw(); else off(); });
+  draw();
+  dlg.replaceChildren(h("form", { method: "dialog", class: "sheet-inner" },
+    h("header", { class: "sheet-head" }, h("div", {}, h("p", { class: "eyebrow" }, "Account"), h("h2", {}, "Signed in")),
+      h("button", { class: "close", value: "close", "aria-label": "Close" }, "×")), body));
+  dlg.onclose = null;
+  dlg.showModal();
+}
+
 // ---------- boot ----------
 async function boot() {
+  onSyncChange(renderAccount);
   initSync(() => location.reload());
+  renderAccount();
   void persistStorage();
   const brand = document.querySelector(".brand") as HTMLElement;
   brand.addEventListener("click", () => { location.hash = "#home"; scrollTo({ top: 0 }); });
