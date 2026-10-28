@@ -921,3 +921,9 @@ table.slabs label.inline span { font-size: 0.72rem; color: var(--muted); }
 .top-right { justify-self: end; display: flex; align-items: center; gap: 14px; min-width: 0; }
 .top-right #account { margin-left: 0; }
 @media (max-width: 760px) { .top-right { gap: 10px; } .top-right .prog .track { display: none; } }
+
+/* ---------- footer ---------- */
+.site-foot { max-width: 1180px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-left, 0px)) 110px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); }
+.site-foot a { color: inherit; }
+.site-foot span { margin-right: auto; }
+@media (min-width: 761px) { .site-foot { padding-bottom: 32px; } }

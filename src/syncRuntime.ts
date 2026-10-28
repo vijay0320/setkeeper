@@ -149,7 +149,8 @@ export async function signOut() {
 export async function deleteCloudCopy() {
   const s = await session();
   if (!s || !api) return;
-  await api.remove(s);
+  // delete the whole account; if the database predates that function, delete the data row
+  try { await api.deleteAccount(s); } catch { await api.remove(s); }
   await signOut();
 }
 

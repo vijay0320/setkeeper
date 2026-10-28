@@ -106,6 +106,8 @@ export class SyncApi {
     });
   }
   /** Delete the collector's cloud copy (local data stays). */
+  /** Delete the account itself (the cloud copy goes with it). Needs delete_my_account() from setup.sql. */
+  deleteAccount(s: Session) { return this.call("/rest/v1/rpc/delete_my_account", { method: "POST", token: s.access_token, body: "{}" }); }
   remove(s: Session) { return this.call(`/rest/v1/collections?user_id=eq.${encodeURIComponent(s.user_id)}`, { method: "DELETE", token: s.access_token }); }
 }
 

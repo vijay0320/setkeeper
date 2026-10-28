@@ -29,3 +29,14 @@ alter table public.collections add constraint collections_size check (pg_column_
 create or replace function public.keepalive() returns timestamptz
 language sql stable security invoker as $$ select now() $$;
 grant execute on function public.keepalive() to anon;
+
+-- Lets a signed-in collector delete their own account from the app (Data → Delete my account).
+-- Deleting the auth user also deletes their collections row (on delete cascade).
+create or replace function public.delete_my_account() returns void
+language plpgsql security definer set search_path = public, auth as $$
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  delete from auth.users where id = auth.uid();
+end $$;
+revoke execute on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

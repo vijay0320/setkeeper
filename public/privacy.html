@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy policy · SetKeeper</title>
+<meta name="description" content="What SetKeeper stores, where, and how to delete it.">
+<link rel="icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Instrument+Serif&display=swap">
+<style>
+  :root { --paper: #e9e8e4; --sheet: #f4f3f0; --ink: #141414; --muted: #5d5b56; --line: rgb(20 20 20 / 0.14); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--paper); color: var(--ink); font: 16px/1.65 Archivo, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 80px; }
+  a { color: inherit; text-underline-offset: 3px; }
+  .back { font-size: 0.9rem; color: var(--muted); text-decoration: none; }
+  .back:hover { text-decoration: underline; }
+  h1 { font: 400 clamp(2.6rem, 9vw, 4.2rem)/1 "Instrument Serif", Georgia, serif; letter-spacing: -0.01em; margin: 28px 0 10px; }
+  .lede { font-size: 1.12rem; color: var(--muted); margin: 0 0 8px; }
+  .date { font-size: 0.85rem; color: var(--muted); margin: 0 0 28px; padding-bottom: 24px; border-bottom: 1px solid var(--ink); }
+  h2 { font: 400 1.9rem/1.15 "Instrument Serif", Georgia, serif; margin: 40px 0 10px; }
+  h3 { font-size: 1rem; font-weight: 600; margin: 22px 0 6px; }
+  p, li { max-width: 68ch; }
+  ul { padding-left: 1.2em; }
+  li { margin: 4px 0; }
+  .summary { background: var(--sheet); border-radius: 14px; padding: 18px 22px; margin: 0 0 8px; }
+  .summary ul { margin: 6px 0 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 10px 0; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; }
+  @media (max-width: 560px) { table, tbody, tr, td, th { display: block; } thead { display: none; } tr { padding: 8px 0; border-bottom: 1px solid var(--line); } td { border: 0; padding: 2px 0; } td:first-child { font-weight: 600; } }
+  footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./">← Back to SetKeeper</a>
+  <h1>Privacy policy</h1>
+  <p class="lede">SetKeeper is a free, open-source tracker for Pokémon card collectors. It's built to keep your data on your own device, and to collect as little as possible when you choose to sync.</p>
+  <p class="date">Effective October 28, 2026</p>
+
+  <div class="summary">
+    <b>The short version</b>
+    <ul>
+      <li>Without an account, everything you enter stays in your browser. We never see it.</li>
+      <li>If you sign in to sync, we store your email address and your collection data, and nothing else.</li>
+      <li>No ads, no tracking, no analytics, no selling or sharing your data.</li>
+      <li>Card scans and centering photos are processed on your device and never uploaded.</li>
+      <li>You can download all your data or delete your account at any time from the app.</li>
+    </ul>
+  </div>
+
+  <h2>Using SetKeeper without an account</h2>
+  <p>Your binders, card statuses, notes, prices and imported spreadsheets are saved in your browser's local storage on that device. They aren't sent to us. Clearing your browser's site data deletes them, so download a backup from <b>Data → Sync &amp; backup</b> now and then.</p>
+
+  <h2>If you sign in to sync</h2>
+  <p>Signing in is optional. It keeps your collection the same on your phone, tablet and computer.</p>
+  <h3>What we store</h3>
+  <ul>
+    <li><b>Your email address</b>, used only to send your sign-in links. There's no password.</li>
+    <li><b>Your collection data:</b> binders and their names, card statuses and copies, notes, priorities, stores and dates you recorded, prices you entered or paid, grading notes, pack logs and listings you imported.</li>
+    <li><b>Technical records the sign-in service keeps</b> to run accounts securely, such as when you last signed in.</li>
+  </ul>
+  <h3>What we don't store</h3>
+  <ul>
+    <li>Photos from the scanner or centering tool. They're analysed in your browser and discarded.</li>
+    <li>Card databases, images and price caches, which are downloaded fresh on each device.</li>
+    <li>Your name, address, payment details, location or contacts.</li>
+  </ul>
+  <h3>How it's protected</h3>
+  <p>Your synced data is stored with <a href="https://supabase.com/privacy" rel="noopener">Supabase</a>, which provides the database and sign-in. Each person's data is a separate record protected by row-level security: the database only returns a record to the account that owns it. Connections are encrypted (HTTPS). Sign-in emails are sent through our email provider.</p>
+  <h3>Why we use it</h3>
+  <p>Only to sign you in and sync your collection between your devices. We don't use it for marketing, profiling or anything else, and we don't sell, rent or share it.</p>
+
+  <h2>Services your browser connects to</h2>
+  <p>SetKeeper is a website that runs in your browser. To show cards and prices, your browser loads content from these services, which, like any website, receive your IP address and browser details when it does:</p>
+  <table>
+    <thead><tr><th>Service</th><th>What for</th></tr></thead>
+    <tbody>
+      <tr><td>GitHub Pages</td><td>Hosts the SetKeeper website. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub privacy statement</a></td></tr>
+      <tr><td>TCGdex</td><td>Card lists, images and market prices. <a href="https://tcgdex.dev" rel="noopener">tcgdex.dev</a></td></tr>
+      <tr><td>The Pokémon Company</td><td>Official card images and gallery data. <a href="https://www.pokemon.com/us/privacy-notice" rel="noopener">Privacy notice</a></td></tr>
+      <tr><td>Google Fonts</td><td>The typefaces. <a href="https://policies.google.com/privacy" rel="noopener">Google privacy policy</a></td></tr>
+      <tr><td>Supabase</td><td>Only if you sign in: sign-in and sync. <a href="https://supabase.com/privacy" rel="noopener">Supabase privacy policy</a></td></tr>
+    </tbody>
+  </table>
+  <p>Links to TCGplayer, PriceCharting and eBay are ordinary links. Nothing is sent to those sites unless you click one.</p>
+
+  <h2>Cookies and storage</h2>
+  <p>SetKeeper doesn't use cookies, ads or analytics. It uses your browser's local storage to save your collection and settings, and, if you sign in, to keep you signed in on that device.</p>
+
+  <h2>How long we keep it</h2>
+  <p>Synced data is kept while your account exists. When you delete your account, your email and collection data are deleted from the database straight away; the provider's routine backups are overwritten within their normal backup cycle. Data in your browser stays until you clear it.</p>
+
+  <h2>Your choices and rights</h2>
+  <ul>
+    <li><b>See and copy your data:</b> Data → Download a backup gives you everything in one file.</li>
+    <li><b>Correct it:</b> edit anything in the app; the change syncs.</li>
+    <li><b>Stop syncing:</b> sign out. Your data stays on that device.</li>
+    <li><b>Delete it:</b> Data → Delete my account deletes your account and cloud copy. Clearing your browser's site data removes what's on the device.</li>
+    <li><b>Ask a question or make a request:</b> see "Contact" below.</li>
+  </ul>
+  <p>We handle personal information in line with Canada's Personal Information Protection and Electronic Documents Act (PIPEDA) and British Columbia's Personal Information Protection Act. You can contact the Office of the Privacy Commissioner of Canada if you have concerns we haven't resolved.</p>
+
+  <h2>Where data is stored</h2>
+  <p>Synced data is stored on Supabase's cloud servers in the region chosen for this project. Supabase and the services above may process data in Canada, the United States or other countries.</p>
+
+  <h2>Children</h2>
+  <p>Accounts aren't intended for children under 13, and we don't knowingly collect their information. A parent or guardian who believes a child has signed up can ask us to delete the account.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes, the new version will be posted here with a new effective date. Significant changes will also be noted in the app.</p>
+
+  <h2>Contact</h2>
+  <p>SetKeeper is run by an individual developer in British Columbia, Canada. For privacy questions or requests, open an issue at <a href="https://github.com/vijay0320/setkeeper/issues" rel="noopener">github.com/vijay0320/setkeeper/issues</a>. Please don't include personal details in a public issue; ask for a private contact instead.</p>
+
+  <footer>SetKeeper is an unofficial fan project and isn't affiliated with or endorsed by The Pokémon Company, Nintendo, Creatures or Game Freak.</footer>
+</div>
+</body>
+</html>
