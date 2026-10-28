@@ -65,6 +65,10 @@ The scout's adapters are tested against recorded response formats (`npm test`), 
 
 Push to `main`. The included workflow (`.github/workflows/pages.yml`) runs the tests, builds `dist/` and publishes it. In the repo settings, set **Pages → Source** to **GitHub Actions** once.
 
+## Landed cost (Canada)
+
+The Buy tab compares sellers on what an order costs **at your door**, not the sticker price: shops' GST/HST and PST for your province, the Bank of Canada USD→CAD rate (refreshed daily), your card's foreign-exchange fee, and for imports the CA$20 mail and CA$40 US-courier tax limits, GST/HST plus provincial tax collected at the border (BC, MB, QC, SK), and Canada Post's handling fee or a courier's brokerage fee. Trading cards (tariff item 9504.40.00) are duty-free and aren't on Canada's 2026 surtax list for US goods. The cart optimizer minimises this landed total, so a cheaper US listing loses when border tax and fees make it dearer. Rules and sources live in `data/landed/rules.json`; sellers can set `province`, `taxAt` (`checkout`/`border`) and `carrier` (`post`/`courier`) in the shop list.
+
 ## Sync and backup
 
 Everything is saved in the browser first, so the app works offline and without an account. **Data → Sync & backup** adds:

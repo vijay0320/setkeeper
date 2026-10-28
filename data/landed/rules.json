@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-28",
+  "note": "Tax and import rules used to estimate what an order really costs a Canadian collector. Check the sources when rules change; the app shows these as estimates.",
+  "provinces": {
+    "AB": { "name": "Alberta", "gst": 0.05 },
+    "BC": { "name": "British Columbia", "gst": 0.05, "pst": 0.07, "pstName": "PST", "pstOnImports": true },
+    "MB": { "name": "Manitoba", "gst": 0.05, "pst": 0.07, "pstName": "RST", "pstOnImports": true },
+    "NB": { "name": "New Brunswick", "hst": 0.15 },
+    "NL": { "name": "Newfoundland and Labrador", "hst": 0.15 },
+    "NS": { "name": "Nova Scotia", "hst": 0.14 },
+    "NT": { "name": "Northwest Territories", "gst": 0.05 },
+    "NU": { "name": "Nunavut", "gst": 0.05 },
+    "ON": { "name": "Ontario", "hst": 0.13 },
+    "PE": { "name": "Prince Edward Island", "hst": 0.15 },
+    "QC": { "name": "Quebec", "gst": 0.05, "pst": 0.09975, "pstName": "QST", "pstOnImports": true },
+    "SK": { "name": "Saskatchewan", "gst": 0.05, "pst": 0.06, "pstName": "PST", "pstOnImports": true },
+    "YT": { "name": "Yukon", "gst": 0.05 }
+  },
+  "imports": {
+    "postalExempt": 20,
+    "courierCusmaTaxExempt": 40,
+    "courierCusmaDutyExempt": 150,
+    "courierOtherExempt": 20,
+    "cusmaCountries": ["US", "MX"],
+    "dutyRate": 0,
+    "dutyNote": "Trading cards are classified as playing cards (tariff item 9504.40.00), which enter Canada duty-free and are not on the United States Surtax Order (2026) schedules.",
+    "canadaPostHandlingFee": 9.95,
+    "courierBrokerageMin": 15,
+    "courierBrokeragePct": 0.03
+  },
+  "cardFxFeeDefault": 0.025,
+  "sources": [
+    { "name": "Sales tax rates by province, 2026 (TaxTips.ca)", "url": "https://www.taxtips.ca/salestaxes/sales-tax-rates-2026.htm" },
+    { "name": "CBSA: Importing by mail or courier, duty and taxes", "url": "https://www.cbsa-asfc.gc.ca/import/postal-postale/dtytx-drttx-eng.html" },
+    { "name": "CBSA Memorandum D8-2-16: Courier Imports Remission", "url": "https://www.cbsa-asfc.gc.ca/publications/dm-md/d8/d8-2-16-eng.html" },
+    { "name": "Canada Post: customs duty, taxes and exemptions", "url": "https://www.canadapost-postescanada.ca/cpc/en/support/articles/customs-requirements/customs-duty-taxes-and-exemptions.page" },
+    { "name": "United States Surtax Order (2026), SOR/2026-186", "url": "https://laws.justice.gc.ca/eng/regulations/SOR-2026-186/FullText.html" },
+    { "name": "eBay.ca: paying tax on eBay purchases", "url": "https://www.ebay.ca/help/buying/paying-items/paying-tax-ebay-purchases?id=4771" }
+  ]
+}

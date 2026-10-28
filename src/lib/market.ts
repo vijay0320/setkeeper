@@ -16,6 +16,11 @@ export interface Seller {
   /** Store-wide shipping. Marketplace sellers usually price shipping per listing instead. */
   shipping?: ShippingRule;
   note?: string;
+  /** Landed-cost hints (see landed.ts): seller's province, where tax is charged, how it ships. */
+  province?: import("./landed.ts").Province;
+  taxAt?: "checkout" | "border" | "none";
+  carrier?: "post" | "courier";
+  chargesPst?: boolean;
 }
 
 export interface Listing {

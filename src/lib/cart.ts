@@ -11,6 +11,7 @@
 // free-shipping threshold) from several starting carts; tests compare it to brute force.
 import type { Priority } from "./types.ts";
 import { type Listing, type MarketSnapshot, type Seller, orderShipping, toCAD } from "./market.ts";
+import { landedCost, type Landed, type LandedContext } from "./landed.ts";
 
 export interface Want {
   cardId: string;
@@ -27,6 +28,8 @@ export interface CartOptions {
   scalperAbove: number; // never consider asks above market × this
   onlyCountries?: string[]; // e.g. ["CA"]
   exhaustive?: { best?: number }; // tests only
+  /** Optimise on landed cost (tax, FX, duty, border fees) for a buyer in this province. */
+  landed?: LandedContext;
 }
 
 export interface CartItem {
@@ -44,6 +47,7 @@ export interface Order {
   shipping: number;
   total: number;
   freeShipping?: { needed: number; saves: number; options: { cardId: string; label: string; price: number }[] };
+  landed?: Landed; // when optimising on landed cost: tax, FX and border fees; total includes them
 }
 
 export interface CartPlan {
@@ -53,6 +57,7 @@ export interface CartPlan {
   cards: number;
   itemsTotal: number;
   shippingTotal: number;
+  extrasTotal: number; // tax, FX fees, duty and border fees (landed mode)
   total: number;
   objective: number; // spend minus worth of cards bought (lower is better)
   naiveTotal: number; // same cards, each from its cheapest listing, every seller's shipping paid
@@ -68,6 +73,9 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
   const sellers = snap.sellers.filter((s) => !o.onlyCountries?.length || o.onlyCountries.includes(s.country));
   const sIndex = new Map(sellers.map((s, i) => [s.id, i]));
   const unavailable: CartPlan["unavailable"] = [];
+  const P = o.landed ? o.landed.rules.provinces[o.landed.province] : undefined;
+  const homeTax = P ? 1 + (P.hst ?? P.gst ?? 0) + (P.pst ?? 0) : 1;
+  const land = (s: number, items: number, ship: number) => landedCost(sellers[s], items, ship, o.landed!);
 
   // ----- offers per wanted card -----
   const offers: Offer[][] = [];
@@ -87,7 +95,8 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
     for (const x of list) if (!best.has(x.seller) || x.price + x.ship < best.get(x.seller)!.price + best.get(x.seller)!.ship) best.set(x.seller, x);
     offers.push([...best.values()].sort((a, b) => a.price + a.ship - (b.price + b.ship)));
     const value = w.market ?? offers[offers.length - 1][0].price;
-    worth.push(o.mode === "complete" ? 1e6 : value * o.tolerance * PRIORITY_BOOST[w.priority]);
+    // in landed mode a card is worth its market price plus the tax you'd pay buying it at home
+    worth.push(o.mode === "complete" ? 1e6 : value * homeTax * o.tolerance * PRIORITY_BOOST[w.priority]);
     active.push(w);
   }
   const n = active.length;
@@ -100,7 +109,8 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
   };
   const sellerCost = (assign: number[], s: number) => {
     const items = sellerItems(assign, s);
-    return items.reduce((a, x) => a + x.price, 0) + orderShipping(sellers[s], items, o.usdToCad);
+    const sub = items.reduce((a, x) => a + x.price, 0), ship = orderShipping(sellers[s], items, o.usdToCad);
+    return o.landed ? land(s, sub, ship).total : sub + ship;
   };
   const objective = (assign: number[]) => {
     let t = 0;
@@ -216,6 +226,7 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
     const subtotal = items.reduce((a, x) => a + x.price, 0);
     const shipping = orderShipping(sellers[s], items, o.usdToCad);
     const order: Order = { seller: sellers[s], items, subtotal: r2(subtotal), shipping: r2(shipping), total: r2(subtotal + shipping) };
+    if (o.landed) { order.landed = land(s, subtotal, shipping); order.total = order.landed.total; }
     const rule = sellers[s].shipping;
     if (rule?.freeOver != null && shipping - items.reduce((a, x) => a + x.shipping, 0) > 0) {
       const line = toCAD(rule.freeOver, sellers[s].currency, o.usdToCad);
@@ -254,10 +265,10 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
   let naiveTotal = 0;
   const naiveSellers = new Set(chosen.map((i) => offers[i][naiveAssign[i]].seller));
   for (const s of naiveSellers) naiveTotal += sellerCost(naiveAssign, s);
-  const total = r2(itemsTotal + shippingTotal);
+  const total = r2(orders.reduce((a, x) => a + x.total, 0));
   return {
     orders, deferred, unavailable, cards: chosen.length, objective: bestObj,
-    itemsTotal: r2(itemsTotal), shippingTotal: r2(shippingTotal), total,
+    itemsTotal: r2(itemsTotal), shippingTotal: r2(shippingTotal), extrasTotal: r2(total - itemsTotal - shippingTotal), total,
     naiveTotal: r2(naiveTotal), savings: r2(Math.max(0, naiveTotal - total)),
   };
 }

@@ -2,7 +2,7 @@ import { latestListings, initSync, onSyncChange, syncEnabled, state as syncState
 import setData from "../data/sets/30th-celebration.json";
 import fpData from "../data/sets/30th-celebration.fingerprints.json";
 import type { Card, CardSet, Collection, Entry, Priority, Status } from "./lib/types.ts";
-import { PRIORITY_LABEL, STATUS_LABEL, owned, missing } from "./lib/types.ts";
+import { PRIORITY_LABEL, STATUS_LABEL, DEFAULT_SETTINGS, owned, missing } from "./lib/types.ts";
 import { load, save, updateEntry, updateSettings } from "./lib/store.ts";
 import { checkPrice, estimatedCost, formatCAD, priorityOf, VERDICT_LABEL } from "./lib/pricing.ts";
 import { plan, progress, insights } from "./lib/planner.ts";
@@ -19,6 +19,9 @@ import { readXlsx } from "./lib/xlsx.ts";
 import { CONDITION_LABEL, TIER_LABEL, compareCompanies, reopenedSince, worstFrom, isOpen, type Condition, type ServicesFile, type TierStatus } from "./lib/grading.ts";
 import servicesData from "../data/grading/services.json";
 import galleriesData from "../data/galleries/index.json";
+import landedRules from "../data/landed/rules.json";
+import fxData from "../data/landed/fx.json";
+import { PROVINCES, importLimit, type LandedRules, type Province } from "./lib/landed.ts";
 import { gallerySet, findPart, gallerySetId, partName, shortName, galleryUrl, type GalleryIndex, type DbSet } from "./lib/galleries.ts";
 import { analysePacks, observedRates, DEFAULT_MODEL, type PackSession } from "./lib/packs.ts";
 import { progress as groupProgress } from "./lib/planner.ts";
@@ -82,7 +85,7 @@ function autoFrom(info: Record<string, CardInfo>, mapId: (id: string) => string 
   const out: Record<string, number> = {};
   for (const c of SET.cards) {
     const i = info[mapId(c.id) ?? ""];
-    if (i?.usd) out[c.id] = Math.round(i.usd * col.settings.usdToCad * 100) / 100;
+    if (i?.usd) out[c.id] = Math.round(i.usd * usdCad() * 100) / 100;
   }
   return out;
 }
@@ -1081,7 +1084,7 @@ function priceChecker() {
   const mkt = h("input", { id: "pc-mkt", type: "number", min: "0", step: "0.01", inputmode: "decimal" });
   const usd = h("input", { id: "pc-usd", type: "checkbox" });
   const run = () => {
-    const a = Number(ask.value), m = Number(mkt.value) * (usd.checked ? col.settings.usdToCad : 1);
+    const a = Number(ask.value), m = Number(mkt.value) * (usd.checked ? usdCad() : 1);
     if (!ask.value || !mkt.value) return;
     const pc = checkPrice(a, m, col.settings);
     out.className = `verdict v-${pc.verdict}`;
@@ -1092,7 +1095,7 @@ function priceChecker() {
     h("h2", {}, "Quick price check"),
     h("p", { class: "hint" }, "For anything on a shelf: singles, packs or boxes. Compare the asking price with MSRP or market value."),
     h("div", { class: "two" }, h("label", { class: "field" }, h("span", {}, "Asking (CAD)"), ask), h("label", { class: "field" }, h("span", {}, "Market or MSRP"), mkt)),
-    h("label", { class: "check" }, usd, `Market value is in USD (× ${col.settings.usdToCad})`), out);
+    h("label", { class: "check" }, usd, `Market value is in USD (× ${usdCad()})`), out);
 }
 
 // ---------- Grade (centering) ----------
@@ -1205,7 +1208,7 @@ function companyResults(id: string) {
   const e = entry(id), raw = marketOf(id);
   if (raw == null) return [];
   return compareCompanies(SERVICES.companies, { raw, condition: e.graded?.condition ?? "pristine", worst: worstFrom(e.grade?.centering), values: slabValues(e) },
-    col.settings.usdToCad, col.settings.gradingShip);
+    usdCad(), col.settings.gradingShip);
 }
 function bestResult(id: string) {
   return companyResults(id).filter((x) => x.result).sort((a, b) => b.result!.profit - a.result!.profit)[0];
@@ -1283,13 +1286,13 @@ function worthPanel(): Node {
           h("thead", {}, h("tr", {}, h("th", {}, "Slab prices (CAD)"), h("th", {}, "Top grade"), h("th", {}, "Next grade"), h("th", {}, ""))),
           h("tbody", {}, ...slabRows))),
         out,
-        h("p", { class: "fine" }, `Fees are each company's cheapest open tier that covers the card's value, converted at ${col.settings.usdToCad} CAD per USD, plus ${formatCAD(col.settings.gradingShip)} shipping and insurance per card (change on Data). Grade chances are rough starting points.`))));
+        h("p", { class: "fine" }, `Fees are each company's cheapest open tier that covers the card's value, converted at ${usdCad()} CAD per USD, plus ${formatCAD(col.settings.gradingShip)} shipping and insurance per card (change on Data). Grade chances are rough starting points.`))));
 }
 
 function servicesPanel(): Node {
   const seen = seenTiers();
   const reopened = Object.keys(seen).length ? reopenedSince(SERVICES.companies, seen) : [];
-  const fx = col.settings.usdToCad;
+  const fx = usdCad();
   const panel = h("div", { class: "panel services" },
     h("h2", {}, "Where to grade"),
     reopened.length ? h("div", { class: "reopened", role: "status" }, h("strong", {}, "Just reopened"),
@@ -1493,6 +1496,17 @@ function data(): Node {
 }
 
 // ---------- Buy (cart optimizer across sellers) ----------
+const RULES = landedRules as unknown as LandedRules;
+interface BuyerPrefs { province: Province; fxFee: number; landed: boolean }
+const BUYER_KEY = "setkeeper:v1:buyer";
+function buyer(): BuyerPrefs {
+  try { return { province: "BC", fxFee: RULES.cardFxFeeDefault, landed: true, ...JSON.parse(localStorage.getItem(BUYER_KEY) ?? "{}") }; }
+  catch { return { province: "BC", fxFee: RULES.cardFxFeeDefault, landed: true }; }
+}
+function setBuyer(patch: Partial<BuyerPrefs>) { try { localStorage.setItem(BUYER_KEY, JSON.stringify({ ...buyer(), ...patch })); } catch { /* ignore */ } render(); }
+/** USD→CAD: the collector's own setting if they changed it, else the Bank of Canada rate from the daily scout. */
+const usdCad = () => (col.settings.usdToCad !== DEFAULT_SETTINGS.usdToCad ? col.settings.usdToCad : (fxData as { usdcad: number }).usdcad || col.settings.usdToCad);
+
 let market: MarketState = loadMarket(SET.id);
 let scoutTried = false;
 
@@ -1543,9 +1557,11 @@ function buy(): Node {
   const p = market.prefs;
   const setPref = (patch: Partial<typeof p>) => { market.prefs = { ...p, ...patch }; saveMarket(SET.id, market); render(); };
   const wants = wantsFor(p.scope);
+  const B = buyer();
   const plan = optimizeCart(wants, snap, {
-    usdToCad: col.settings.usdToCad, mode: p.mode, conditions: p.conditions,
+    usdToCad: usdCad(), mode: p.mode, conditions: p.conditions,
     tolerance: col.settings.overAbove, scalperAbove: col.settings.scalperAbove, onlyCountries: p.canadaOnly ? ["CA"] : undefined,
+    ...(B.landed ? { landed: { province: B.province, rules: RULES, fxFee: B.fxFee } } : {}),
   });
 
   const when = new Date(snap.fetchedAt);
@@ -1564,9 +1580,23 @@ function buy(): Node {
         h("label", { class: "check" }, h("input", { id: "b-ca", type: "checkbox", checked: p.canadaOnly, onchange: (e: Event) => setPref({ canadaOnly: (e.target as HTMLInputElement).checked }) }), "Canadian sellers only"),
         h("label", { class: "check" }, h("input", { id: "b-prio", type: "checkbox", checked: p.scope === "priority", onchange: (e: Event) => setPref({ scope: (e.target as HTMLInputElement).checked ? "priority" : "all" }) }), "Chase & high priority only"),
         ...["NM", "LP", "MP"].map((cnd) => h("label", { class: "check" }, h("input", { id: `b-${cnd}`, type: "checkbox", checked: p.conditions.includes(cnd),
-          onchange: (e: Event) => setPref({ conditions: (e.target as HTMLInputElement).checked ? [...p.conditions, cnd] : p.conditions.filter((x) => x !== cnd) }) }), cnd)))),
+          onchange: (e: Event) => setPref({ conditions: (e.target as HTMLInputElement).checked ? [...p.conditions, cnd] : p.conditions.filter((x) => x !== cnd) }) }), cnd))),
+      h("div", { class: "row landed-row" },
+        h("label", { class: "check" }, h("input", { id: "b-landed", type: "checkbox", checked: B.landed, onchange: (e: Event) => setBuyer({ landed: (e.target as HTMLInputElement).checked }) }), "Landed cost: include tax, FX and border fees"),
+        h("label", { class: "inline-field" }, "Ship to",
+          h("select", { id: "b-prov", "aria-label": "Your province or territory", disabled: !B.landed, onchange: (e: Event) => setBuyer({ province: (e.target as HTMLSelectElement).value as Province }) },
+            ...PROVINCES.map((x) => h("option", { value: x, selected: x === B.province }, RULES.provinces[x].name)))),
+        h("label", { class: "inline-field" }, "Card FX fee",
+          h("input", { id: "b-fx", type: "number", min: "0", max: "10", step: "0.1", value: String(Math.round(B.fxFee * 1000) / 10), disabled: !B.landed, "aria-label": "Credit card foreign exchange fee, percent",
+            onchange: (e: Event) => setBuyer({ fxFee: Math.max(0, Number((e.target as HTMLInputElement).value) || 0) / 100 }) }), "%")),
+      B.landed ? h("p", { class: "hint" }, `Prices compared at your door in ${RULES.provinces[B.province].name}: shops' sales tax, US$1 = CA$${usdCad().toFixed(4)}${(fxData as { date?: string }).date && usdCad() === (fxData as { usdcad: number }).usdcad ? ` (Bank of Canada, ${(fxData as { date: string }).date})` : ""}, your card's FX fee, and on imports the CA$20 mail / CA$40 US-courier tax limits, GST/HST and provincial tax, and Canada Post or courier fees. Estimates; `,
+        h("a", { href: "#landed-sources", onclick: (e: Event) => { e.preventDefault(); $("#landed-sources")?.toggleAttribute("open"); } }, "rules and sources"), ".") : null),
     cartSummary(plan, wants.length),
-    ...plan.orders.map(orderPanel));
+    ...plan.orders.map(orderPanel),
+    h("details", { class: "panel", id: "landed-sources" },
+      h("summary", {}, h("b", {}, "Landed-cost rules and sources"), ` · checked ${RULES.checkedAt}`),
+      h("p", { class: "hint" }, "Trading cards enter Canada duty-free and aren't on the 2026 surtax list on US goods, so imports pay sales tax but no duty. eBay collects tax at checkout only for Canadian sellers; US eBay sellers are taxed at the border like any import. Splitting one order into several shipments to stay under the limits doesn't count."),
+      h("ul", {}, ...RULES.sources.map((x) => h("li", {}, h("a", { href: x.url, target: "_blank", rel: "noopener" }, x.name))))));
   if (plan.deferred.length) wrap.append(h("div", { class: "panel" },
     h("h2", {}, `Wait on these (${plan.deferred.length})`),
     h("p", { class: "hint" }, "Buying them now would cost more in shipping than they're worth. They'll join a cart once you're ordering from that seller anyway."),
@@ -1583,7 +1613,8 @@ function cartSummary(plan: CartPlan, wanted: number) {
     tile("Cards in cart", `${plan.cards}`, `of ${wanted} missing`),
     tile("Cards", formatCAD(plan.itemsTotal)),
     tile("Shipping", formatCAD(plan.shippingTotal), `${plan.orders.length} order${plan.orders.length === 1 ? "" : "s"}`),
-    tile("Total", formatCAD(plan.total), plan.cards ? `${formatCAD(plan.total / plan.cards)} per card` : undefined),
+    plan.extrasTotal ? tile("Tax & fees", formatCAD(plan.extrasTotal), "sales tax, FX, border") : null,
+    tile(plan.extrasTotal ? "Landed total" : "Total", formatCAD(plan.total), plan.cards ? `${formatCAD(plan.total / plan.cards)} per card at your door` : undefined),
     tile("Saved", formatCAD(plan.savings), "vs cheapest price per card"));
 }
 
@@ -1599,7 +1630,7 @@ function orderPanel(o: CartPlan["orders"][number]) {
     h("header", { class: "order-head" },
       h("div", {}, h("h2", {}, o.seller.name), h("p", { class: "eyebrow" }, `${o.seller.country} · ${o.seller.kind === "marketplace" ? "marketplace seller" : "shop"} · prices in CAD`)),
       h("div", { class: "order-total" }, h("strong", {}, formatCAD(o.total)),
-        h("small", {}, `${formatCAD(o.subtotal)} + ${o.shipping ? `${formatCAD(o.shipping)} shipping` : "free shipping"}`))),
+        h("small", {}, `${formatCAD(o.subtotal)} + ${o.shipping ? `${formatCAD(o.shipping)} shipping` : "free shipping"}${o.landed?.lines.length ? ` + ${formatCAD(o.total - o.subtotal - o.shipping)} tax & fees` : ""}`))),
     h("ul", { class: "order-items" }, ...o.items.map((it) => {
       const c = BY_ID.get(it.cardId)!;
       return h("li", {},
@@ -1609,7 +1640,12 @@ function orderPanel(o: CartPlan["orders"][number]) {
         h("span", { class: "price" }, formatCAD(it.price), it.shipping ? h("small", {}, ` +${formatCAD(it.shipping)} ship`) : null),
         it.listing.url ? h("a", { href: it.listing.url, target: "_blank", rel: "noopener", class: "view-link" }, "View") : h("span"));
     })),
-    o.seller.country !== "CA" ? h("p", { class: "hint" }, `Ships from ${o.seller.country === "US" ? "the US" : o.seller.country}: duties, taxes or brokerage fees may be added at the border. The optimizer picked it because it still came out cheaper; tick "Canadian sellers only" to compare.`) : null,
+    o.landed?.lines.length ? h("dl", { class: "landed-lines" }, ...o.landed.lines.flatMap((x) => [h("dt", {}, x.label), h("dd", {}, formatCAD(x.amount))])) : null,
+    o.landed?.note ? h("p", { class: "hint" }, o.landed.note, (() => {
+      const lim = importLimit(o.seller, RULES);
+      return lim && o.subtotal > lim && o.landed!.fees ? ` Picked anyway: still the cheapest way to get these cards to your door.` : "";
+    })()) : null,
+    !o.landed && o.seller.country !== "CA" ? h("p", { class: "hint" }, `Ships from ${o.seller.country === "US" ? "the US" : o.seller.country}: duties, taxes or brokerage fees may be added at the border. Turn on landed cost to include them.`) : null,
     fs ? h("p", { class: "freeship" }, `Add ${formatCAD(fs.needed)} more here to ship free and save ${formatCAD(fs.saves)}.`,
       fs.options.length ? ` Cards you need that they have: ${fs.options.slice(0, 5).map((x) => `${x.label} ${formatCAD(x.price)}`).join(", ")}${fs.options.length > 5 ? "…" : ""}.` : "") : null,
     h("div", { class: "row" }, h("button", { class: "btn ghost", onclick: markOrdered }, "I placed this order")));
@@ -1669,7 +1705,7 @@ function cardValue(): (id: string) => number | undefined {
     const cur = new Map(snap.sellers.map((x) => [x.id, x.currency]));
     for (const l of snap.listings) {
       if (l.qty <= 0) continue;
-      const v = cur.get(l.sellerId) === "USD" ? l.price * col.settings.usdToCad : l.price;
+      const v = cur.get(l.sellerId) === "USD" ? l.price * usdCad() : l.price;
       if (!cheapest.has(l.cardId) || v < cheapest.get(l.cardId)!) cheapest.set(l.cardId, v);
     }
   }
