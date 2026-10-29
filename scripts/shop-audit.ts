@@ -48,12 +48,27 @@ export function blocked(path: string, rules: string[]): string | undefined {
   return rules.find((r) => new RegExp("^" + r.replace(/[.+?^{}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\\\$$/, "$")).test(path));
 }
 
-/** Sentences in a terms page that restrict scraping or automated access. */
+/**
+ * Passages in a terms page that restrict scraping or automated access. Terms often bury this
+ * in one long list ("…to spam, phish, pharm, pretext, spider, crawl, or scrape…"), so each
+ * mention is read with the text around it rather than sentence by sentence.
+ */
 export function tosFlags(text: string): string[] {
-  const s = text.split(/(?<=[.;!?])\s+/).map((x) => x.trim()).filter((x) => x.length > 20 && x.length < 600);
-  const about = /scrap|crawl|spider|\brobots?\b|\bbots?\b|data[\s-]?min|harvest|automated (means|system|device|access|process|tool)|automatic (means|device)/i;
-  const forbids = /(not|never|prohibit|forbid|may not|must not|shall not|without (our|prior|express)|agree not)/i;
-  return [...new Set(s.filter((x) => about.test(x) && forbids.test(x)))].slice(0, 5);
+  const about = /scrap(e|ing|er)|\bcrawl|\bspider|\brobots?\b|\bbots?\b|data[\s-]?min|harvest|automated (means|system|device|access|process|tool|software)|automatic (means|device)/gi;
+  const forbids = /\b(not|never|prohibit\w*|forbid\w*|may not|must not|shall not|without (our|the|prior|express)|agree not|restrict\w*)\b/i;
+  const out: string[] = [];
+  let last = -1000;
+  for (const m of text.matchAll(about)) {
+    const at = m.index ?? 0;
+    if (at - last < 250) continue; // same passage
+    // a list of prohibited uses can start long before the word itself
+    const win = text.slice(Math.max(0, at - 1500), at + 120);
+    if (!forbids.test(win)) continue;
+    const snip = text.slice(Math.max(0, at - 140), at + 80).replace(/^\S*\s/, "").trim();
+    out.push(`…${snip}…`);
+    last = at;
+  }
+  return out.slice(0, 4);
 }
 
 const text = (html: string) => html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ")
