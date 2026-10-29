@@ -1,0 +1,705 @@
+{
+ "checkedAt": "2026-10-29T20:38:07.435Z",
+ "note": "Which shops the price scout may read, and which collection. Titles and counts only; no inventory.",
+ "shops": [
+  {
+   "id": "3dragons",
+   "name": "3 Dragons",
+   "origin": "https://www.3dragons.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://www.3dragons.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 1000,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "30th-anniversary-edition-singles",
+      "title": "30th Anniversary Edition Singles",
+      "count": 657,
+      "readable": true
+     },
+     {
+      "handle": "30a",
+      "title": "30th Anniversary Edition",
+      "count": 594,
+      "readable": true
+     },
+     {
+      "handle": "cel25",
+      "title": "Celebrations",
+      "count": 50,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "401games",
+   "name": "401 Games",
+   "origin": "https://store.401games.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://store.401games.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 1000,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "30th-anniversary-edition",
+      "title": "30th Anniversary Edition",
+      "count": 594,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "atlascollectables",
+   "name": "Atlas Collectables",
+   "origin": "https://www.atlascollectables.com",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.atlascollectables.com/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "bananagames",
+   "name": "Banana Games",
+   "origin": "https://bananagames.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://bananagames.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 235,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "bentogaming",
+   "name": "Bento Gaming",
+   "origin": "https://bentogaming.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://bentogaming.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 245,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "cardboardgaming",
+   "name": "Card Board Gaming",
+   "origin": "https://www.cardboardgaming.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://www.cardboardgaming.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 15,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "cardbrawlers",
+   "name": "Card Brawlers",
+   "origin": "https://cardbrawlers.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://cardbrawlers.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 354,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "cardboardmemories",
+   "name": "Cardboard Memories",
+   "origin": "https://www.cardboardmemories.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://www.cardboardmemories.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 181,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "cartamagica",
+   "name": "Carta Magica Montreal",
+   "origin": "https://www.cartamagica.com",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.cartamagica.com/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "cartamagicaottawa",
+   "name": "Carta Magica Ottawa",
+   "origin": "https://www.cartamagicaottawa.com",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.cartamagicaottawa.com/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "collectorslane",
+   "name": "Collector's Lane",
+   "origin": "https://www.collectorslane.ca",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.collectorslane.ca/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "comichunter",
+   "name": "Comic Hunter",
+   "origin": "https://www.comichunter.net",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.comichunter.net/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "danireon",
+   "name": "Danireon Cards & Games",
+   "origin": "https://www.danireon.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://www.danireon.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 269,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-30th-anniversary-singles",
+      "title": "Pokémon 30th Anniversary Singles",
+      "count": 188,
+      "readable": true
+     },
+     {
+      "handle": "pokemon-celebrations-singles",
+      "title": "Pokemon Celebrations Singles",
+      "count": 66,
+      "readable": true
+     },
+     {
+      "handle": "30th-anniversary-pokemon",
+      "title": "30th Anniversary Pokémon",
+      "count": 14,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "deckoutgaming",
+   "name": "Deck Out Gaming",
+   "origin": "https://deckoutgaming.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://deckoutgaming.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 458,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "swsh-celebrations-classic-collection",
+      "title": "SWSH - Celebrations: Classic Collection",
+      "count": 1,
+      "readable": true
+     },
+     {
+      "handle": "swsh-celebrations",
+      "title": "SWSH - Celebrations",
+      "count": 0,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "doescards",
+   "name": "Doe's Cards",
+   "origin": "https://doescards.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://doescards.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 92,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-tcg-30th-celebration",
+      "title": "Pokémon TCG: 30th Celebration",
+      "count": 14,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "dollys",
+   "name": "Dolly's Toys and Games",
+   "origin": "https://www.dollys.ca",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.dollys.ca/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "enterthebattlefield",
+   "name": "Enter the Battlefield",
+   "origin": "https://enterthebattlefield.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://enterthebattlefield.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 259,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "facetoface",
+   "name": "Face to Face Games",
+   "origin": "https://www.facetofacegames.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://www.facetofacegames.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 290,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-30th-celebration",
+      "title": "30th Celebration",
+      "count": 248,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "fusiongaming",
+   "name": "Fusion Gaming",
+   "origin": "https://fusiongamingonline.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://fusiongamingonline.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 282,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-mega-evolution-30th-celebration",
+      "title": "Pokémon - Mega Evolution: 30th Celebration",
+      "count": 192,
+      "readable": true
+     },
+     {
+      "handle": "fusion-open-april-12-13",
+      "title": "Fusion Open • August 30th-31st",
+      "count": 6,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "gamekeeper",
+   "name": "Game Keeper Online",
+   "origin": "https://www.gamekeeperonline.com",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.gamekeeperonline.com/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "gamezilla",
+   "name": "Game-zilla",
+   "origin": "https://gamezilla.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://gamezilla.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 1000,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-swsh-celebrations",
+      "title": "Pokemon - SWSH - Celebrations",
+      "count": 55,
+      "readable": true
+     },
+     {
+      "handle": "pokemon-30th-products",
+      "title": "Pokemon 30th Products",
+      "count": 13,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "gameknight",
+   "name": "GameKnight Games",
+   "origin": "https://gameknight.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://gameknight.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 617,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "hairytarantula",
+   "name": "Hairy Tarantula",
+   "origin": "https://www.hairyt.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://www.hairyt.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 258,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "hobbiesville",
+   "name": "Hobbiesville",
+   "origin": "https://hobbiesville.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://hobbiesville.com/pages/terms-and-conditions",
+   "termsFlags": [],
+   "collections": 691,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-30th-celebration-singles",
+      "title": "Pokémon 30th Celebration Singles",
+      "count": 383,
+      "readable": true
+     },
+     {
+      "handle": "pokemon-celebrations-singles",
+      "title": "Pokemon Celebrations Singles",
+      "count": 51,
+      "readable": true
+     },
+     {
+      "handle": "pokemon-celebrations",
+      "title": "Pokemon Celebrations",
+      "count": 44,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "houseofcards",
+   "name": "House of Cards",
+   "origin": "https://houseofcards.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://houseofcards.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 191,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-celebrations",
+      "title": "Pokemon Celebrations",
+      "count": 0,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "kanzengames",
+   "name": "KanZen Games",
+   "origin": "https://kanzengames.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://kanzengames.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 475,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "30th-celebration",
+      "title": "30th Celebration",
+      "count": 221,
+      "readable": true
+     },
+     {
+      "handle": "celebrations",
+      "title": "Celebrations",
+      "count": 34,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "lamood",
+   "name": "L.A. Mood Comics & Games",
+   "origin": "https://lamoodcomics.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://lamoodcomics.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 110,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "levelupgames",
+   "name": "Level Up Games",
+   "origin": "https://levelupgames.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://levelupgames.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 97,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "30th-celebrations",
+      "title": "30th Celebration",
+      "count": 8,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "pokejeux",
+   "name": "Poké Jeux",
+   "origin": "https://www.pokejeux.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://www.pokejeux.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 1000,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "30th-anniversary-edition-mtg",
+      "title": "30th Anniversary Edition",
+      "count": 594,
+      "readable": true
+     },
+     {
+      "handle": "30th-anniversary-edition",
+      "title": "30th Celebration",
+      "count": 191,
+      "readable": true
+     },
+     {
+      "handle": "m6a-mega-expansion-30th-celebration",
+      "title": "M6a: MEGA Expansion 30th Celebration",
+      "count": 175,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "remicardtrader",
+   "name": "Rémi Card Trader",
+   "origin": "https://remicardtrader.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://remicardtrader.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 204,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-30th-celebration",
+      "title": "Pokémon 30th Celebration",
+      "count": 22,
+      "readable": true
+     },
+     {
+      "handle": "30th-first-wave",
+      "title": "30th First Wave",
+      "count": 0,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "screenfreegames",
+   "name": "Screen Free Games",
+   "origin": "https://screenfreegames.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://screenfreegames.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 148,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "skyfoxgames",
+   "name": "Skyfox Games",
+   "origin": "https://skyfoxgames.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://skyfoxgames.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 664,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-celebrations",
+      "title": "Pokémon Celebrations",
+      "count": 18,
+      "readable": true
+     },
+     {
+      "handle": "pokemon-30th-anniversary-collection",
+      "title": "Pokemon 30th Anniversary Collection",
+      "count": 17,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "connectiongames",
+   "name": "The Connection Games & Hobbies",
+   "origin": "https://www.theconnectiongames.com",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.theconnectiongames.com/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "threekingsloot",
+   "name": "Three Kings Loot",
+   "origin": "https://www.threekingsloot.com",
+   "shopify": false,
+   "robots": "blocks the catalogue (Disallow: /)",
+   "terms": "read by hand (robots.txt asks bots not to)",
+   "termsFlags": [],
+   "termsByHand": "https://www.threekingsloot.com/policies/terms-of-service",
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  },
+  {
+   "id": "tistaminis",
+   "name": "Tistaminis",
+   "origin": "https://tistaminis.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://tistaminis.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 730,
+   "sets": {
+    "30th-celebration": [
+     {
+      "handle": "pokemon-30th-celebration",
+      "title": "Pokemon 30th Celebration",
+      "count": 21,
+      "readable": true
+     },
+     {
+      "handle": "pokemon-celebrations",
+      "title": "Pokemon Celebrations",
+      "count": 16,
+      "readable": true
+     }
+    ]
+   },
+   "verdict": "ok: read only the set collection(s) above"
+  },
+  {
+   "id": "trinityhobby",
+   "name": "Trinity Hobby",
+   "origin": "https://trinityhobby.com",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://trinityhobby.com/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 196,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "untouchables",
+   "name": "Untouchables Comics, Cards & Games",
+   "origin": "https://untouchables.ca",
+   "shopify": true,
+   "robots": "allows the catalogue",
+   "terms": "https://untouchables.ca/policies/terms-of-service",
+   "termsFlags": [],
+   "collections": 359,
+   "sets": {},
+   "verdict": "ok to read, but no collection found for a tracked set"
+  },
+  {
+   "id": "coolstuffinc",
+   "name": "CoolStuffInc",
+   "origin": "https://www.coolstuffinc.com",
+   "shopify": false,
+   "robots": "allows the catalogue",
+   "terms": "not found",
+   "termsFlags": [],
+   "collections": 0,
+   "sets": {},
+   "verdict": "not a Shopify store: needs its own adapter or eBay"
+  }
+ ]
+}
