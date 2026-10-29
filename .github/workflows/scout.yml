@@ -45,9 +45,14 @@ jobs:
         continue-on-error: true
       - name: Keep the Supabase project awake
         if: ${{ vars.SUPABASE_URL != '' }}
+        env:
+          SB: ${{ vars.SUPABASE_URL }}
+          KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: |
-          curl -fsS -X POST "${{ vars.SUPABASE_URL }}/rest/v1/rpc/keepalive" \
-            -H "apikey: ${{ vars.SUPABASE_ANON_KEY }}" -H "Content-Type: application/json" -d '{}'
+          # strip stray spaces/newlines and a trailing slash from the variables (curl rejects them)
+          SB="$(printf %s "$SB" | tr -d '[:space:]')"; SB="${SB%/}"
+          KEY="$(printf %s "$KEY" | tr -d '[:space:]')"
+          curl -fsS -X POST "$SB/rest/v1/rpc/keepalive" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d '{}'
         continue-on-error: true
       - name: Commit and redeploy
         env:
