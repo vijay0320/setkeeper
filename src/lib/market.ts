@@ -1,4 +1,5 @@
 // Sellers, their shipping rules and the listings they have for each card.
+import { conditionFromText, printingFromText } from "./prices.ts";
 
 export interface ShippingRule {
   base: number; // charged once per order, in the seller's currency
@@ -29,6 +30,7 @@ export interface Listing {
   price: number; // seller's currency
   qty: number; // units available (0 = sold out)
   condition?: string; // NM, LP, MP, HP, DMG
+  printing?: string; // normal, holofoil, reverse-holofoil… (TCGdex names); unset = the card's usual printing
   url?: string;
   shipping?: number; // per-listing shipping (marketplaces), seller's currency
   title?: string;
@@ -46,13 +48,7 @@ export const CONDITIONS = ["NM", "LP", "MP", "HP", "DMG"] as const;
 
 export function normalizeCondition(s?: string): string | undefined {
   if (!s) return undefined;
-  const t = s.toLowerCase();
-  if (/near mint|^nm|mint/.test(t)) return "NM";
-  if (/lightly|^lp|excellent/.test(t)) return "LP";
-  if (/moderately|^mp|good/.test(t)) return "MP";
-  if (/heavily|^hp|played|poor/.test(t)) return "HP";
-  if (/damag/.test(t)) return "DMG";
-  return s.toUpperCase().slice(0, 3);
+  return conditionFromText(s) ?? s.toUpperCase().slice(0, 3);
 }
 
 /** Convert a seller-currency amount to CAD. */
@@ -70,13 +66,13 @@ export function orderShipping(seller: Seller, items: { price: number; shipping?:
   return perListing + toCAD(rule.base + (rule.perExtra ?? 0) * (items.length - 1), seller.currency, usdToCad);
 }
 
-/** Parse a listings sheet: Seller, Card #, Price, Qty, Condition, Shipping, Free over, Currency, URL (flexible headers). */
+/** Parse a listings sheet: Seller, Card #, Price, Qty, Condition, Printing, Shipping, Free over, Currency, URL (flexible headers). */
 export function listingsFromRows(rows: (string | number | null)[][], resolveCard: (num: string, section?: string) => string | undefined): { listings: Listing[]; sellers: Seller[]; skipped: number } {
   const head = rows[0].map((c) => String(c ?? "").trim().toLowerCase());
   const col = (re: RegExp) => head.findIndex((h) => re.test(h));
   const c = {
     seller: col(/seller|store|shop/), number: col(/card\s*#|number|^no/), section: col(/section/),
-    price: col(/^price|asking/), qty: col(/qty|quantity|stock/), cond: col(/cond/), ship: col(/ship/), url: col(/url|link/),
+    price: col(/^price|asking/), qty: col(/qty|quantity|stock/), cond: col(/cond/), printing: col(/printing|finish|variant|foil/), ship: col(/ship/), url: col(/url|link/),
     currency: col(/currency/), freeOver: col(/free/),
   };
   if (c.seller < 0 || c.number < 0 || c.price < 0) throw new Error('Listings need "Seller", "Card #" and "Price" columns.');
@@ -103,6 +99,7 @@ export function listingsFromRows(rows: (string | number | null)[][], resolveCard
       sellerId: id, cardId, price,
       qty: c.qty >= 0 && String(r[c.qty] ?? "") !== "" ? Number(r[c.qty]) : 1,
       condition: normalizeCondition(c.cond >= 0 ? String(r[c.cond] ?? "") : undefined),
+      ...(c.printing >= 0 && printingFromText(String(r[c.printing] ?? "")) ? { printing: printingFromText(String(r[c.printing] ?? "")) } : {}),
       url: c.url >= 0 ? String(r[c.url] ?? "") || undefined : undefined,
     });
   }

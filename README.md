@@ -56,7 +56,7 @@ Requires Node 22.18 or newer (TypeScript runs natively, no transpile step for te
 The Buy tab needs listings. Three ways to get them:
 
 1. **Price scout (automatic).** The daily GitHub Action collects in-stock singles from Shopify card shops (most Canadian shops) and, with API keys, eBay. Put your shop list (same format as `data/sellers.example.json`) in the repo secret `SCOUT_SELLERS`, and the Supabase service-role key in the secret `SUPABASE_SERVICE_ROLE_KEY`. Each day's prices are stored in a private Supabase table; the price history is never committed to this public repo, and signed-in users can read only the newest prices. Run `node scripts/scout.ts` locally to write `data/listings/<set>.json` (git-ignored) instead.
-2. **Listings sheet.** Import a CSV or .xlsx on the Data tab with columns Seller, Card #, Price, Qty, Condition, Shipping, Free over, Currency, URL.
+2. **Listings sheet.** Import a CSV or .xlsx on the Data tab with columns Seller, Card #, Price, Qty, Condition, Printing, Shipping, Free over, Currency, URL.
 3. **Sample data.** Fictional sellers and prices, to see how it works.
 
 The scout's adapters are tested against recorded response formats (`npm test`), not against live shops. Check each shop's terms before scraping it; the scout reads public catalogue pages once a day with a delay between requests.
@@ -64,6 +64,16 @@ The scout's adapters are tested against recorded response formats (`npm test`), 
 ### Deploy to GitHub Pages
 
 Push to `main`. The included workflow (`.github/workflows/pages.yml`) runs the tests, builds `dist/` and publishes it. In the repo settings, set **Pages → Source** to **GitHub Actions** once.
+
+## Fair prices: printing × condition
+
+A card's price depends on its **printing** (Normal, Holofoil, Reverse Holofoil, 1st Edition… are different products) and its **condition** (NM, LP, MP, HP, DMG), so SetKeeper never compares a played reverse holo with a Near Mint holo.
+
+- **Every printing is priced separately.** TCGdex gives TCGplayer prices per printing (low, mid, market, high) and Cardmarket's price plus its reverse-holo price. The card sheet has a printing and condition picker; shop listings say which printing they are ("Lightly Played Reverse Holofoil"), and the cart only matches a want with listings of the same printing.
+- **A fair value with its range, never a lone number.** Sources disagree (TCGplayer market runs about 20% above eBay sold and Cardmarket), so the fair Near Mint value is the mean of TCGplayer market (USD→CAD) and Cardmarket's trend / 30-day average (EUR→CAD, both at the Bank of Canada rate), shown with the range and each source. When the sources are more than 35% apart the sheet says so and points to eBay sold listings. TCGplayer's "low" (cheapest listing in any condition) is recorded but never used as a value.
+- **Conditions are a share of Near Mint.** The free sources only price NM. Other conditions start as labelled estimates (LP 85%, MP 70%, HP 50%, DMG 35%) and switch to shares measured from Canadian shops that list the same card and printing in NM and a played condition: the daily scout records only the aggregate ratios, by card value, in `data/prices/conditions.json` (used from 8 pairs; last 30 days). Collectors can set their own on the Data tab.
+- **Every listing is judged in its own condition.** In the Buy tab an LP copy is worth the LP value, so a heavily played card at 70% of the NM price is a bad buy, not a deal.
+- **Price history** (`scripts/price-history.ts`, daily): one private row per card, printing and day with every figure above (`card_prices` in `supabase/setup.sql`). Signed-in collectors see a card's 90-day fair value with the sources' range shaded, and the cost to finish their set over time.
 
 ## Landed cost (Canada)
 

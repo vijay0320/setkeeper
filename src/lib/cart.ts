@@ -12,12 +12,15 @@
 import type { Priority } from "./types.ts";
 import { type Listing, type MarketSnapshot, type Seller, orderShipping, toCAD } from "./market.ts";
 import { landedCost, type Landed, type LandedContext } from "./landed.ts";
+import { conditionFactor } from "./prices.ts";
 
 export interface Want {
   cardId: string;
   label: string;
   priority: Priority;
-  market?: number; // CAD
+  market?: number; // CAD, Near Mint fair value of the printing wanted
+  printing?: string; // the printing wanted; listings for other printings are skipped
+  defaultPrinting?: string; // what a listing that names no printing is assumed to be
 }
 
 export interface CartOptions {
@@ -30,6 +33,8 @@ export interface CartOptions {
   exhaustive?: { best?: number }; // tests only
   /** Optimise on landed cost (tax, FX, duty, border fees) for a buyer in this province. */
   landed?: LandedContext;
+  /** Share of the NM value a card in this condition is worth (default: prices.ts estimates). */
+  conditionFactor?: (condition: string | undefined, nm: number) => number;
 }
 
 export interface CartItem {
@@ -67,7 +72,7 @@ export interface CartPlan {
 const PRIORITY_BOOST: Record<Priority, number> = { chase: 1.3, high: 1.15, normal: 1, low: 0.9 };
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
-interface Offer { seller: number; listing: Listing; price: number; ship: number }
+interface Offer { seller: number; listing: Listing; price: number; ship: number; value?: number; worth: number }
 
 export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions): CartPlan {
   const sellers = snap.sellers.filter((s) => !o.onlyCountries?.length || o.onlyCountries.includes(s.country));
@@ -78,25 +83,30 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
   const land = (s: number, items: number, ship: number) => landedCost(sellers[s], items, ship, o.landed!);
 
   // ----- offers per wanted card -----
+  // Each listing is valued on its own: the NM value of the printing wanted × its condition's
+  // share of NM, so an LP copy is judged against the LP price, never against NM.
+  const factor = o.conditionFactor ?? ((c: string | undefined, nm: number) => conditionFactor(c, undefined, nm).factor);
   const offers: Offer[][] = [];
-  const worth: number[] = [];
   const active: Want[] = [];
   for (const w of wants) {
     const all = snap.listings.filter((l) => l.cardId === w.cardId && l.qty > 0 && sIndex.has(l.sellerId)
-      && (!l.condition || o.conditions.includes(l.condition)));
+      && (!l.condition || o.conditions.includes(l.condition))
+      && (!w.printing || (l.printing ?? w.defaultPrinting ?? w.printing) === w.printing));
     const list: Offer[] = all.map((l) => {
       const s = sellers[sIndex.get(l.sellerId)!];
-      return { seller: sIndex.get(l.sellerId)!, listing: l, price: toCAD(l.price, s.currency, o.usdToCad), ship: toCAD(l.shipping ?? 0, s.currency, o.usdToCad) };
-    }).filter((x) => w.market == null || x.price <= w.market * o.scalperAbove + 1e-9);
-    if (!all.length) { unavailable.push({ cardId: w.cardId, label: w.label, reason: "No seller has it in stock" }); continue; }
-    if (!list.length) { unavailable.push({ cardId: w.cardId, label: w.label, reason: `Only listed far above market (${money(w.market!)})` }); continue; }
-    // keep the cheapest offer per seller
+      const value = w.market != null ? w.market * factor(l.condition, w.market) : undefined;
+      return { seller: sIndex.get(l.sellerId)!, listing: l, price: toCAD(l.price, s.currency, o.usdToCad), ship: toCAD(l.shipping ?? 0, s.currency, o.usdToCad), value, worth: 0 };
+    }).filter((x) => x.value == null || x.price <= x.value * o.scalperAbove + 1e-9);
+    if (!all.length) { unavailable.push({ cardId: w.cardId, label: w.label, reason: w.printing && snap.listings.some((l) => l.cardId === w.cardId && l.qty > 0) ? "No seller has this printing in stock" : "No seller has it in stock" }); continue; }
+    if (!list.length) { unavailable.push({ cardId: w.cardId, label: w.label, reason: `Only listed far above its fair price (${money(w.market!)} in NM)` }); continue; }
+    const fallback = Math.min(...list.map((x) => x.price));
+    // in landed mode a card is worth its value plus the tax you'd pay buying it at home
+    for (const x of list) x.worth = o.mode === "complete" ? 1e6 : (x.value ?? fallback) * homeTax * o.tolerance * PRIORITY_BOOST[w.priority];
+    // keep each seller's best offer: most surplus (worth − cost); in complete mode the cheapest
     const best = new Map<number, Offer>();
-    for (const x of list) if (!best.has(x.seller) || x.price + x.ship < best.get(x.seller)!.price + best.get(x.seller)!.ship) best.set(x.seller, x);
+    const score = (x: Offer) => (o.mode === "complete" ? -(x.price + x.ship) : x.worth - x.price - x.ship);
+    for (const x of list) if (!best.has(x.seller) || score(x) > score(best.get(x.seller)!)) best.set(x.seller, x);
     offers.push([...best.values()].sort((a, b) => a.price + a.ship - (b.price + b.ship)));
-    const value = w.market ?? offers[offers.length - 1][0].price;
-    // in landed mode a card is worth its market price plus the tax you'd pay buying it at home
-    worth.push(o.mode === "complete" ? 1e6 : value * homeTax * o.tolerance * PRIORITY_BOOST[w.priority]);
     active.push(w);
   }
   const n = active.length;
@@ -115,7 +125,7 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
   const objective = (assign: number[]) => {
     let t = 0;
     const used = new Set<number>();
-    for (let i = 0; i < n; i++) if (assign[i] >= 0) { used.add(offers[i][assign[i]].seller); t -= worth[i]; }
+    for (let i = 0; i < n; i++) if (assign[i] >= 0) { used.add(offers[i][assign[i]].seller); t -= offers[i][assign[i]].worth; }
     for (const s of used) t += sellerCost(assign, s);
     return t;
   };
@@ -136,10 +146,10 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
   // change in objective if want i switches to option k (-1 = don't buy)
   const delta = (assign: number[], i: number, k: number) => {
     const from = sellerOf(assign, i), to = k >= 0 ? offers[i][k].seller : -1;
-    const before = (from >= 0 ? sellerCost(assign, from) : 0) + (to >= 0 && to !== from ? sellerCost(assign, to) : 0) - (assign[i] >= 0 ? worth[i] : 0);
+    const before = (from >= 0 ? sellerCost(assign, from) : 0) + (to >= 0 && to !== from ? sellerCost(assign, to) : 0) - (assign[i] >= 0 ? offers[i][assign[i]].worth : 0);
     const old = assign[i];
     assign[i] = k;
-    const after = (from >= 0 ? sellerCost(assign, from) : 0) + (to >= 0 && to !== from ? sellerCost(assign, to) : 0) - (k >= 0 ? worth[i] : 0);
+    const after = (from >= 0 ? sellerCost(assign, from) : 0) + (to >= 0 && to !== from ? sellerCost(assign, to) : 0) - (k >= 0 ? offers[i][k].worth : 0);
     assign[i] = old;
     return after - before;
   };
@@ -249,7 +259,7 @@ export function optimizeCart(wants: Want[], snap: MarketSnapshot, o: CartOptions
     deferred.push({ cardId: active[i].cardId, label: active[i].label,
       reason: alone - x.price > 0.005
         ? `Cheapest is ${money(x.price)} at ${seller.name}, but shipping it alone costs ${money(alone - x.price)}. Wait until you order from ${seller.name} anyway, or a bundle shows up.`
-        : `Cheapest ask is ${money(x.price)} at ${seller.name}, above what it's worth (${money(worth[i])}).` });
+        : `Cheapest ask is ${money(x.price)} at ${seller.name}, above what it's worth to you (${money(x.worth)}${x.listing.condition && x.listing.condition !== "NM" ? ` in ${x.listing.condition}` : ""}).` });
   }
 
   const chosen = [...Array(n).keys()].filter((i) => bestAssign[i] >= 0);

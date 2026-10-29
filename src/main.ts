@@ -1,4 +1,4 @@
-import { latestListings, initSync, onSyncChange, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
+import { latestListings, priceHistory, cardsTotalByDay, initSync, onSyncChange, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
 import setData from "../data/sets/30th-celebration.json";
 import fpData from "../data/sets/30th-celebration.fingerprints.json";
 import type { Card, CardSet, Collection, Entry, Priority, Status } from "./lib/types.ts";
@@ -22,6 +22,8 @@ import galleriesData from "../data/galleries/index.json";
 import landedRules from "../data/landed/rules.json";
 import fxData from "../data/landed/fx.json";
 import storesData from "../data/stores/stores.json";
+import conditionsData from "../data/prices/conditions.json";
+import { CONDITIONS, CONDITION_NAME, DEFAULT_FACTORS, MIN_PAIRS, conditionFactor, defaultPrinting, fairValue, printingLabel, valueFor, type ConditionData, type Condition as CardCondition, type FairValue, type PrintingPrice, type ValueFor } from "./lib/prices.ts";
 import { landedCost } from "./lib/landed.ts";
 import { PROVINCES, importLimit, type LandedRules, type Province } from "./lib/landed.ts";
 import { gallerySet, findPart, gallerySetId, partName, shortName, galleryUrl, type GalleryIndex, type DbSet } from "./lib/galleries.ts";
@@ -52,7 +54,8 @@ let SET: CardSet = BUNDLED;
 let REFS: RefFingerprint[] = BUNDLED_REFS;
 let BY_ID = new Map(SET.cards.map((c) => [c.id, c]));
 let col: Collection = load(SET.id);
-let AUTO: Record<string, number> = {}; // market value from the card database, CAD
+let AUTO: Record<string, number> = {}; // fair value from the card database for each card's printing and condition, CAD
+let INFO: Record<string, CardInfo> = {}; // card database info (rarity, every printing's prices) by card id in the active set
 let shelf = loadShelf();
 let setLoading = "";
 let setError = "";
@@ -83,13 +86,17 @@ function loadRefs(setId: string): RefFingerprint[] {
   if (setId === BUNDLED.id) return BUNDLED_REFS;
   try { const raw = localStorage.getItem(fpKey(setId)); return raw ? JSON.parse(raw) : []; } catch { return []; }
 }
-function autoFrom(info: Record<string, CardInfo>, mapId: (id: string) => string | undefined = (id) => BY_ID.get(id)?.ref ?? id): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const c of SET.cards) {
-    const i = info[mapId(c.id) ?? ""];
-    if (i?.usd) out[c.id] = Math.round(i.usd * usdCad() * 100) / 100;
-  }
+/** Card database info keyed by the active set's card ids. */
+function infoFor(info: Record<string, CardInfo>, mapId: (id: string) => string | undefined = (id) => BY_ID.get(id)?.ref ?? id): Record<string, CardInfo> {
+  const out: Record<string, CardInfo> = {};
+  for (const c of SET.cards) { const i = info[mapId(c.id) ?? ""]; if (i) out[c.id] = i; }
   return out;
+}
+/** Fair values for every card: its printing and condition (the collector's, else usual printing in NM). */
+function recomputeAuto() {
+  const out: Record<string, number> = {};
+  for (const c of SET.cards) { const v = priceOf(c.id); if (v) out[c.id] = v.value; }
+  AUTO = out;
 }
 function applySet(set: CardSet, refs: RefFingerprint[]) {
   SET = set; REFS = refs; BY_ID = new Map(set.cards.map((c) => [c.id, c]));
@@ -97,7 +104,8 @@ function applySet(set: CardSet, refs: RefFingerprint[]) {
   market = loadMarket(set.id);
   scoutTried = false; scans = []; gradeCard = ""; pageIndex = 0;
   const cache = loadCatalog(set.id);
-  AUTO = cache ? autoFrom(cache.info, set.id === BUNDLED.id ? tcgdexIdFor30th : undefined) : {};
+  INFO = cache ? infoFor(cache.info, set.id === BUNDLED.id ? tcgdexIdFor30th : undefined) : {};
+  recomputeAuto();
   completedBefore = completedGroups();
 }
 
@@ -110,7 +118,7 @@ async function activateSet(setId: string) {
     applySet(BUNDLED, BUNDLED_REFS);
     const c = loadCatalog(BUNDLED.id);
     // prices load in the background once the page has had a few seconds to draw
-    if (!c?.enrichedAt || Date.now() - Date.parse(c.enrichedAt) > 3 * 86400000) setTimeout(() => refreshPrices(BUNDLED), 5000);
+    if (stalePrices(c)) setTimeout(() => refreshPrices(BUNDLED), 5000);
     return;
   }
   const gp = findPart(GALLERIES, setId);
@@ -118,7 +126,7 @@ async function activateSet(setId: string) {
   const cached = loadCatalog(setId);
   if (cached) {
     applySet(cached.set, loadRefs(setId));
-    if (!cached.enrichedAt || Date.now() - Date.parse(cached.enrichedAt) > 3 * 86400000) refreshPrices(cached.set);
+    if (stalePrices(cached)) refreshPrices(cached.set);
     return;
   }
   if (__ARTIFACT__) { setError = "This preview can't reach the card database. Every set is available in the installed app."; applySet(BUNDLED, BUNDLED_REFS); return; }
@@ -149,7 +157,7 @@ async function activateGallerySet(setId: string, gp: NonNullable<ReturnType<type
   const stale = !cached || !fromGallery || (gp.p.tcgdex && !hasDb) || cached.set.cards.length < gp.p.count;
   if (cached && (!stale || __ARTIFACT__)) {
     applySet(cached.set, loadRefs(setId));
-    if (!__ARTIFACT__ && hasDb && (!cached.enrichedAt || Date.now() - Date.parse(cached.enrichedAt) > 3 * 86400000)) refreshPrices(cached.set);
+    if (!__ARTIFACT__ && hasDb && stalePrices(cached)) refreshPrices(cached.set);
     return;
   }
   let db: DbSet | undefined;
@@ -166,6 +174,13 @@ async function activateGallerySet(setId: string, gp: NonNullable<ReturnType<type
   render();
 }
 
+/** Prices older than three days, or saved before every printing was kept. */
+function stalePrices(c?: { enrichedAt?: string; info: Record<string, CardInfo> }): boolean {
+  if (!c?.enrichedAt || Date.now() - Date.parse(c.enrichedAt) > 3 * 86400000) return true;
+  const infos = Object.values(c.info);
+  return infos.some((i) => i.usd != null || i.eur != null) && !infos.some((i) => i.prices?.length);
+}
+
 /** Fetch rarity and market prices for every card in the background. */
 async function refreshPrices(set: CardSet) {
   if (__ARTIFACT__) return;
@@ -178,7 +193,8 @@ async function refreshPrices(set: CardSet) {
   const info = await enrich(ids, (d, t) => { enrichStatus = `Loading prices ${d}/${t}`; if (d % 20 === 0 || d === t) renderHeader(); });
   enrichStatus = "";
   const cache = loadCatalog(set.id) ?? { set, fetchedAt: new Date().toISOString(), info: {} };
-  cache.info = { ...cache.info, ...info };
+  // a failed lookup comes back empty: keep yesterday's prices rather than wiping them
+  for (const [k, v] of Object.entries(info)) if (Object.keys(v).length || !cache.info[k]) cache.info[k] = v;
   cache.enrichedAt = new Date().toISOString();
   if (!bundled) {
     cache.set.cards = cache.set.cards.map((c) => ({ ...c, rarity: info[c.ref ?? c.id]?.rarity ?? c.rarity }));
@@ -187,7 +203,8 @@ async function refreshPrices(set: CardSet) {
   saveCatalog(cache);
   if (SET.id === set.id) {
     if (!bundled) { SET = cache.set; BY_ID = new Map(SET.cards.map((c) => [c.id, c])); }
-    AUTO = autoFrom(cache.info, bundled ? tcgdexIdFor30th : undefined);
+    INFO = infoFor(cache.info, bundled ? tcgdexIdFor30th : undefined);
+    recomputeAuto();
     render();
   }
 }
@@ -893,7 +910,8 @@ function openCard(id: string) {
           h("div", { class: "two" }, field("Priority", prio), field("Copies owned", numIn("qty", "1"))),
           h("div", { class: "two" }, field("Store / seller", (() => { const i = txtIn("store"); i.setAttribute("list", "store-list"); i.addEventListener("change", refreshVerdict); return i; })()), field("Date seen", txtIn("seenOn", "date"))),
           h("datalist", { id: "store-list" }, ...STORES.stores.map((x) => h("option", { value: x.name }))),
-          h("div", { class: "two" }, field("Asking price (CAD)", numIn("priceSeen")), field(AUTO[id] != null ? `Market value (TCGplayer ≈ ${formatCAD(AUTO[id])})` : "Market value (CAD)", numIn("market"))),
+          priceGuide(c, refreshVerdict),
+          h("div", { class: "two" }, field("Asking price (CAD)", numIn("priceSeen")), field("Your own value (CAD, optional)", (() => { const i = numIn("market"); i.setAttribute("placeholder", AUTO[id] != null ? `fair ${formatCAD(AUTO[id])}` : ""); return i; })())),
           verdict,
           h("p", { class: "lookup" }, "Look up market value: ",
             h("a", { href: `https://www.tcgplayer.com/search/pokemon/product?q=${q}`, target: "_blank", rel: "noopener" }, "TCGplayer"), " · ",
@@ -1432,6 +1450,7 @@ function stats(): Node {
       tile("Spent", formatCAD(spent)),
       tile("To finish", formatCAD(finish), unpriced ? `+ ${unpriced} unpriced` : "all priced")),
     (col.badges ?? []).length ? h("div", { class: "badges" }, ...(col.badges ?? []).map((b) => h("span", { class: "medal", title: `Completed ${b.date}` }, h("i", { "aria-hidden": "true" }), b.label))) : null,
+    finishTrendPanel(miss),
     h("div", { class: "panel" }, h("h2", {}, "What stands out"), h("ul", { class: "insights" }, ...insights(SET.cards, effEntries(), col.settings).map((t) => h("li", {}, t)))),
     h("div", { class: "cols" },
       h("div", { class: "panel" }, h("h2", {}, "By section"), bars("section")),
@@ -1493,11 +1512,136 @@ function data(): Node {
         __ARTIFACT__ ? h("button", { class: "btn ghost", onclick: copy(json, "Backup") }, "Copy backup") : h("button", { class: "btn ghost", onclick: download(json, "setkeeper-backup.json", "application/json") }, "Download backup")),
       h("textarea", { id: "export-text", rows: 6, hidden: true, readonly: true, "aria-label": "Export text" })),
     h("div", { class: "panel" }, h("h2", {}, "Price rules"),
-      h("div", { class: "two" }, num("dealBelow", "Deal at or under (% of market)", "1", true), num("overAbove", "Overpriced above (%)", "1", true)),
+      h("div", { class: "two" }, num("dealBelow", "Deal at or under (% of fair value)", "1", true), num("overAbove", "Overpriced above (%)", "1", true)),
       h("div", { class: "two" }, num("scalperAbove", "Scalper price above (%)", "1", true), num("usdToCad", "USD → CAD rate", "0.01"))),
+    conditionPanel(),
     h("div", { class: "panel" }, h("h2", {}, "Grading costs"),
       h("div", { class: "two" }, num("gradingFee", "Grading fee per card (CAD)", "0.01"), num("gradingShip", "Shipping + insurance per card (CAD)", "0.01"))),
     h("p", { class: "fine" }, `Card list and images: ${SET.sources[0]}. Unofficial fan tool, not affiliated with The Pokémon Company. Your data stays in this browser.`));
+}
+
+// ---------- condition discounts (Data tab) ----------
+function conditionPanel(): HTMLElement {
+  const own = col.settings.conditionFactors ?? {};
+  const C = conditionsData as unknown as ConditionData;
+  const rows = (["LP", "MP", "HP", "DMG"] as const).map((k) => {
+    const m = C.overall?.[k], used = factorOf(k);
+    return h("tr", {},
+      h("th", { scope: "row" }, `${k} · ${CONDITION_NAME[k]}`),
+      h("td", { class: "n" }, `${Math.round(DEFAULT_FACTORS[k] * 100)}%`),
+      h("td", { class: "n" }, m ? `${Math.round(m.ratio * 100)}% (${m.pairs} pair${m.pairs === 1 ? "" : "s"}${m.pairs < MIN_PAIRS ? ", too few yet" : ""})` : "—"),
+      h("td", {}, h("input", { id: `cf-${k}`, type: "number", min: "5", max: "120", step: "1", value: own[k] != null ? Math.round(own[k]! * 100) : "", placeholder: String(Math.round(used.factor * 100)),
+        "aria-label": `Your ${CONDITION_NAME[k]} share of Near Mint, percent`,
+        onchange: (e: Event) => {
+          const v = (e.target as HTMLInputElement).value;
+          const next = { ...own, [k]: v === "" ? undefined : Math.min(1.2, Math.max(0.05, Number(v) / 100)) };
+          updateSettings(col, { conditionFactors: Object.fromEntries(Object.entries(next).filter(([, x]) => x != null)) });
+          persist(); recomputeAuto(); render();
+        } })));
+  });
+  return h("div", { class: "panel" }, h("h2", {}, "Condition prices"),
+    h("p", { class: "hint" }, "The price sources only price Near Mint cards. Other conditions are valued as a share of the Near Mint price: SetKeeper's estimate at first, then the share measured from Canadian shops that list the same card in NM and a played condition (by card value, once there are at least " + MIN_PAIRS + " pairs). Your own numbers override both."),
+    h("table", { class: "cond-table" },
+      h("thead", {}, h("tr", {}, h("th", {}, "Condition"), h("th", { class: "n" }, "Estimate"), h("th", { class: "n" }, "Measured"), h("th", {}, "Yours (%)"))),
+      h("tbody", {}, ...rows)),
+    C.updatedAt ? h("p", { class: "fine" }, `Measured shares updated ${C.updatedAt}.`) : null);
+}
+
+// ---------- price guide and history (SetKeeper's own daily records) ----------
+/** TCGdex id of a card in the active set, for price history. */
+function dbIdOf(c: Card): string | undefined {
+  if (SET.id === BUNDLED.id) return tcgdexIdFor30th(c.id);
+  return c.ref ?? (c.id.startsWith("g-") ? undefined : c.id);
+}
+interface TrendPoint { day: string; v: number; lo?: number; hi?: number }
+/** Small line chart (SVG) of a daily series in CAD, with the sources' range as a band when given. */
+function trendChart(points: TrendPoint[], label: string): HTMLElement {
+  const W = 320, H = 90, P = 6;
+  const all = points.flatMap((p) => [p.v, p.lo ?? p.v, p.hi ?? p.v]), lo = Math.min(...all), hi = Math.max(...all), span = hi - lo || 1;
+  const X = (i: number) => P + (i * (W - 2 * P)) / Math.max(1, points.length - 1), Y = (v: number) => H - P - ((v - lo) * (H - 2 * P)) / span;
+  const line = (f: (p: TrendPoint) => number) => points.map((p, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(f(p)).toFixed(1)}`).join("");
+  const band = points.some((p) => p.lo != null && p.hi != null && p.hi - p.lo > 0.005)
+    ? `<path class="band" d="${line((p) => p.hi ?? p.v)}${points.map((p, i) => `L${X(points.length - 1 - i).toFixed(1)},${Y(points[points.length - 1 - i].lo ?? points[points.length - 1 - i].v).toFixed(1)}`).join("")}Z" fill="currentColor" opacity="0.14" stroke="none"/>` : "";
+  const vs = points.map((p) => p.v), first = vs[0], last = vs[vs.length - 1], ch = first ? (last - first) / first : 0;
+  const wrap = h("figure", { class: "trend" });
+  wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}: ${formatCAD(first)} to ${formatCAD(last)} over ${points.length} days">${band}<path d="${line((p) => p.v)}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(points.length - 1)}" cy="${Y(last)}" r="3.5" fill="currentColor"/></svg>`;
+  wrap.append(h("figcaption", {}, h("b", {}, formatCAD(last)), ` ${label} · `,
+    h("span", { class: ch > 0.005 ? "up" : ch < -0.005 ? "down" : "" }, `${ch >= 0 ? "+" : ""}${(ch * 100).toFixed(1)}%`), ` over ${points.length} day${points.length === 1 ? "" : "s"}`,
+    band ? h("span", { class: "fine" }, " · shaded: range between sources") : ""));
+  return wrap;
+}
+
+const basisText = (f: ReturnType<typeof factorOf>, cond: string) =>
+  cond === "NM" ? "" : f.basis === "measured" ? `measured from ${f.pairs} Canadian shop listings` : f.basis === "yours" ? "your setting (Data tab)" : "estimate until enough shop listings are measured";
+
+/**
+ * The card sheet's price guide: pick the printing and condition, see the fair value with the
+ * range of the sources behind it, where each number comes from, and its daily history.
+ */
+function priceGuide(c: Card, onChange: () => void): HTMLElement {
+  const box = h("div", { class: "price-guide" });
+  const draw = () => {
+    const e = entry(c.id), ps = printingsOf(c.id), printing = printingOf(c.id), cond = (e.condition ?? "NM") as CardCondition;
+    const v = priceOf(c.id);
+    const set = (patch: Partial<Entry>) => { updateEntry(col, c.id, patch); persist(); recomputeAuto(); draw(); onChange(); };
+    const printingSel = ps.length > 1
+      ? h("select", { id: "f-printing", "aria-label": "Printing", onchange: (ev: Event) => { const x = (ev.target as HTMLSelectElement).value; set({ printing: x === defaultPrinting(ps) ? undefined : x }); } },
+        ...ps.map((p) => h("option", { value: p.printing, selected: p.printing === printing }, printingLabel(p.printing))))
+      : h("span", { class: "static" }, ps[0] && ps[0].printing !== "default" ? printingLabel(ps[0].printing) : "Usual printing");
+    const condSel = h("select", { id: "f-condition", "aria-label": "Condition", onchange: (ev: Event) => { const x = (ev.target as HTMLSelectElement).value as CardCondition; set({ condition: x === "NM" ? undefined : x }); } },
+      ...CONDITIONS.map((k) => h("option", { value: k, selected: k === cond }, `${k} · ${CONDITION_NAME[k]}`)));
+    const head = h("div", { class: "two" }, h("label", { class: "field" }, h("span", {}, "Printing"), printingSel), h("label", { class: "field" }, h("span", {}, "Condition"), condSel));
+    if (!v) { box.replaceChildren(head, h("p", { class: "hint small" }, ps.length ? "No price for this printing in the card database yet. Add your own value below." : "No price in the card database yet. Add your own value below.")); return; }
+    const f = v.factor, pl = printing && printing !== "default" ? printingLabel(printing) : "";
+    box.replaceChildren(head,
+      h("div", { class: "fair" },
+        h("p", { class: "fair-main" }, h("span", {}, `Fair value · ${[pl, cond].filter(Boolean).join(" · ")}`), h("strong", {}, formatCAD(v.value)),
+          v.high - v.low > 0.005 ? h("small", {}, `range ${formatCAD(v.low)}–${formatCAD(v.high)}`) : null),
+        h("ul", { class: "fair-src" },
+          ...v.fair.sources.map((x) => h("li", {}, h("span", {}, x.label), h("span", { class: "n" }, `${x.currency === "USD" ? "US$" : "€"}${x.native.toFixed(2)} → ${formatCAD(x.cad)}`))),
+          cond !== "NM" ? h("li", {}, h("span", {}, `${CONDITION_NAME[cond]}: ${Math.round(f.factor * 100)}% of Near Mint`), h("span", { class: "n fine" }, basisText(f, cond))) : null),
+        h("p", { class: "fine" }, `Near Mint prices from recent sales; fair value is the average of the sources${cond !== "NM" ? ", times the condition's share" : ""}. US$1 = CA$${fx().usdcad.toFixed(4)}, €1 = CA$${fx().eurcad.toFixed(4)} (Bank of Canada).`),
+        v.fair.disagree ? h("p", { class: "notice small" }, `The sources disagree by ${Math.round(v.fair.spread * 100)}%. Check eBay sold listings below before paying near the top of the range.`) : null),
+      historyBox(c, printing ?? "default", cond));
+  };
+  draw();
+  return box;
+}
+
+function historyBox(c: Card, printing: string, cond: string): HTMLElement {
+  const box = h("div", { class: "price-history" });
+  const id = dbIdOf(c);
+  if (!id || __ARTIFACT__) return box;
+  if (!syncState.email) { box.append(h("p", { class: "hint small" }, "Sign in to see this card's price history.")); return box; }
+  box.append(h("p", { class: "hint small" }, "Loading price history…"));
+  void priceHistory(id, 90).then((rows) => {
+    const r = (rows ?? []).filter((x) => (printing === "default" ? x.is_default : x.printing === printing));
+    const pts: TrendPoint[] = [];
+    for (const x of r) {
+      const fv = fairValue({ printing, tcg: x.tcg_market != null ? { market: Number(x.tcg_market) } : undefined, cm: { trend: x.cm_trend != null ? Number(x.cm_trend) : undefined, avg30: x.cm_avg30 != null ? Number(x.cm_avg30) : undefined } }, fx());
+      if (!fv) continue;
+      const k = factorOf(cond, fv.nm).factor;
+      pts.push({ day: x.day, v: fv.nm * k, lo: fv.low * k, hi: fv.high * k });
+    }
+    const lbl = `fair value, ${cond}${printing !== "default" ? ` ${printingLabel(printing)}` : ""}`;
+    box.replaceChildren(pts.length >= 2 ? trendChart(pts, lbl) : h("p", { class: "hint small" }, pts.length === 1 ? `Price history started ${pts[0].day}: ${formatCAD(pts[0].v)}. The chart appears after a second day.` : "No price history for this printing yet."));
+  });
+  return box;
+}
+
+function finishTrendPanel(missingCards: Card[]): HTMLElement {
+  const panel = h("div", { class: "panel" }, h("h2", {}, "Cost to finish, over time"));
+  const ids = missingCards.map(dbIdOf).filter((x): x is string => !!x);
+  if (__ARTIFACT__ || !ids.length) { panel.append(h("p", { class: "hint" }, __ARTIFACT__ ? "Price history appears here in the installed app." : "No missing cards with price history.")); return panel; }
+  if (!syncState.email) { panel.append(h("p", { class: "hint" }, "Sign in to see how the cost of your missing cards changes day by day.")); return panel; }
+  panel.append(h("p", { class: "hint" }, "Loading…"));
+  void cardsTotalByDay(ids, fx(), 90).then((rows) => {
+    const pts = (rows ?? []).map((r) => ({ day: r.day, v: Number(r.total_cad) }));
+    panel.replaceChildren(h("h2", {}, "Cost to finish, over time"),
+      pts.length >= 2 ? trendChart(pts, `for your ${ids.length} missing cards (fair Near Mint value, usual printing, before shipping and tax)`)
+        : h("p", { class: "hint" }, "SetKeeper started recording daily prices recently. The trend appears after a couple of days."));
+  });
+  return panel;
 }
 
 // ---------- Canadian shop directory (name, province, published shipping) ----------
@@ -1538,6 +1682,26 @@ function setBuyer(patch: Partial<BuyerPrefs>) { try { localStorage.setItem(BUYER
 /** USD→CAD: the collector's own setting if they changed it, else the Bank of Canada rate from the daily scout. */
 const usdCad = () => (col.settings.usdToCad !== DEFAULT_SETTINGS.usdToCad ? col.settings.usdToCad : (fxData as { usdcad: number }).usdcad || col.settings.usdToCad);
 
+function fx() { return { usdcad: usdCad(), eurcad: (fxData as { eurcad?: number }).eurcad ?? 1.6 }; }
+const COND = conditionsData as unknown as ConditionData;
+
+// ---------- fair prices (printing × condition), see src/lib/prices.ts ----------
+/** Every printing's prices for a card; older cached data only has one TCGplayer/Cardmarket price. */
+function printingsOf(id: string): PrintingPrice[] {
+  const i = INFO[id];
+  if (i?.prices?.length) return i.prices;
+  if (i?.usd != null || i?.eur != null) return [{ printing: "default", ...(i.usd != null ? { tcg: { market: i.usd } } : {}), ...(i.eur != null ? { cm: { trend: i.eur } } : {}) }];
+  return [];
+}
+function printingOf(id: string): string | undefined {
+  const ps = printingsOf(id), want = entry(id).printing;
+  return want && ps.some((p) => p.printing === want) ? want : defaultPrinting(ps);
+}
+function fairOf(id: string, printing = printingOf(id)): FairValue | undefined { return fairValue(printingsOf(id).find((p) => p.printing === printing), fx()); }
+/** Fair value of a card in the collector's printing and condition (NM when unset). */
+function priceOf(id: string): ValueFor | undefined { return valueFor(fairOf(id), entry(id).condition, conditionsData as unknown as ConditionData, col.settings.conditionFactors); }
+function factorOf(cond: string | undefined, nm?: number) { return conditionFactor(cond, conditionsData as unknown as ConditionData, nm, col.settings.conditionFactors); }
+
 let market: MarketState = loadMarket(SET.id);
 let scoutTried = false;
 
@@ -1561,7 +1725,14 @@ function wantsFor(scope: "all" | "priority"): Want[] {
   return SET.cards
     .filter((c) => missing(statusOf(c.id)) && c.section !== "Basic Energy")
     .filter((c) => scope === "all" || ["chase", "high"].includes(priorityOf(c, entry(c.id))))
-    .map((c) => ({ cardId: c.id, label: `${c.name} ${c.number}`, priority: priorityOf(c, entry(c.id)), market: marketOf(c.id) }));
+    .map((c) => {
+      // listings are valued per condition, so the want carries the Near Mint value of the printing wanted
+      const e = entry(c.id), ps = printingsOf(c.id), fair = fairOf(c.id);
+      const nm = e.market != null ? e.market / factorOf(e.condition, fair?.nm ?? e.market).factor : fair?.nm;
+      const printing = e.printing && ps.some((p) => p.printing === e.printing) ? e.printing : undefined;
+      return { cardId: c.id, label: `${c.name} ${c.number}${printing ? ` (${printingLabel(printing)})` : ""}`, priority: priorityOf(c, e), market: nm,
+        ...(printing ? { printing, defaultPrinting: defaultPrinting(ps) } : {}) };
+    });
 }
 
 function buy(): Node {
@@ -1592,6 +1763,7 @@ function buy(): Node {
   const plan = optimizeCart(wants, snap, {
     usdToCad: usdCad(), mode: p.mode, conditions: p.conditions,
     tolerance: col.settings.overAbove, scalperAbove: col.settings.scalperAbove, onlyCountries: p.canadaOnly ? ["CA"] : undefined,
+    conditionFactor: (cnd, nm) => factorOf(cnd, nm).factor,
     ...(B.landed ? { landed: { province: B.province, rules: RULES, fxFee: B.fxFee } } : {}),
   });
 
@@ -1605,12 +1777,12 @@ function buy(): Node {
         h("button", { role: "radio", "aria-checked": String(p.mode === "value"), onclick: () => setPref({ mode: "value" }) }, "Best value"),
         h("button", { role: "radio", "aria-checked": String(p.mode === "complete"), onclick: () => setPref({ mode: "complete" }) }, "Complete the set")),
       h("p", { class: "hint" }, p.mode === "value"
-        ? `Buys a card only when its price plus its share of shipping stays under its worth (market × ${Math.round(col.settings.overAbove * 100)}%, more for chase and high-priority cards).`
+        ? `Buys a card only when its price plus its share of shipping stays under its worth: its fair value in that listing's condition and printing × ${Math.round(col.settings.overAbove * 100)}% (more for chase and high-priority cards). An LP copy is judged against the LP price, not NM.`
         : "Buys every card that's available at a fair price and keeps the total, shipping included, as low as possible."),
       h("div", { class: "row" },
         h("label", { class: "check" }, h("input", { id: "b-ca", type: "checkbox", checked: p.canadaOnly, onchange: (e: Event) => setPref({ canadaOnly: (e.target as HTMLInputElement).checked }) }), "Canadian sellers only"),
         h("label", { class: "check" }, h("input", { id: "b-prio", type: "checkbox", checked: p.scope === "priority", onchange: (e: Event) => setPref({ scope: (e.target as HTMLInputElement).checked ? "priority" : "all" }) }), "Chase & high priority only"),
-        ...["NM", "LP", "MP"].map((cnd) => h("label", { class: "check" }, h("input", { id: `b-${cnd}`, type: "checkbox", checked: p.conditions.includes(cnd),
+        ...CONDITIONS.map((cnd) => h("label", { class: "check", title: CONDITION_NAME[cnd] }, h("input", { id: `b-${cnd}`, type: "checkbox", checked: p.conditions.includes(cnd),
           onchange: (e: Event) => setPref({ conditions: (e.target as HTMLInputElement).checked ? [...p.conditions, cnd] : p.conditions.filter((x) => x !== cnd) }) }), cnd))),
       h("div", { class: "row landed-row" },
         h("label", { class: "check" }, h("input", { id: "b-landed", type: "checkbox", checked: B.landed, onchange: (e: Event) => setBuyer({ landed: (e.target as HTMLInputElement).checked }) }), "Landed cost: include tax, FX and border fees"),
@@ -1677,7 +1849,8 @@ function orderPanel(o: CartPlan["orders"][number]) {
       return h("li", {},
         cardThumb(c, "mini"),
         h("span", { class: "oi-name" }, h("b", {}, c.name), " ", h("span", { class: "num" }, c.number),
-          it.listing.condition ? h("span", { class: "badge" }, it.listing.condition) : null),
+          it.listing.condition ? h("span", { class: "badge", title: CONDITION_NAME[it.listing.condition as CardCondition] ?? it.listing.condition }, it.listing.condition) : null,
+          it.listing.printing ? h("span", { class: "badge" }, printingLabel(it.listing.printing)) : null),
         h("span", { class: "price" }, formatCAD(it.price), it.shipping ? h("small", {}, ` +${formatCAD(it.shipping)} ship`) : null),
         it.listing.url ? h("a", { href: it.listing.url, target: "_blank", rel: "noopener", class: "view-link" }, "View") : h("span"));
     })),

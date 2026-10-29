@@ -1,0 +1,4 @@
+{
+ "note": "Sets whose card prices the daily scout saves to the private card_prices table. Add a TCGdex set id to start its history.",
+ "sets": ["30th", "30th-c", "me05", "me04", "me03", "me02.5", "me02", "me01", "sv10.5b", "sv10.5w", "sv10", "sv09", "sv08.5", "sv08", "sv03.5"]
+}

@@ -7,7 +7,7 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   fair: "Fair",
   over: "Overpriced",
   scalper: "Scalper price",
-  unknown: "No market price",
+  unknown: "No fair value",
 };
 
 export interface PriceCheck {
@@ -21,13 +21,13 @@ const money = (n: number) => `$${n.toFixed(2)}`;
 /** Compare an asking price with fair market value using the collector's thresholds. */
 export function checkPrice(priceSeen: number | undefined, market: number | undefined, s: Settings): PriceCheck {
   if (priceSeen == null || !(priceSeen >= 0)) return { verdict: "unknown", note: "No asking price recorded" };
-  if (market == null || !(market > 0)) return { verdict: "unknown", note: `Asking ${money(priceSeen)}; add a market value to judge it` };
+  if (market == null || !(market > 0)) return { verdict: "unknown", note: `Asking ${money(priceSeen)}; no fair value to judge it by yet` };
   const ratio = priceSeen / market;
   const pct = Math.round(Math.abs(ratio - 1) * 100);
-  if (ratio <= s.dealBelow) return { verdict: "deal", ratio, note: `${pct}% under market (${money(market)})` };
-  if (ratio > s.scalperAbove) return { verdict: "scalper", ratio, note: `${pct}% over market (${money(market)}) — walk away` };
-  if (ratio > s.overAbove) return { verdict: "over", ratio, note: `${pct}% over market (${money(market)})` };
-  return { verdict: "fair", ratio, note: ratio >= 1 ? `${pct}% over market` : `${pct}% under market` };
+  if (ratio <= s.dealBelow) return { verdict: "deal", ratio, note: `${pct}% under fair value (${money(market)})` };
+  if (ratio > s.scalperAbove) return { verdict: "scalper", ratio, note: `${pct}% over fair value (${money(market)}) — walk away` };
+  if (ratio > s.overAbove) return { verdict: "over", ratio, note: `${pct}% over fair value (${money(market)})` };
+  return { verdict: "fair", ratio, note: ratio >= 1 ? `${pct}% over fair value` : `${pct}% under fair value` };
 }
 
 /** Best estimate of what the card will cost to buy: asking price if seen, else market value. */

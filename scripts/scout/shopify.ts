@@ -2,6 +2,7 @@
 import type { CardSet } from "../../src/lib/types.ts";
 import type { Listing } from "../../src/lib/market.ts";
 import { normalizeCondition } from "../../src/lib/market.ts";
+import { printingFromText } from "../../src/lib/prices.ts";
 import { matchTitle } from "./match.ts";
 
 export interface ShopifyStore {
@@ -31,9 +32,12 @@ export function listingsFromProducts(store: ShopifyStore, products: Product[], s
       const qty = v.inventory_quantity != null ? Math.max(0, v.inventory_quantity) : v.available ? 1 : 0;
       const price = Number(v.price);
       if (!qty || !(price > 0)) continue;
+      // shops put the condition and often the printing in the variant ("Lightly Played Reverse Holofoil")
+      const printing = printingFromText(v.title) ?? printingFromText(p.title);
       out.push({
         sellerId: store.id, cardId, price, qty,
         condition: normalizeCondition(v.title === "Default Title" ? "NM" : v.title),
+        ...(printing ? { printing } : {}),
         url: `https://${store.domain}/products/${p.handle}`, title: p.title,
       });
     }

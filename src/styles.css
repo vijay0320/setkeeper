@@ -829,7 +829,7 @@ dialog#sheet::backdrop { background: rgb(20 20 20 / 0.35); backdrop-filter: blur
 .drag-hint { margin: 4px 0 0; text-align: center; font-size: 0.78rem; color: var(--muted); }
 .close { background: transparent; border: 1px solid var(--line); }
 .verdict { background: rgb(255 255 255 / 0.6); }
-@media (max-width: 640px) { .sheet-stage { max-width: 240px; margin: 0 auto; } }
+@media (max-width: 640px) { .sheet-body { grid-template-columns: 1fr; } .sheet-stage { max-width: 240px; margin: 0 auto; } }
 
 /* misc */
 .loading { font-family: var(--serif); font-size: 2rem; color: var(--muted); }
@@ -940,3 +940,26 @@ table.slabs label.inline span { font-size: 0.72rem; color: var(--muted); }
 .shop-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 10px; }
 .shop-list li { display: grid; grid-template-columns: auto auto 1fr auto; gap: 4px 10px; align-items: baseline; font-size: 0.9rem; }
 @media (max-width: 640px) { .shop-list li { grid-template-columns: auto 1fr; } .shop-list li > span:not(.badge) { grid-column: 1 / -1; } }
+.trend { margin: 8px 0 0; color: var(--ink); }
+.trend svg { width: 100%; max-width: 420px; height: auto; display: block; }
+.trend figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+.trend .up { color: #b8432f; } .trend .down { color: #2f8f5b; }
+.price-history { margin: 4px 0 8px; }
+
+/* price guide: printing × condition, fair value with its sources */
+.price-guide { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--sheet); }
+.price-guide .static { display: flex; align-items: center; min-height: 40px; font-weight: 700; }
+.fair { display: grid; gap: 6px; }
+.fair-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0; }
+.fair-main span { color: var(--muted); font-size: 0.85rem; flex-basis: 100%; }
+.fair-main strong { font-family: var(--display); font-size: 1.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fair-main small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.fair-src { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 0.88rem; }
+.fair-src li { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px dashed var(--line); padding-top: 3px; }
+.fair-src .n { font-variant-numeric: tabular-nums; text-align: right; }
+.notice.small { font-size: 0.85rem; padding: 6px 10px; margin: 0; }
+.cond-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 6px 0; }
+.cond-table th, .cond-table td { text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--line); }
+.cond-table .n { text-align: right; font-variant-numeric: tabular-nums; }
+.cond-table input { width: 5.5em; min-height: 36px; }
+@media (max-width: 560px) { .cond-table th:nth-child(2), .cond-table td:nth-child(2) { display: none; } }

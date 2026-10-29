@@ -1,0 +1,6 @@
+{
+ "overall": {},
+ "bands": {},
+ "days": [],
+ "note": "Share of the Near Mint price, measured from shops listing the same card in NM and a played condition (last 30 days, weighted by pairs). Used once a condition has at least 8 pairs; otherwise SetKeeper's estimates apply. Filled in by the daily scout."
+}

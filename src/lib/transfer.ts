@@ -1,4 +1,5 @@
 // Import from / export to spreadsheets (CSV for Google Sheets, .xlsx, JSON backup).
+import { conditionFromText, printingFromText, printingLabel } from "./prices.ts";
 import type { Card, CardSet, Collection, Entry, Priority, Status } from "./types.ts";
 import { DEFAULT_SETTINGS, PRIORITY_LABEL, STATUS_LABEL } from "./types.ts";
 import { checkPrice, priorityOf, VERDICT_LABEL } from "./pricing.ts";
@@ -36,6 +37,8 @@ const HEADERS: Record<string, RegExp> = {
   status: /^status$|^owned$/i,
   priority: /^priority$/i,
   qty: /^qty|quantity/i,
+  printing: /^printing|^finish|^variant/i,
+  condition: /^condition|^cond\b/i,
   store: /^store|^seller/i,
   seenOn: /^date seen|^seen on/i,
   priceSeen: /^price seen|^target price|^asking/i,
@@ -94,6 +97,8 @@ export function importRows(set: CardSet, rows: Cell[][]): ImportResult {
     const prio = parsePriority(get("priority"));
     if (prio) e.priority = prio;
     const qty = num(get("qty")); if (qty != null) e.qty = qty;
+    const pr = printingFromText(String(get("printing") ?? "")); if (pr) e.printing = pr;
+    const cd = conditionFromText(String(get("condition") ?? "")); if (cd && cd !== "NM") e.condition = cd;
     const storeRaw = String(get("store") ?? "").trim();
     if (storeRaw) Object.assign(e, splitStore(storeRaw, year));
     const seen = parseDate(get("seenOn") as Cell); if (seen) e.seenOn = seen;
@@ -151,14 +156,14 @@ const csvCell = (v: unknown) => {
 
 /** CSV that opens cleanly in Google Sheets (File → Import) or Excel. */
 export function exportCSV(set: CardSet, c: Collection): string {
-  const head = ["Section", "Card #", "Name", "Rarity", "Priority", "Status", "Qty", "Store", "Date Seen",
+  const head = ["Section", "Card #", "Name", "Rarity", "Priority", "Status", "Qty", "Printing", "Condition", "Store", "Date Seen",
     "Price Seen (CAD)", "Market Value (CAD)", "Price Check", "Paid (CAD)", "Notes", "Image"];
   const lines = [head.join(",")];
   for (const card of set.cards) {
     const e = c.entries[card.id] ?? {};
     const pc = checkPrice(e.priceSeen, e.market, c.settings ?? DEFAULT_SETTINGS);
     lines.push([card.section, card.number, card.name, card.rarity, PRIORITY_LABEL[priorityOf(card, e)],
-      STATUS_LABEL[e.status ?? "need"], e.qty ?? "", e.store ?? "", e.seenOn ?? "", e.priceSeen ?? "", e.market ?? "",
+      STATUS_LABEL[e.status ?? "need"], e.qty ?? "", e.printing ? printingLabel(e.printing) : "", e.condition ?? "", e.store ?? "", e.seenOn ?? "", e.priceSeen ?? "", e.market ?? "",
       pc.verdict === "unknown" ? "" : VERDICT_LABEL[pc.verdict], e.paid ?? "", e.notes ?? "",
       card.image ? set.imageBase + card.image + set.imageSuffix : ""].map(csvCell).join(","));
   }

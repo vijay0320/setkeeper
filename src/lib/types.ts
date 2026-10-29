@@ -35,8 +35,10 @@ export interface Entry {
   store?: string;
   seenOn?: string; // ISO date
   priceSeen?: number; // CAD
-  market?: number; // CAD
+  market?: number; // CAD, the collector's own value (overrides the fair value)
   paid?: number; // CAD
+  printing?: string; // normal, holofoil, reverse-holofoil… (unset = the card's usual printing)
+  condition?: "NM" | "LP" | "MP" | "HP" | "DMG"; // of the copy owned, or wanted (unset = NM)
   notes?: string;
   grade?: { company: string; centering: string; measuredOn: string };
   graded?: {
@@ -56,6 +58,8 @@ export interface Settings {
   gradingShip: number; // CAD per card, both ways + insurance
   packPrice: number; // CAD
   resaleShare: number; // share of a duplicate hit's value you'd recover
+  /** The collector's own condition discounts (share of NM), overriding measured ones and estimates. */
+  conditionFactors?: Partial<Record<"LP" | "MP" | "HP" | "DMG", number>>;
 }
 
 export interface Collection {

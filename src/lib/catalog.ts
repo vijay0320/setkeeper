@@ -1,6 +1,7 @@
 // Every Pokémon TCG set, past and future, from TCGdex (https://tcgdex.dev): a free,
 // open card database with images and TCGplayer/Cardmarket prices, CORS-enabled.
 import type { Card, CardSet } from "./types.ts";
+import { pricesFrom, defaultPrinting, cmValue, type PrintingPrice, type RawPricing } from "./prices.ts";
 
 export const TCGDEX = "https://api.tcgdex.net/v2/en";
 
@@ -16,8 +17,9 @@ export interface SetSummary {
 
 export interface CardInfo {
   rarity?: string;
-  usd?: number; // TCGplayer market price
-  eur?: number; // Cardmarket trend
+  usd?: number; // TCGplayer market price of the card's usual printing
+  eur?: number; // Cardmarket price of the card's usual printing
+  prices?: PrintingPrice[]; // every printing (normal, holofoil, reverse holo…), see prices.ts
 }
 
 export interface CatalogCache {
@@ -98,25 +100,20 @@ export async function fetchSet(id: string, f: Fetch = fetch): Promise<RawSet> {
 
 interface RawCard {
   id: string; rarity?: string;
-  pricing?: {
-    tcgplayer?: Record<string, { marketPrice?: number | null; midPrice?: number | null } | string> | null;
-    cardmarket?: { trend?: number | null; avg?: number | null } | null;
-  };
+  pricing?: RawPricing | null;
 }
 
-/** Pull rarity and a market price out of a TCGdex card. Prefers the holo/normal TCGplayer market price. */
+/** Rarity and every printing's prices from a TCGdex card; usd/eur are the usual printing's. */
 export function infoFrom(c: RawCard): CardInfo {
   const out: CardInfo = {};
   if (c.rarity && c.rarity !== "None") out.rarity = c.rarity;
-  const tp = c.pricing?.tcgplayer;
-  if (tp) {
-    for (const k of ["holofoil", "normal", "reverse-holofoil", "1st-edition-holofoil", "unlimited-holofoil"]) {
-      const v = tp[k];
-      if (v && typeof v === "object" && (v.marketPrice ?? v.midPrice)) { out.usd = Number(v.marketPrice ?? v.midPrice); break; }
-    }
-  }
-  const cm = c.pricing?.cardmarket;
-  if (cm && (cm.trend ?? cm.avg)) out.eur = Number(cm.trend ?? cm.avg);
+  const prices = pricesFrom(c.pricing);
+  if (!prices.length) return out;
+  out.prices = prices;
+  const d = prices.find((p) => p.printing === defaultPrinting(prices));
+  const usd = d?.tcg?.market ?? d?.tcg?.mid, eur = cmValue(d?.cm);
+  if (usd != null) out.usd = usd;
+  if (eur != null) out.eur = Math.round(eur * 100) / 100;
   return out;
 }
 

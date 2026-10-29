@@ -1,7 +1,7 @@
 // eBay Browse API (official). Needs an eBay developer app: EBAY_CLIENT_ID / EBAY_CLIENT_SECRET.
 import type { Card, CardSet } from "../../src/lib/types.ts";
 import type { Listing, Seller } from "../../src/lib/market.ts";
-import { normalizeCondition } from "../../src/lib/market.ts";
+import { conditionFromText, printingFromText } from "../../src/lib/prices.ts";
 import { matchTitle } from "./match.ts";
 
 export interface EbayConfig { marketplace: string; deliveryCountry: string; perCard: number; sellerCountries?: string[] }
@@ -45,7 +45,9 @@ export function fromItems(items: ItemSummary[], card: Card, set: CardSet, cfg: E
     listings.push({
       sellerId: id, cardId: card.id, price: Number(it.price.value),
       qty: it.estimatedAvailabilities?.[0]?.estimatedAvailableQuantity ?? 1,
-      condition: normalizeCondition(it.condition) ?? "NM",
+      // eBay's ungraded conditions: "Near mint or better", "Excellent", "Very good", "Poor"; else the title, else NM
+      condition: conditionFromText(it.condition) ?? conditionFromText(it.title) ?? "NM",
+      ...(printingFromText(it.title) ? { printing: printingFromText(it.title) } : {}),
       shipping: ship && ship.currency === it.price.currency ? Number(ship.value) : 0,
       url: it.itemWebUrl, title: it.title,
     });

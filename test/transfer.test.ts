@@ -29,8 +29,11 @@ test("imports a Google Sheets CSV, splitting 'Store (date)'", () => {
 test("CSV export round-trips through import", () => {
   const c = emptyCollection(set.id);
   c.entries["001"] = { status: "have", qty: 3 };
-  c.entries["157"] = { status: "in-store", priceSeen: 120, market: 100, store: "Shop" };
+  c.entries["157"] = { status: "in-store", priceSeen: 120, market: 100, store: "Shop", printing: "reverse-holofoil", condition: "LP" };
   const r = importRows(set, parseCSV(exportCSV(set, c)));
+  assert.equal(r.entries["157"].printing, "reverse-holofoil");
+  assert.equal(r.entries["157"].condition, "LP");
+  assert.equal(r.entries["001"].condition, undefined);
   assert.equal(r.matched, set.cards.length);
   assert.equal(r.entries["001"].qty, 3);
   assert.equal(r.entries["157"].priceSeen, 120);

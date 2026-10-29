@@ -40,7 +40,8 @@ test("converts a TCGdex set", () => {
 test("reads rarity and prices", () => {
   const c = { id: "sv03.5-025", rarity: "Common", pricing: { cardmarket: { trend: 0.15, avg: 0.16 },
     tcgplayer: { unit: "USD", "reverse-holofoil": { marketPrice: 0.86 }, normal: { marketPrice: 0.25 } } } };
-  assert.deepEqual(infoFrom(c), { rarity: "Common", usd: 0.25, eur: 0.15 });
+  assert.deepEqual(infoFrom(c), { rarity: "Common", usd: 0.25, eur: 0.16,
+    prices: [{ printing: "normal", tcg: { market: 0.25 }, cm: { trend: 0.15, avg30: 0.16 } }, { printing: "reverse-holofoil", tcg: { market: 0.86 } }] });
   assert.deepEqual(infoFrom({ id: "x", rarity: "None", pricing: { cardmarket: null, tcgplayer: null } }), {});
 });
 

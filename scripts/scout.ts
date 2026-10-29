@@ -13,6 +13,7 @@ import type { CardSet } from "../src/lib/types.ts";
 import type { MarketSnapshot, Seller } from "../src/lib/market.ts";
 import { fetchShopify, type ShopifyStore } from "./scout/shopify.ts";
 import { ebayToken, fetchEbay, type EbayConfig } from "./scout/ebay.ts";
+import { measureConditions, rollConditions, type ConditionData } from "../src/lib/prices.ts";
 
 const arg = (k: string) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined; };
 const setId = arg("--set") ?? "30th-celebration";
@@ -65,6 +66,25 @@ if (cfg.ebay?.enabled) {
 }
 
 snap.sellers = [...sellers.values()];
+
+// Condition discounts measured from these listings (a shop's NM vs played price for the same
+// card and printing). Only the aggregate ratios are published, never the listings.
+{
+  const fx = JSON.parse(readFileSync("data/landed/fx.json", "utf8")) as { usdcad: number };
+  const cur = new Map(snap.sellers.map((x) => [x.id, x.currency]));
+  const m = measureConditions(snap.listings.filter((l) => l.qty > 0).map((l) => ({
+    sellerId: l.sellerId, cardId: l.cardId, printing: l.printing, condition: l.condition,
+    cad: cur.get(l.sellerId) === "USD" ? l.price * fx.usdcad : l.price,
+  })));
+  const file = "data/prices/conditions.json";
+  const prev = existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as ConditionData) : undefined;
+  const pairs = Object.values(m.overall).reduce((a, f) => a + (f?.pairs ?? 0), 0);
+  if (pairs) {
+    mkdirSync("data/prices", { recursive: true });
+    writeFileSync(file, JSON.stringify(rollConditions(prev, new Date().toISOString().slice(0, 10), m), null, 1) + "\n");
+  }
+  console.log(`condition pairs today: ${pairs} (${Object.entries(m.overall).map(([c, f]) => `${c} ${f!.ratio} × ${f!.pairs}`).join(", ") || "none"})`);
+}
 const sbUrl = process.env.SUPABASE_URL?.replace(/\/$/, ""), sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (sbUrl && sbKey) {
   const res = await fetch(`${sbUrl}/rest/v1/price_snapshots`, {

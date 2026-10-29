@@ -15,7 +15,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - name: Card prices
+      - name: USD and EUR to CAD rates (Bank of Canada)
+        run: node scripts/fx.ts
+        continue-on-error: true
+      - name: Shop listings and condition discounts
         run: node scripts/scout.ts
         continue-on-error: true
         env:
@@ -25,9 +28,12 @@ jobs:
           SCOUT_SELLERS: ${{ secrets.SCOUT_SELLERS }}
           EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
           EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
-      - name: USD to CAD rate (Bank of Canada)
-        run: node scripts/fx.ts
+      - name: Daily card prices, every printing (private history in Supabase)
+        run: node scripts/price-history.ts
         continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       - name: Grading tiers (PSA, Beckett, CGC, TAG)
         run: node scripts/grading-scout.ts
         continue-on-error: true
@@ -49,7 +55,7 @@ jobs:
         run: |
           git config user.name "setkeeper-scout"
           git config user.email "scout@users.noreply.github.com"
-          git add data/grading data/galleries data/landed
+          git add data/grading data/galleries data/landed data/prices
           if git diff --cached --quiet; then echo "Nothing changed"; exit 0; fi
           git commit -m "Update prices, grading tiers and sets $(date -u +%F)"
           git push

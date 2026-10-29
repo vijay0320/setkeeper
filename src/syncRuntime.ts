@@ -186,3 +186,25 @@ export async function latestListings(setId: string): Promise<unknown | null> {
   });
   return res.ok ? res.json() : null;
 }
+
+/** Call a database function as the signed-in collector (null when signed out or offline). */
+async function rpc<T>(name: string, body: unknown): Promise<T | null> {
+  if (!syncEnabled) return null;
+  const s = await session();
+  if (!s) return null;
+  try {
+    const res = await fetch(`${__SUPABASE_URL__.replace(/\/$/, "")}/rest/v1/rpc/${name}`, {
+      method: "POST",
+      headers: { apikey: __SUPABASE_ANON_KEY__, Authorization: `Bearer ${s.access_token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return res.ok ? ((await res.json()) as T) : null;
+  } catch { return null; }
+}
+/** One printing of one card on one day (see card_prices in supabase/setup.sql). */
+export interface PricePoint { day: string; printing: string; is_default: boolean; tcg_low: number | null; tcg_market: number | null; cm_trend: number | null; cm_avg30: number | null }
+/** A card's daily price history from SetKeeper's own records (signed-in collectors). */
+export const priceHistory = (cardId: string, days = 90) => rpc<PricePoint[]>("price_history", { p_card: cardId, p_days: days });
+/** Daily total fair NM value (CAD) of a list of cards in their usual printing, e.g. everything still missing: the "cost to finish" trend. */
+export const cardsTotalByDay = (cardIds: string[], fx: { usdcad: number; eurcad: number }, days = 90) =>
+  rpc<{ day: string; total_cad: number; priced: number }[]>("cards_total_by_day", { p_cards: cardIds.slice(0, 400), p_days: days, p_usdcad: fx.usdcad, p_eurcad: fx.eurcad });
