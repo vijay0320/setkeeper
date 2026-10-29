@@ -1642,8 +1642,8 @@ function buy(): Node {
 function shopsPanel(): Node {
   return h("details", { class: "panel shops" },
     h("summary", {}, h("b", {}, `Card shops (${STORES.stores.length})`), ` · shipping policies checked ${STORES.checkedAt}`),
-    h("p", { class: "hint" }, "Established shops that sell singles to Canadian collectors. Pick one as the \"Store / seller\" on a card and SetKeeper shows what that card costs at your door."),
-    h("ul", { class: "shop-list" }, ...STORES.stores.map((x) => h("li", {},
+    h("p", { class: "hint" }, "Established shops that sell singles to Canadian collectors, by province. Pick one as the \"Store / seller\" on a card and SetKeeper shows what that card costs at your door."),
+    h("ul", { class: "shop-list" }, ...[...STORES.stores].sort((a, b) => (a.province ?? "ZZ" + a.country).localeCompare(b.province ?? "ZZ" + b.country) || a.name.localeCompare(b.name)).map((x) => h("li", {},
       h("b", {}, h("a", { href: x.url, target: "_blank", rel: "noopener" }, x.name)), h("span", { class: "badge" }, x.province ?? x.country),
       h("span", {}, x.summary), h("a", { href: x.policy, target: "_blank", rel: "noopener" }, "Policy")))));
 }

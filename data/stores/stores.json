@@ -1,7 +1,20 @@
 {
- "checkedAt": "2026-10-28",
+ "checkedAt": "2026-10-29",
  "note": "Established shops that sell Pokémon TCG singles to Canadian collectors, with each shop's published shipping policy. Collected by reading the shops' public policy pages; no inventory is scraped. Rates a shop only shows at checkout are left out.",
  "stores": [
+  {
+   "id": "3dragons",
+   "name": "3 Dragons",
+   "url": "https://www.3dragons.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "QC",
+   "shipping": {
+    "freeOver": 200
+   },
+   "summary": "Montreal. Free expedited shipping over $200; rates shown at checkout.",
+   "policy": "https://www.3dragons.ca/policies/shipping-policy"
+  },
   {
    "id": "401games",
    "name": "401 Games",
@@ -17,6 +30,109 @@
    "currency": "CAD"
   },
   {
+   "id": "atlascollectables",
+   "name": "Atlas Collectables",
+   "url": "https://www.atlascollectables.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Waterloo shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.atlascollectables.com"
+  },
+  {
+   "id": "bananagames",
+   "name": "Banana Games",
+   "url": "https://bananagames.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Toronto shop with Pokémon singles. Canadian rates shown at checkout.",
+   "policy": "https://bananagames.ca/policies/shipping-policy"
+  },
+  {
+   "id": "bentogaming",
+   "name": "Bento Gaming",
+   "url": "https://bentogaming.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "AB",
+   "summary": "Calgary shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://bentogaming.com/pages/shipping"
+  },
+  {
+   "id": "cardboardgaming",
+   "name": "Card Board Gaming",
+   "url": "https://www.cardboardgaming.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "shipping": {
+    "base": 2
+   },
+   "summary": "Markham. Singles-only orders: $2 untracked lettermail or $12 tracked; other orders from $10 flat.",
+   "policy": "https://www.cardboardgaming.ca/policies/shipping-policy"
+  },
+  {
+   "id": "cardbrawlers",
+   "name": "Card Brawlers",
+   "url": "https://cardbrawlers.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "QC",
+   "summary": "Quebec City. Untracked standard mail or tracked and insured shipping, rates at checkout.",
+   "policy": "https://cardbrawlers.com/policies/shipping-policy"
+  },
+  {
+   "id": "cardboardmemories",
+   "name": "Cardboard Memories",
+   "url": "https://www.cardboardmemories.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Brampton shop that buys and sells Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.cardboardmemories.ca/policies/shipping-policy"
+  },
+  {
+   "id": "cartamagica",
+   "name": "Carta Magica Montreal",
+   "url": "https://www.cartamagica.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "QC",
+   "summary": "Montreal shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.cartamagica.com"
+  },
+  {
+   "id": "cartamagicaottawa",
+   "name": "Carta Magica Ottawa",
+   "url": "https://www.cartamagicaottawa.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Ottawa shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.cartamagicaottawa.com"
+  },
+  {
+   "id": "collectorslane",
+   "name": "Collector's Lane",
+   "url": "https://www.collectorslane.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "SK",
+   "summary": "Saskatoon shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.collectorslane.ca"
+  },
+  {
+   "id": "comichunter",
+   "name": "Comic Hunter",
+   "url": "https://www.comichunter.net",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "NB",
+   "summary": "Moncton, Fredericton and Charlottetown shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.comichunter.net"
+  },
+  {
    "id": "danireon",
    "name": "Danireon Cards & Games",
    "url": "https://www.danireon.com",
@@ -25,6 +141,63 @@
    "policy": "https://www.danireon.com/policies/shipping-policy",
    "country": "CA",
    "currency": "CAD"
+  },
+  {
+   "id": "deckoutgaming",
+   "name": "Deck Out Gaming",
+   "url": "https://deckoutgaming.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "shipping": {
+    "base": 14.99,
+    "freeOver": 250,
+    "tiers": [
+     {
+      "under": 60,
+      "cost": 14.99
+     },
+     {
+      "under": 250,
+      "cost": 11.99
+     }
+    ]
+   },
+   "summary": "Tracked parcel $14.99 under $60, $11.99 for $60–$249.99, free from $250. Untracked bubble mailer also offered.",
+   "policy": "https://deckoutgaming.ca/policies/shipping-policy"
+  },
+  {
+   "id": "doescards",
+   "name": "Doe's Cards",
+   "url": "https://doescards.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "shipping": {
+    "freeOver": 250
+   },
+   "summary": "Brampton. Free shipping over $250; UPS or Purolator, rates at checkout.",
+   "policy": "https://doescards.ca/policies/shipping-policy"
+  },
+  {
+   "id": "dollys",
+   "name": "Dolly's Toys and Games",
+   "url": "https://www.dollys.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Scarborough shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.dollys.ca"
+  },
+  {
+   "id": "enterthebattlefield",
+   "name": "Enter the Battlefield",
+   "url": "https://enterthebattlefield.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Oakville. Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://enterthebattlefield.ca/policies/shipping-policy"
   },
   {
    "id": "facetoface",
@@ -50,6 +223,53 @@
    "currency": "CAD"
   },
   {
+   "id": "gamekeeper",
+   "name": "Game Keeper Online",
+   "url": "https://www.gamekeeperonline.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "QC",
+   "summary": "Montreal shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.gamekeeperonline.com"
+  },
+  {
+   "id": "gamezilla",
+   "name": "Game-zilla",
+   "url": "https://gamezilla.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "NB",
+   "summary": "Fredericton. Singles by untracked letter mail, tracked bubble mailer or parcel; rates at checkout.",
+   "policy": "https://gamezilla.ca/policies/shipping-policy"
+  },
+  {
+   "id": "gameknight",
+   "name": "GameKnight Games",
+   "url": "https://gameknight.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "MB",
+   "shipping": {
+    "base": 3,
+    "freeOver": 200
+   },
+   "summary": "Singles-only orders: $3 flat untracked letter mail; free (expedited) from $200 before tax.",
+   "policy": "https://gameknight.ca/pages/shipping-delivery-and-pickup"
+  },
+  {
+   "id": "hairytarantula",
+   "name": "Hairy Tarantula",
+   "url": "https://www.hairyt.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "shipping": {
+    "freeOver": 30
+   },
+   "summary": "Toronto. Free untracked lettermail on TCG singles orders over $30; tracked UPS/Canada Post/FedEx options at checkout.",
+   "policy": "https://www.hairyt.com/policies/shipping-policy"
+  },
+  {
    "id": "hobbiesville",
    "name": "Hobbiesville",
    "url": "https://hobbiesville.com",
@@ -63,69 +283,14 @@
    "currency": "CAD"
   },
   {
-   "id": "remicardtrader",
-   "name": "Rémi Card Trader",
-   "url": "https://remicardtrader.ca",
-   "province": "QC",
-   "shipping": {
-    "base": 15,
-    "freeOver": 175
-   },
-   "summary": "Tracked, $15 flat in Canada ($100 to the territories); free from $175. Ships within 1 business day.",
-   "policy": "https://remicardtrader.ca/en/policies/shipping-policy",
-   "country": "CA",
-   "currency": "CAD"
-  },
-  {
-   "id": "untouchables",
-   "name": "Untouchables Comics, Cards & Games",
-   "url": "https://untouchables.ca",
-   "province": "ON",
-   "shipping": {
-    "base": 11.95,
-    "freeOver": 200
-   },
-   "summary": "$11.95 Canada Post Expedited (tracked), no lettermail option; free from $200 before tax.",
-   "policy": "https://untouchables.ca/policies/shipping-policy",
-   "country": "CA",
-   "currency": "CAD"
-  },
-  {
-   "id": "pokejeux",
-   "name": "Poké Jeux",
-   "url": "https://www.pokejeux.ca",
+   "id": "houseofcards",
+   "name": "House of Cards",
+   "url": "https://houseofcards.ca",
    "country": "CA",
    "currency": "CAD",
-   "province": "QC",
-   "shipping": {
-    "freeOver": 200
-   },
-   "summary": "Pokémon specialist in Boucherville. Untracked letter mail or tracked shipping (rates at checkout); free UPS on $200+ before tax.",
-   "policy": "https://www.pokejeux.ca/policies/shipping-policy"
-  },
-  {
-   "id": "deckoutgaming",
-   "name": "Deck Out Gaming",
-   "url": "https://deckoutgaming.ca",
-   "country": "CA",
-   "currency": "CAD",
-   "province": "ON",
-   "shipping": {
-    "base": 14.99,
-    "freeOver": 250,
-    "tiers": [
-     {
-      "under": 60,
-      "cost": 14.99
-     },
-     {
-      "under": 250,
-      "cost": 11.99
-     }
-    ]
-   },
-   "summary": "Tracked parcel $14.99 under $60, $11.99 for $60–$249.99, free from $250. Untracked bubble mailer also offered.",
-   "policy": "https://deckoutgaming.ca/policies/shipping-policy"
+   "province": "BC",
+   "summary": "Abbotsford, Cloverdale and Kelowna. Shipping rates shown at checkout.",
+   "policy": "https://houseofcards.ca/policies/shipping-policy"
   },
   {
    "id": "kanzengames",
@@ -156,18 +321,139 @@
    "policy": "https://kanzengames.com/policies/shipping-policy"
   },
   {
-   "id": "gameknight",
-   "name": "GameKnight Games",
-   "url": "https://gameknight.ca",
+   "id": "lamood",
+   "name": "L.A. Mood Comics & Games",
+   "url": "https://lamoodcomics.ca",
    "country": "CA",
    "currency": "CAD",
-   "province": "MB",
+   "province": "ON",
+   "summary": "London, ON shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://lamoodcomics.ca/policies/shipping-policy"
+  },
+  {
+   "id": "levelupgames",
+   "name": "Level Up Games",
+   "url": "https://levelupgames.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Mississauga. English and Japanese Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://levelupgames.ca/policies/shipping-policy"
+  },
+  {
+   "id": "pokejeux",
+   "name": "Poké Jeux",
+   "url": "https://www.pokejeux.ca",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "QC",
    "shipping": {
-    "base": 3,
     "freeOver": 200
    },
-   "summary": "Singles-only orders: $3 flat untracked letter mail; free (expedited) from $200 before tax.",
-   "policy": "https://gameknight.ca/pages/shipping-delivery-and-pickup"
+   "summary": "Pokémon specialist in Boucherville. Untracked letter mail or tracked shipping (rates at checkout); free UPS on $200+ before tax.",
+   "policy": "https://www.pokejeux.ca/policies/shipping-policy"
+  },
+  {
+   "id": "remicardtrader",
+   "name": "Rémi Card Trader",
+   "url": "https://remicardtrader.ca",
+   "province": "QC",
+   "shipping": {
+    "base": 15,
+    "freeOver": 175
+   },
+   "summary": "Tracked, $15 flat in Canada ($100 to the territories); free from $175. Ships within 1 business day.",
+   "policy": "https://remicardtrader.ca/en/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
+  },
+  {
+   "id": "screenfreegames",
+   "name": "Screen Free Games",
+   "url": "https://screenfreegames.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "AB",
+   "summary": "Calgary. Boxed orders $11.99 to BC/AB (free over $175), $20 elsewhere (free over $250); trading cards ship by envelope at a lower rate shown at checkout.",
+   "policy": "https://screenfreegames.com/policies/shipping-policy"
+  },
+  {
+   "id": "skyfoxgames",
+   "name": "Skyfox Games",
+   "url": "https://skyfoxgames.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Oshawa shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://skyfoxgames.com"
+  },
+  {
+   "id": "connectiongames",
+   "name": "The Connection Games & Hobbies",
+   "url": "https://www.theconnectiongames.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "BC",
+   "summary": "Vancouver shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.theconnectiongames.com"
+  },
+  {
+   "id": "threekingsloot",
+   "name": "Three Kings Loot",
+   "url": "https://www.threekingsloot.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "QC",
+   "summary": "Montreal shop with Pokémon singles. Shipping rates shown at checkout.",
+   "policy": "https://www.threekingsloot.com"
+  },
+  {
+   "id": "tistaminis",
+   "name": "Tistaminis",
+   "url": "https://tistaminis.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "summary": "Hamilton. Canada Post (other couriers during strikes). Rates shown at checkout.",
+   "policy": "https://tistaminis.com/policies/shipping-policy"
+  },
+  {
+   "id": "trinityhobby",
+   "name": "Trinity Hobby",
+   "url": "https://trinityhobby.com",
+   "country": "CA",
+   "currency": "CAD",
+   "province": "ON",
+   "shipping": {
+    "base": 15,
+    "freeOver": 200,
+    "tiers": [
+     {
+      "under": 100,
+      "cost": 15
+     },
+     {
+      "under": 200,
+      "cost": 10
+     }
+    ]
+   },
+   "summary": "$15 flat in Canada, $10 over $100, free over $200; untracked letter mail for singles (rate at checkout).",
+   "policy": "https://trinityhobby.com/policies/shipping-policy"
+  },
+  {
+   "id": "untouchables",
+   "name": "Untouchables Comics, Cards & Games",
+   "url": "https://untouchables.ca",
+   "province": "ON",
+   "shipping": {
+    "base": 11.95,
+    "freeOver": 200
+   },
+   "summary": "$11.95 Canada Post Expedited (tracked), no lettermail option; free from $200 before tax.",
+   "policy": "https://untouchables.ca/policies/shipping-policy",
+   "country": "CA",
+   "currency": "CAD"
   },
   {
    "id": "coolstuffinc",
