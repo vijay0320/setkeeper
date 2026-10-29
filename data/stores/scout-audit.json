@@ -1,5 +1,5 @@
 {
- "checkedAt": "2026-10-29T20:38:07.435Z",
+ "checkedAt": "2026-10-29T20:52:54.985Z",
  "note": "Which shops the price scout may read, and which collection. Titles and counts only; no inventory.",
  "shops": [
   {
@@ -9,7 +9,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://www.3dragons.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 1000,
    "sets": {
     "30th-celebration": [
@@ -33,7 +35,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "401games",
@@ -42,7 +44,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://store.401games.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 1000,
    "sets": {
     "30th-celebration": [
@@ -54,7 +58,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "atlascollectables",
@@ -88,10 +92,13 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://bentogaming.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…of the Services; (c) collect or track the personal information of others; (d) spam, phish, pharm, or pretext the services; (e) use any robot, spider, scraping, data gathering and extraction tools, automatic devices…",
+    "…or automated or manual means to access the Services; or (f) interfere with, bypass, or circumvent the security or authorization features, robot exclusion headers, or other measures we employ to restrict access to the S…"
+   ],
    "collections": 245,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "cardboardgaming",
@@ -100,10 +107,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://www.cardboardgaming.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 15,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "cardbrawlers",
@@ -112,10 +121,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://cardbrawlers.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 354,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "cardboardmemories",
@@ -188,7 +199,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://www.danireon.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 269,
    "sets": {
     "30th-celebration": [
@@ -212,7 +225,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "deckoutgaming",
@@ -221,7 +234,10 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://deckoutgaming.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…Later services (e.g., Sezzle, Afterpay) are also subject to a 10% restocking fee if cancellation is requested. Orders placed by automated bots are similarly subject to a 10% cancellation fee.\\u003c\\/p\\u003e\\n\\u003chr\\u…",
+    "…personal information without consent\\u003c\\/p\\u003e\\n\\u003c\\/li\\u003e\\n\\u003cli\\u003e\\n\\u003cp\\u003eSpam, phish, or scrape data\\u003c\\/p\\u003e\\n\\u003c\\/li\\u003e\\n\\u003cli\\u003e\\n\\u003cp\\u003eCircu…"
+   ],
    "collections": 458,
    "sets": {
     "30th-celebration": [
@@ -239,7 +255,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "doescards",
@@ -248,7 +264,11 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://doescards.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…of the Services; (c) collect or track the personal information of others; (d) spam, phish, pharm, or pretext the services; (e) use any robot, spider, scraping, data gathering and extraction tools, automatic devices…",
+    "…or automated or manual means to access the Services; or (f) interfere with, bypass, or circumvent the security or authorization features, robot exclusion headers, or other measures we employ to restrict access to the S…",
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 92,
    "sets": {
     "30th-celebration": [
@@ -260,7 +280,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "dollys",
@@ -282,10 +302,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://enterthebattlefield.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 259,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "facetoface",
@@ -315,7 +337,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://fusiongamingonline.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 282,
    "sets": {
     "30th-celebration": [
@@ -333,7 +357,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "gamekeeper",
@@ -382,10 +406,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://gameknight.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 617,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "hairytarantula",
@@ -394,10 +420,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://www.hairyt.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 258,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "hobbiesville",
@@ -406,7 +434,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://hobbiesville.com/pages/terms-and-conditions",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 691,
    "sets": {
     "30th-celebration": [
@@ -423,14 +453,14 @@
       "readable": true
      },
      {
-      "handle": "pokemon-celebrations",
-      "title": "Pokemon Celebrations",
+      "handle": "pokemon-30th-celebration",
+      "title": "Pokemon 30th Celebration",
       "count": 44,
       "readable": true
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "houseofcards",
@@ -460,7 +490,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://kanzengames.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 475,
    "sets": {
     "30th-celebration": [
@@ -478,7 +510,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "lamood",
@@ -487,10 +519,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://lamoodcomics.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 110,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "levelupgames",
@@ -499,7 +533,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://levelupgames.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 97,
    "sets": {
     "30th-celebration": [
@@ -511,7 +547,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "pokejeux",
@@ -520,7 +556,11 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://www.pokejeux.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…is accurate and complete. We reserve the right to refuse or cancel any order at our discretion, including orders we believe are placed by automated tools or for resale in violation of our quantity limits.\\u003c\\/p\\u003…",
+    "…to:\\u003c\\/p\\u003e\\n\\u003cul\\u003e\\n\\u003cli\\u003eUse our site for any unlawful purpose\\u003c\\/li\\u003e\\n\\u003cli\\u003ePlace orders using automated tools, bots, or scripts\\u003c\\/li\\u003e\\n\\u003cli\\u003ePurchase quanti…",
+    "…to circumvent our security measures or gain unauthorized access to any system\\u003c\\/li\\u003e\\n\\u003cli\\u003eScrape, copy, or redistribute our content without written permission\\u003c\\/li\\u…"
+   ],
    "collections": 1000,
    "sets": {
     "30th-celebration": [
@@ -544,7 +584,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "remicardtrader",
@@ -580,10 +620,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://screenfreegames.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 148,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "skyfoxgames",
@@ -592,7 +634,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://skyfoxgames.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…resell or exploit any portion of the Services; (c) collect or track the personal information of others; (d) spam, phish, pharm, pretext, spider, crawl, or scrape; or (e) interfere with or circumvent the security featu…"
+   ],
    "collections": 664,
    "sets": {
     "30th-celebration": [
@@ -610,7 +654,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "connectiongames",
@@ -645,7 +689,9 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://tistaminis.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 730,
    "sets": {
     "30th-celebration": [
@@ -663,7 +709,7 @@
      }
     ]
    },
-   "verdict": "ok: read only the set collection(s) above"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "trinityhobby",
@@ -672,10 +718,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://trinityhobby.com/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 196,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "untouchables",
@@ -684,10 +732,12 @@
    "shopify": true,
    "robots": "allows the catalogue",
    "terms": "https://untouchables.ca/policies/terms-of-service",
-   "termsFlags": [],
+   "termsFlags": [
+    "…website, other websites, or the Internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to inte…"
+   ],
    "collections": 359,
    "sets": {},
-   "verdict": "ok to read, but no collection found for a tracked set"
+   "verdict": "terms restrict automated access: skip unless the shop says yes"
   },
   {
    "id": "coolstuffinc",
