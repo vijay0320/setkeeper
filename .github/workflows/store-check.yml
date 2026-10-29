@@ -1,0 +1,21 @@
+name: Check candidate shops
+# One-off, run by hand: loads each candidate shop's homepage and public shipping policy
+# once (2 s apart) and saves a report to review. Never reads inventory.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node scripts/store-check.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-check-report
+          path: data/stores/check-report.json

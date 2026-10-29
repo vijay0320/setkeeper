@@ -1,0 +1,684 @@
+{
+ "note": "Candidate shops to verify (from the user's list). Checked once by scripts/store-check.ts.",
+ "candidates": [
+  {
+   "name": "Rain City Games",
+   "url": "https://www.raincitygames.com",
+   "province": "BC",
+   "location": "Vancouver & New Westminster, BC",
+   "known": false
+  },
+  {
+   "name": "Magic Stronghold Games",
+   "url": "https://www.magicstronghold.com",
+   "province": "BC",
+   "location": "Vancouver, BC",
+   "known": false
+  },
+  {
+   "name": "The Connection Games & Hobbies",
+   "url": "https://www.theconnectiongames.com",
+   "province": "BC",
+   "location": "Vancouver, BC",
+   "known": false
+  },
+  {
+   "name": "Games on the Drive",
+   "url": "https://www.gamesonthedrive.com",
+   "province": "BC",
+   "location": "Vancouver, BC",
+   "known": false
+  },
+  {
+   "name": "Strategies Games & Hobbies",
+   "url": "https://strategiesgames.ca",
+   "province": "BC",
+   "location": "Vancouver, BC",
+   "known": false
+  },
+  {
+   "name": "Screen Free Games",
+   "url": "https://screenfreegames.com",
+   "province": "BC",
+   "location": "Vancouver, BC",
+   "known": false
+  },
+  {
+   "name": "Zephyr Epic",
+   "url": "https://zephyrepic.com",
+   "province": "BC",
+   "location": "Surrey, BC",
+   "known": false
+  },
+  {
+   "name": "Imperium Cards & Games",
+   "url": "https://imperiumcards.ca",
+   "province": "BC",
+   "location": "Surrey, BC",
+   "known": false
+  },
+  {
+   "name": "Craving for a Game",
+   "url": "https://www.cravingforagame.ca",
+   "province": "BC",
+   "location": "Surrey, BC",
+   "known": false
+  },
+  {
+   "name": "House of Cards",
+   "url": "https://houseofcards.ca",
+   "province": "BC",
+   "location": "Abbotsford, Cloverdale & Kelowna, BC",
+   "known": false
+  },
+  {
+   "name": "Imperial Hobbies",
+   "url": "https://imperialhobbies.ca",
+   "province": "BC",
+   "location": "Richmond, BC",
+   "known": false
+  },
+  {
+   "name": "Hourglass Comics & Games",
+   "url": "https://hourglasscomics.ca",
+   "province": "BC",
+   "location": "Port Coquitlam, BC",
+   "known": false
+  },
+  {
+   "name": "401 Games",
+   "url": "https://store.401games.ca",
+   "province": "ON",
+   "location": "Downtown Toronto & Vaughan, ON",
+   "known": true
+  },
+  {
+   "name": "Face to Face Games Toronto",
+   "url": "https://facetofacegames.com",
+   "province": "ON",
+   "location": "Toronto, ON",
+   "known": true
+  },
+  {
+   "name": "Hobbiesville",
+   "url": "https://hobbiesville.com",
+   "province": "ON",
+   "location": "Toronto & Ottawa (Somerset & Blackwell), ON",
+   "known": true
+  },
+  {
+   "name": "Deck Out Gaming",
+   "url": "https://deckoutgaming.ca",
+   "province": "ON",
+   "location": "Oshawa, ON",
+   "known": true
+  },
+  {
+   "name": "Dolly's Toys and Games",
+   "url": "https://www.dollys.ca",
+   "province": "ON",
+   "location": "Scarborough, ON",
+   "known": false
+  },
+  {
+   "name": "Untouchables Sports Cards & Gaming",
+   "url": "https://untouchables.ca",
+   "province": "ON",
+   "location": "Mississauga & Milton, ON",
+   "known": true
+  },
+  {
+   "name": "Atlas Collectables",
+   "url": "https://www.atlascollectables.com",
+   "province": "ON",
+   "location": "Waterloo, ON",
+   "known": false
+  },
+  {
+   "name": "Cardboard Memories",
+   "url": "https://www.cardboardmemories.ca",
+   "province": "ON",
+   "location": "Brampton, ON",
+   "known": false
+  },
+  {
+   "name": "Meeplemart",
+   "url": "https://www.meeplemart.com",
+   "province": "ON",
+   "location": "Downtown Toronto, ON",
+   "known": false
+  },
+  {
+   "name": "Hairy Tarantula",
+   "url": "https://hairyt.com",
+   "province": "ON",
+   "location": "Toronto, ON",
+   "known": false
+  },
+  {
+   "name": "Board Game Bliss",
+   "url": "https://www.boardgamebliss.com",
+   "province": "ON",
+   "location": "Markham, ON",
+   "known": false
+  },
+  {
+   "name": "Level Up Games",
+   "url": "https://levelupgames.ca",
+   "province": "ON",
+   "location": "Mississauga, ON",
+   "known": false
+  },
+  {
+   "name": "Enter the Battlefield",
+   "url": "https://enterthebattlefield.ca",
+   "province": "ON",
+   "location": "Oakville, ON",
+   "known": false
+  },
+  {
+   "name": "L.A. Mood Comics & Games",
+   "url": "https://lamoodcomics.ca",
+   "province": "ON",
+   "location": "London, ON",
+   "known": false
+  },
+  {
+   "name": "The CG Realm",
+   "url": "https://thecgrealm.com",
+   "province": "ON",
+   "location": "Windsor, ON",
+   "known": false
+  },
+  {
+   "name": "Skyfox Games",
+   "url": "https://skyfoxgames.com",
+   "province": "ON",
+   "location": "Oshawa, ON",
+   "known": false
+  },
+  {
+   "name": "Carta Magica Ottawa",
+   "url": "https://www.cartamagicaottawa.com",
+   "province": "ON",
+   "location": "Ottawa, ON",
+   "known": false
+  },
+  {
+   "name": "Tistaminis",
+   "url": "https://tistaminis.com",
+   "province": "ON",
+   "location": "Hamilton, ON",
+   "known": false
+  },
+  {
+   "name": "Titan Toyz",
+   "url": "https://titantoyz.com",
+   "province": "ON",
+   "location": "Kitchener, ON",
+   "known": false
+  },
+  {
+   "name": "Video Games Plus (VGP)",
+   "url": "https://videogamesplus.ca",
+   "province": "ON",
+   "location": "North York, ON",
+   "known": false
+  },
+  {
+   "name": "Trinity Hobby",
+   "url": "https://trinityhobby.com",
+   "province": "ON",
+   "location": "Richmond Hill, ON",
+   "known": false
+  },
+  {
+   "name": "L'Imaginaire",
+   "url": "https://imaginaire.com",
+   "province": "QC",
+   "location": "Quebec City, Montreal, Laval, Sherbrooke, Trois-Rivières, QC",
+   "known": false
+  },
+  {
+   "name": "Carta Magica Montreal",
+   "url": "https://www.cartamagica.com",
+   "province": "QC",
+   "location": "Montreal, QC",
+   "known": false
+  },
+  {
+   "name": "Game Keeper Online",
+   "url": "https://gamekeeperonline.com",
+   "province": "QC",
+   "location": "Verdun / Montreal, QC",
+   "known": false
+  },
+  {
+   "name": "Three Kings Loot",
+   "url": "https://threekingsloot.com",
+   "province": "QC",
+   "location": "Montreal, QC",
+   "known": false
+  },
+  {
+   "name": "3 Dragons",
+   "url": "https://www.3dragons.ca",
+   "province": "QC",
+   "location": "Montreal, QC",
+   "known": false
+  },
+  {
+   "name": "La Boîte Mystère (The Mystery Box)",
+   "url": "https://laboitemystere.com",
+   "province": "QC",
+   "location": "Quebec City, QC",
+   "known": false
+  },
+  {
+   "name": "Card Brawlers",
+   "url": "https://cardbrawlers.com",
+   "province": "QC",
+   "location": "Quebec City, QC",
+   "known": false
+  },
+  {
+   "name": "La Pieuvre Barbue",
+   "url": "https://lapieuvrebarbue.com",
+   "province": "QC",
+   "location": "Alma, QC",
+   "known": false
+  },
+  {
+   "name": "Poke Jeux",
+   "url": "https://pokejeux.com",
+   "province": "QC",
+   "location": "Quebec City, QC",
+   "known": true
+  },
+  {
+   "name": "Redzer Games",
+   "url": "https://redzer.ca",
+   "province": "AB",
+   "location": "Calgary, AB",
+   "known": false
+  },
+  {
+   "name": "Phoenix Comics & Games",
+   "url": "https://phoenixcards.ca",
+   "province": "AB",
+   "location": "Calgary, AB",
+   "known": false
+  },
+  {
+   "name": "Shoebox Games & Cafe",
+   "url": "https://shoeboxgames.ca",
+   "province": "AB",
+   "location": "Calgary, AB",
+   "known": false
+  },
+  {
+   "name": "Metal Galaxy Social Games",
+   "url": "https://metal-galaxy.com",
+   "province": "AB",
+   "location": "Calgary, AB",
+   "known": false
+  },
+  {
+   "name": "The Sentry Box",
+   "url": "https://www.sentrybox.com",
+   "province": "AB",
+   "location": "Calgary, AB",
+   "known": false
+  },
+  {
+   "name": "Eastridge Sports Cards & Games",
+   "url": "https://eastridgecards.com",
+   "province": "AB",
+   "location": "Calgary, AB",
+   "known": false
+  },
+  {
+   "name": "Outpost Gaming",
+   "url": "https://outpostgaming.ca",
+   "province": "AB",
+   "location": "Edmonton, AB",
+   "known": false
+  },
+  {
+   "name": "Wizards Comics & Collectibles",
+   "url": "https://wizardscomics.com",
+   "province": "AB",
+   "location": "Edmonton, AB",
+   "known": false
+  },
+  {
+   "name": "Apt to Game",
+   "url": "https://apttogame.com",
+   "province": "AB",
+   "location": "Edmonton, AB",
+   "known": false
+  },
+  {
+   "name": "Tavern of Games",
+   "url": "https://tavernofgames.ca",
+   "province": "AB",
+   "location": "Edmonton, AB",
+   "known": false
+  },
+  {
+   "name": "Warp 1 Comics & Games",
+   "url": "https://warpcomics.com",
+   "province": "AB",
+   "location": "Edmonton, AB",
+   "known": false
+  },
+  {
+   "name": "Bento Gaming",
+   "url": "https://bentogaming.ca",
+   "province": "AB",
+   "location": "St. Albert / Edmonton, AB",
+   "known": false
+  },
+  {
+   "name": "Red Deer Cards & Collectibles",
+   "url": "https://reddeercards.com",
+   "province": "AB",
+   "location": "Red Deer, AB",
+   "known": false
+  },
+  {
+   "name": "Kapow Comics & Games",
+   "url": "https://kapowcomics.ca",
+   "province": "AB",
+   "location": "Lethbridge, AB",
+   "known": false
+  },
+  {
+   "name": "Boardwalk Board Game Cafe",
+   "url": "https://boardwalkcafe.ca",
+   "province": "AB",
+   "location": "Lethbridge, AB",
+   "known": false
+  },
+  {
+   "name": "Dragon's Den Games",
+   "url": "https://dragonsdengames.com",
+   "province": "SK",
+   "location": "Saskatoon, SK",
+   "known": false
+  },
+  {
+   "name": "Amazing Stories",
+   "url": "https://amazingstories.ca",
+   "province": "SK",
+   "location": "Saskatoon, SK",
+   "known": false
+  },
+  {
+   "name": "Collector's Lane",
+   "url": "https://collectorslane.ca",
+   "province": "SK",
+   "location": "Saskatoon, SK",
+   "known": false
+  },
+  {
+   "name": "Comic Readers",
+   "url": "https://comicreaders.com",
+   "province": "SK",
+   "location": "Regina, SK",
+   "known": false
+  },
+  {
+   "name": "Tramps Music & Books",
+   "url": "https://tramps.ca",
+   "province": "SK",
+   "location": "Prince Albert, SK",
+   "known": false
+  },
+  {
+   "name": "Fusion Gaming",
+   "url": "https://www.fusiongamingonline.com",
+   "province": "MB",
+   "location": "Winnipeg, MB",
+   "known": true
+  },
+  {
+   "name": "GameKnight Games & Cool Stuff",
+   "url": "https://gameknight.ca",
+   "province": "MB",
+   "location": "Winnipeg, MB",
+   "known": true
+  },
+  {
+   "name": "A Place 4 Cards",
+   "url": "https://aplace4cards.com",
+   "province": "MB",
+   "location": "Winnipeg, MB",
+   "known": false
+  },
+  {
+   "name": "Maxx Collectibles",
+   "url": "https://maxxcollectibles.ca",
+   "province": "MB",
+   "location": "Winnipeg, MB",
+   "known": false
+  },
+  {
+   "name": "Galaxy Comics & Collectibles",
+   "url": "https://galaxycomics.ca",
+   "province": "MB",
+   "location": "Winnipeg, MB",
+   "known": false
+  },
+  {
+   "name": "Play 'N' Trade Brandon",
+   "url": "https://playntradebrandon.ca",
+   "province": "MB",
+   "location": "Brandon, MB",
+   "known": false
+  },
+  {
+   "name": "The Deck Box",
+   "url": "https://thedeckbox.ca",
+   "province": "NS",
+   "location": "Halifax, NS",
+   "known": false
+  },
+  {
+   "name": "The Board Room Game Cafe",
+   "url": "https://boardroomgames.ca",
+   "province": "NS",
+   "location": "Halifax & Bedford, NS",
+   "known": false
+  },
+  {
+   "name": "Giant Robot Comics",
+   "url": "https://giantrobotcomics.com",
+   "province": "NS",
+   "location": "Dartmouth, NS",
+   "known": false
+  },
+  {
+   "name": "Cape Breton Comics & Cards",
+   "url": "https://cbcomics.ca",
+   "province": "NS",
+   "location": "Sydney, NS",
+   "known": false
+  },
+  {
+   "name": "Comic Hunter Moncton / Fredericton",
+   "url": "https://comichunter.net",
+   "province": "NB",
+   "location": "Moncton & Fredericton, NB",
+   "known": false
+  },
+  {
+   "name": "Game-zilla",
+   "url": "https://gamezilla.ca",
+   "province": "NB",
+   "location": "Fredericton, NB",
+   "known": false
+  },
+  {
+   "name": "Heroes' Beacon Comics & Games",
+   "url": "https://heroesbeacon.com",
+   "province": "NB",
+   "location": "Saint John, NB",
+   "known": false
+  },
+  {
+   "name": "Exile Games",
+   "url": "https://exilegames.ca",
+   "province": "PE",
+   "location": "Charlottetown, PE",
+   "known": false
+  },
+  {
+   "name": "Midgard Gaming",
+   "url": "https://midgardgaming.com",
+   "province": "NL",
+   "location": "Mount Pearl, NL",
+   "known": false
+  },
+  {
+   "name": "Netherworld Collectibles",
+   "url": "https://netherworld.ca",
+   "province": "NL",
+   "location": "St. John's, NL",
+   "known": false
+  },
+  {
+   "name": "Titan Gaming & Collectibles",
+   "url": "https://titangamingyt.ca",
+   "province": "YT",
+   "location": "Whitehorse, YT",
+   "known": false
+  },
+  {
+   "name": "Poke Cache",
+   "url": "https://pokecache.com",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Strictly Sealed",
+   "url": "https://strictlysealed.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Rémi Card Trader",
+   "url": "https://remicardtrader.ca",
+   "province": null,
+   "location": "Quebec / Canada-wide",
+   "known": true
+  },
+  {
+   "name": "King Card Canada",
+   "url": "https://kingcard.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Tonkatom's TCG Station",
+   "url": "https://tonkatomstcgstation.com",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Konnichiwa Canada",
+   "url": "https://konnichiwa.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Canada Card World",
+   "url": "https://canadacardworld.com",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Manta Trading",
+   "url": "https://mantatrading.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Pocket Collection",
+   "url": "https://pocketcollection.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Banana Games",
+   "url": "https://bananagames.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Card Board Gaming",
+   "url": "https://cardboardgaming.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Cardboard Hero",
+   "url": "https://cardboardhero.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Yume Cards",
+   "url": "https://yumecards.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Derpy Cards",
+   "url": "https://derpycards.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Doe's Cards",
+   "url": "https://doescards.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Just-a-Hobby",
+   "url": "https://justahobby.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Pop Collectibles",
+   "url": "https://popcollectibles.ca",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  },
+  {
+   "name": "Springer Hobbies",
+   "url": "https://springerhobbies.com",
+   "province": null,
+   "location": "Canada-wide",
+   "known": false
+  }
+ ]
+}
