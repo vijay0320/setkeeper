@@ -1,5 +1,6 @@
 {
  "usdcad": 1.4036,
+ "eurcad": 1.5636,
  "date": "2026-10-28",
- "source": "Bank of Canada daily exchange rate (FXUSDCAD), updated by the daily scout"
+ "source": "Bank of Canada daily exchange rates (FXUSDCAD, FXEURCAD), updated by the daily scout"
 }
