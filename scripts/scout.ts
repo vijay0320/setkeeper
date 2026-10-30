@@ -38,6 +38,7 @@ for (const store of cfg.shopify ?? []) {
       id: store.id, name: store.name, country: store.country, currency: store.currency, kind: "store", url: `https://${store.domain}`, shipping: store.shipping,
       ...(store.province ? { province: store.province } : {}), ...(store.carrier ? { carrier: store.carrier } : {}),
       ...(store.taxAt ? { taxAt: store.taxAt } : {}), ...(store.chargesPst != null ? { chargesPst: store.chargesPst } : {}),
+      ...(store.note ? { note: store.note } : {}),
     });
     snap.listings.push(...ls);
     snap.sources!.push({ name: store.name, ok: true, listings: ls.length });

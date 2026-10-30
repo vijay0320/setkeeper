@@ -2,7 +2,12 @@
 import type { Card, CardSet } from "../../src/lib/types.ts";
 import type { Listing, Seller } from "../../src/lib/market.ts";
 import { conditionFromText, printingFromText } from "../../src/lib/prices.ts";
+import { createHash } from "node:crypto";
 import { matchTitle } from "./match.ts";
+
+// eBay user data (seller usernames) is never stored: sellers are grouped by a one-way hash,
+// so the price history holds no eBay account data to delete later.
+const sellerKey = (username: string) => createHash("sha256").update(username).digest("hex").slice(0, 12);
 
 export interface EbayConfig { marketplace: string; deliveryCountry: string; perCard: number; sellerCountries?: string[] }
 
@@ -40,8 +45,8 @@ export function fromItems(items: ItemSummary[], card: Card, set: CardSet, cfg: E
     if (!currency || !it.seller?.username) continue;
     if (Number(it.seller.feedbackPercentage ?? 100) < 97) continue;
     const ship = it.shippingOptions?.[0]?.shippingCost;
-    const id = `ebay:${it.seller.username}`;
-    sellers.push({ id, name: `${it.seller.username} (eBay)`, country, currency, kind: "marketplace" });
+    const id = `ebay:${sellerKey(it.seller.username)}`;
+    sellers.push({ id, name: `eBay seller, ${country || "?"}${it.seller.feedbackPercentage ? ` · ${it.seller.feedbackPercentage}% positive` : ""}`, country, currency, kind: "marketplace" });
     listings.push({
       sellerId: id, cardId: card.id, price: Number(it.price.value),
       qty: it.estimatedAvailabilities?.[0]?.estimatedAvailableQuantity ?? 1,

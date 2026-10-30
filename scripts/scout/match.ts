@@ -4,9 +4,10 @@ import type { CardSet } from "../../src/lib/types.ts";
 const EXCLUDE = /\b(psa|bgs|cgc|tag|ace|graded|slab|proxy|custom|orica|replica|fake|japanese|jpn|korean|chinese|lot of|bundle|empty|code card|online code|booster|etb|elite trainer|tin|box|pack)\b/i;
 const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9♀♂ ]/g, " ").replace(/\s+/g, " ").trim();
 
-export function matchTitle(title: string, set: CardSet): string | undefined {
+/** `inSetCollection`: the listing comes from a shop's collection for this set, so its title needn't name the set. */
+export function matchTitle(title: string, set: CardSet, inSetCollection = false): string | undefined {
   if (EXCLUDE.test(title)) return undefined;
-  if (!/30th|celebration/i.test(title)) return undefined;
+  if (!inSetCollection && !/30th|celebration/i.test(title)) return undefined;
   const t = norm(title);
   const classic = /classic/i.test(title);
 

@@ -26,7 +26,7 @@ interface Product { title: string; handle: string; variants: { title: string; pr
 export function listingsFromProducts(store: ShopifyStore, products: Product[], set: CardSet): Listing[] {
   const out: Listing[] = [];
   for (const p of products) {
-    const cardId = matchTitle(p.title, set);
+    const cardId = matchTitle(p.title, set, !!store.collection);
     if (!cardId) continue;
     for (const v of p.variants) {
       const qty = v.inventory_quantity != null ? Math.max(0, v.inventory_quantity) : v.available ? 1 : 0;

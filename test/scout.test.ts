@@ -68,7 +68,16 @@ test("reads eBay Browse API results", () => {
   ];
   const r = fromItems(items, card("092"), set, { marketplace: "EBAY_CA", deliveryCountry: "CA", perCard: 30 });
   assert.equal(r.listings.length, 1);
-  assert.deepEqual(r.listings[0], { sellerId: "ebay:maplecards", cardId: "092", price: 5.5, qty: 1, condition: "NM", shipping: 2, url: "https://www.ebay.ca/itm/1", title: items[0].title });
+  assert.match(r.listings[0].sellerId, /^ebay:[0-9a-f]{12}$/); // usernames are never stored
+  assert.ok(!JSON.stringify(r).includes("maplecards"));
+  assert.deepEqual(r.listings[0], { sellerId: r.listings[0].sellerId, cardId: "092", price: 5.5, qty: 1, condition: "NM", shipping: 2, url: "https://www.ebay.ca/itm/1", title: items[0].title });
   assert.equal(r.sellers[0].kind, "marketplace");
+  assert.equal(r.sellers[0].name, "eBay seller, CA · 99.8% positive");
   assert.equal(query(card("mew-g")), "Mew RGB 30th Celebration");
+});
+
+test("titles in a shop's set collection needn't name the set", () => {
+  assert.equal(matchTitle("Umbreon ex - 092/128 - Special Illustration Rare", set), undefined);
+  assert.equal(matchTitle("Umbreon ex - 092/128 - Special Illustration Rare", set, true), "092");
+  assert.equal(matchTitle("Umbreon ex 092/128 Booster Box", set, true), undefined);
 });
