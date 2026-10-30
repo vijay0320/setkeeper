@@ -105,8 +105,21 @@ test("pages through a Shopify collection until empty", async () => {
   const { listings: ls } = await fetchShopify({ ...store, collection: "thirty" }, resolve30, fake);
   assert.equal(ls.length, 3);
   assert.equal(urls[0], "https://shop.example/robots.txt");
-  assert.equal(urls[1], "https://shop.example/collections/thirty/products.json?limit=250&page=1");
-  assert.equal(urls.length, 2); // a short page is the last one
+  assert.equal(urls[1], "https://shop.example/cart.js"); // currency check
+  assert.equal(urls[2], "https://shop.example/collections/thirty/products.json?limit=250&page=1&currency=CAD");
+  assert.equal(urls.length, 3); // a short page is the last one
+});
+
+test("asks for the shop's own currency and refuses prices in another", async () => {
+  const seen: Record<string, string>[] = [];
+  const usd = (async (url: string, init?: RequestInit) => {
+    seen.push((init?.headers ?? {}) as Record<string, string>);
+    if (url.endsWith("robots.txt")) return new Response("");
+    if (url.endsWith("cart.js")) return new Response(JSON.stringify({ currency: "USD" }));
+    return new Response(JSON.stringify({ products }));
+  }) as unknown as typeof fetch;
+  await assert.rejects(fetchShopify({ ...store, collection: "thirty" }, resolve30, usd), /came back in USD/);
+  assert.match(seen[1].Cookie, /localization=CA; cart_currency=CAD/);
 });
 
 test("leaves a shop alone when robots.txt says so, or when it has no singles collection", async () => {

@@ -121,7 +121,11 @@ if (cfg.ebay?.enabled) {
   const pairs = Object.values(m.overall).reduce((a, f) => a + (f?.pairs ?? 0), 0);
   if (pairs) {
     mkdirSync("data/prices", { recursive: true });
-    writeFileSync(file, JSON.stringify(rollConditions(prev, new Date().toISOString().slice(0, 10), m), null, 1) + "\n");
+    // days measured before the scout asked for Canadian prices (whole-dollar US prices) are dropped
+    const clean = prev ? { ...prev, days: (prev.days ?? []).filter((d) => d.priced === "shop-currency") } : undefined;
+    const rolled = rollConditions(clean, new Date().toISOString().slice(0, 10), m);
+    rolled.days = rolled.days?.map((d) => (d.day === rolled.updatedAt ? { ...d, priced: "shop-currency" } : d));
+    writeFileSync(file, JSON.stringify(rolled, null, 1) + "\n");
   }
   notice("Conditions", `${pairs} NM-vs-played pairs measured today`);
   console.log(`condition pairs today: ${pairs} (${Object.entries(m.overall).map(([c, f]) => `${c} ${f!.ratio} × ${f!.pairs}`).join(", ") || "none"})`);

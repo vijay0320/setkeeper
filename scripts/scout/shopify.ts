@@ -86,9 +86,17 @@ const UA = "SetKeeper price scout (+https://github.com/vijay0320/setkeeper)";
 const PAUSE = 700;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** One request, retried after a pause when the shop is briefly busy (429 or 5xx). */
-export async function getWithRetry(fetchFn: typeof fetch, url: string, waits = [5000, 20000]): Promise<Response> {
+/**
+ * Shopify stores that sell to several countries price by the visitor's country, and GitHub's
+ * servers are in the US: without this the scout got US-dollar prices rounded to whole dollars.
+ * These are the cookies a Canadian visitor's browser carries (country and currency).
+ */
+export const localeHeaders = (store?: Pick<ShopifyStore, "country" | "currency">): Record<string, string> =>
+  ({ "User-Agent": UA, ...(store ? { Cookie: `localization=${store.country}; cart_currency=${store.currency}` } : {}) });
+
+export async function getWithRetry(fetchFn: typeof fetch, url: string, waits = [5000, 20000], headers: Record<string, string> = { "User-Agent": UA }): Promise<Response> {
   for (let i = 0; ; i++) {
-    const r = await fetchFn(url, { headers: { "User-Agent": UA } });
+    const r = await fetchFn(url, { headers });
     if ((r.status === 429 || r.status >= 500) && i < waits.length) { await sleep(Number(r.headers.get("retry-after")) * 1000 || waits[i]); continue; }
     return r;
   }
@@ -110,7 +118,7 @@ export async function collectionsFor(store: ShopifyStore, fetchFn: typeof fetch 
   if (store.pokemonSingles) {
     const cols: { handle: string; title: string; products_count?: number }[] = [];
     for (let page = 1; page <= 20; page++) {
-      const r = await getWithRetry(fetchFn, `https://${store.domain}/collections.json?limit=250&page=${page}`);
+      const r = await getWithRetry(fetchFn, `https://${store.domain}/collections.json?limit=250&page=${page}`, undefined, localeHeaders(store));
       if (!r.ok) break;
       const j = (await r.json()) as { collections?: typeof cols };
       if (!j.collections?.length) break;
@@ -129,6 +137,10 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
   const rules = rb?.ok ? robotsRules(await rb.text()) : [];
   const no = blocked("/collections.json", rules) ?? blocked("/collections/x/products.json", rules);
   if (no) throw new Error(`robots.txt asks bots not to read the catalogue (Disallow: ${no}); skipped`);
+  // prices must come back in the shop's own currency, or nothing from this shop is saved
+  const cart = await getWithRetry(fetchFn, `https://${store.domain}/cart.js`, undefined, localeHeaders(store)).catch(() => undefined);
+  const cur = cart?.ok ? ((await cart.json().catch(() => ({}))) as { currency?: string }).currency : undefined;
+  if (cur && cur !== store.currency) throw new Error(`prices came back in ${cur}, not ${store.currency}; skipped`);
   const handles = await collectionsFor(store, fetchFn);
   // never fall back to a shop's whole catalogue when its Pokémon singles collection wasn't found
   if (!handles.length && store.pokemonSingles) throw new Error("no Pokémon singles collection found; skipped");
@@ -139,7 +151,7 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
   for (const b of bases) {
     if (budget <= 0) { stats?.notes.push(`page budget used up before ${b.h}`); break; }
     for (let page = 1; page <= 100 && budget > 0; page++, budget--) {
-      const res = await getWithRetry(fetchFn, `${b.url}?limit=250&page=${page}`);
+      const res = await getWithRetry(fetchFn, `${b.url}?limit=250&page=${page}&currency=${store.currency}`, undefined, localeHeaders(store));
       if (!res.ok) {
         // Shopify stops paging deep collections (about 25,000 products); keep what was read
         if (page > 1) { stats?.notes.push(`${b.h || "catalogue"} stopped at page ${page} (HTTP ${res.status}), ${(page - 1) * 250} products read`); break; }

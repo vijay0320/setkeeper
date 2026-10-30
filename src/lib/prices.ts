@@ -152,7 +152,8 @@ export interface ConditionData {
   /** Measured share of NM per condition, overall and per value band, from shops' own NM vs played prices. */
   overall: Partial<Record<Condition, ObservedFactor>>;
   bands?: Partial<Record<Band, Partial<Record<Condition, ObservedFactor>>>>;
-  days?: { day: string; overall: Partial<Record<Condition, ObservedFactor>>; bands?: ConditionData["bands"] }[];
+  /** priced "shop-currency": measured from prices in the shop's own currency (runs before Oct 31, 2026 weren't). */
+  days?: { day: string; overall: Partial<Record<Condition, ObservedFactor>>; bands?: ConditionData["bands"]; priced?: string }[];
   note?: string;
 }
 
