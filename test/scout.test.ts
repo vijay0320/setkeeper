@@ -285,3 +285,24 @@ test("skips graded slabs and reads more title shapes", () => {
   assert.equal(matchCard("Ceruledge ex 36 - SV08 Surging Sparks Holofoil", iy).card?.id, "sv08-036");
   assert.equal(matchCard("Ortega 141 - SV Prismatic Evolutions Holofoil", iy).card?.id, "sv08.5-141");
 });
+
+test("a subset card reached two ways is still one card", () => {
+  const iz = buildIndex([
+    { id: "swsh9tg-TG04", localId: "TG04", name: "Jolteon", setId: "swsh9tg" },
+    { id: "swsh9tg-TG30", localId: "TG30", name: "Charizard", setId: "swsh9tg" },
+  ], [{ id: "swsh9tg", name: "Brilliant Stars Trainer Gallery", official: 30, total: 30 }]);
+  assert.equal(matchCard("Jolteon - TG04/TG30 - Rare Ultra", iz).card?.id, "swsh9tg-TG04");
+});
+
+test("switches a shop to Canada through its country picker when cookies aren't enough", async () => {
+  let picked = false;
+  const fake = (async (url: string, init?: RequestInit) => {
+    if (url.endsWith("robots.txt")) return new Response("");
+    if (url.endsWith("/localization")) { picked = true; return new Response("", { status: 302, headers: { "set-cookie": "localization=CA; path=/" } }); }
+    if (url.endsWith("cart.js")) return new Response(JSON.stringify({ currency: picked && String((init?.headers as Record<string, string>)?.Cookie).includes("localization=CA") ? "CAD" : "USD" }));
+    return new Response(JSON.stringify({ products }));
+  }) as unknown as typeof fetch;
+  const { listings } = await fetchShopify({ ...store, collection: "thirty" }, resolve30, fake);
+  assert.ok(picked);
+  assert.equal(listings.length, 3);
+});

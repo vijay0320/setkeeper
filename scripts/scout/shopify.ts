@@ -138,8 +138,24 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
   const no = blocked("/collections.json", rules) ?? blocked("/collections/x/products.json", rules);
   if (no) throw new Error(`robots.txt asks bots not to read the catalogue (Disallow: ${no}); skipped`);
   // prices must come back in the shop's own currency, or nothing from this shop is saved
-  const cart = await getWithRetry(fetchFn, `https://${store.domain}/cart.js`, undefined, localeHeaders(store)).catch(() => undefined);
-  const cur = cart?.ok ? ((await cart.json().catch(() => ({}))) as { currency?: string }).currency : undefined;
+  let headers = localeHeaders(store);
+  const currency = async () => {
+    const cart = await getWithRetry(fetchFn, `https://${store.domain}/cart.js`, undefined, headers).catch(() => undefined);
+    return cart?.ok ? ((await cart.json().catch(() => ({}))) as { currency?: string }).currency : undefined;
+  };
+  let cur = await currency();
+  if (cur && cur !== store.currency) {
+    // the shop ignores the cookies: choose the country the way its country picker does, and keep its session cookie
+    const r = await fetchFn(`https://${store.domain}/localization`, {
+      method: "POST", redirect: "manual",
+      headers: { ...headers, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ form_type: "localization", utf8: "✓", _method: "put", return_to: "/", country_code: store.country }).toString(),
+    }).catch(() => undefined);
+    const set = (r?.headers as Headers & { getSetCookie?: () => string[] })?.getSetCookie?.() ?? [];
+    const jar = set.map((c) => c.split(";")[0]).filter(Boolean);
+    if (jar.length) headers = { ...headers, Cookie: [headers.Cookie, ...jar].filter(Boolean).join("; ") };
+    cur = await currency();
+  }
   if (cur && cur !== store.currency) throw new Error(`prices came back in ${cur}, not ${store.currency}; skipped`);
   const handles = await collectionsFor(store, fetchFn);
   // never fall back to a shop's whole catalogue when its Pokémon singles collection wasn't found
@@ -151,7 +167,7 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
   for (const b of bases) {
     if (budget <= 0) { stats?.notes.push(`page budget used up before ${b.h}`); break; }
     for (let page = 1; page <= 100 && budget > 0; page++, budget--) {
-      const res = await getWithRetry(fetchFn, `${b.url}?limit=250&page=${page}&currency=${store.currency}`, undefined, localeHeaders(store));
+      const res = await getWithRetry(fetchFn, `${b.url}?limit=250&page=${page}&currency=${store.currency}`, undefined, headers);
       if (!res.ok) {
         // Shopify stops paging deep collections (about 25,000 products); keep what was read
         if (page > 1) { stats?.notes.push(`${b.h || "catalogue"} stopped at page ${page} (HTTP ${res.status}), ${(page - 1) * 250} products read`); break; }

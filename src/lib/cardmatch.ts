@@ -42,7 +42,8 @@ const numKey = (left: string, right: string) => {
   const pre = l.match(/^[A-Z]+/)?.[0] ?? "";
   return `${localKey(l)}/${localKey(/^\d+$/.test(r) ? pre + r : r)}`;
 };
-const add = <T>(m: Map<string, T[]>, k: string, v: T) => { const l = m.get(k); if (l) l.push(v); else m.set(k, [v]); };
+// a card can reach the same key two ways (e.g. a Trainer Gallery set whose size is also its subset's): keep it once
+const add = <T>(m: Map<string, T[]>, k: string, v: T) => { const l = m.get(k); if (!l) m.set(k, [v]); else if (!l.includes(v)) l.push(v); };
 
 /** Promo sets' codes: Scarlet & Violet promos are printed "SVP 053", Mega Evolution "MEP 001". */
 const PROMO_PREFIX: Record<string, string> = { svp: "SVP", mep: "MEP" };
