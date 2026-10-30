@@ -3,74 +3,74 @@
  "overall": {
   "LP": {
    "ratio": 1,
-   "pairs": 2704
+   "pairs": 2946
   },
   "MP": {
    "ratio": 0.87,
-   "pairs": 2651
+   "pairs": 2828
   },
   "HP": {
-   "ratio": 0.57,
-   "pairs": 295
+   "ratio": 0.56,
+   "pairs": 321
   },
   "DMG": {
    "ratio": 0.5,
-   "pairs": 183
+   "pairs": 210
   }
  },
  "bands": {
   "under10": {
    "LP": {
     "ratio": 1,
-    "pairs": 2376
+    "pairs": 2506
    },
    "MP": {
     "ratio": 1,
-    "pairs": 2192
+    "pairs": 2250
    },
    "HP": {
     "ratio": 0.6,
-    "pairs": 225
+    "pairs": 231
    },
    "DMG": {
     "ratio": 0.5,
-    "pairs": 134
+    "pairs": 150
    }
   },
   "10to100": {
    "LP": {
-    "ratio": 0.9,
-    "pairs": 303
+    "ratio": 0.88,
+    "pairs": 410
    },
    "MP": {
     "ratio": 0.65,
-    "pairs": 431
+    "pairs": 544
    },
    "HP": {
     "ratio": 0.5,
-    "pairs": 66
+    "pairs": 85
    },
    "DMG": {
     "ratio": 0.3,
-    "pairs": 46
+    "pairs": 56
    }
   },
   "over100": {
    "LP": {
-    "ratio": 0.83,
-    "pairs": 25
+    "ratio": 0.84,
+    "pairs": 30
    },
    "MP": {
     "ratio": 0.65,
-    "pairs": 28
+    "pairs": 34
    },
    "HP": {
     "ratio": 0.5,
-    "pairs": 4
+    "pairs": 5
    },
    "DMG": {
-    "ratio": 0.36,
-    "pairs": 3
+    "ratio": 0.35,
+    "pairs": 4
    }
   }
  },
@@ -80,74 +80,74 @@
    "overall": {
     "MP": {
      "ratio": 0.87,
-     "pairs": 2651
+     "pairs": 2828
     },
     "HP": {
-     "ratio": 0.57,
-     "pairs": 295
+     "ratio": 0.56,
+     "pairs": 321
     },
     "DMG": {
      "ratio": 0.5,
-     "pairs": 183
+     "pairs": 210
     },
     "LP": {
      "ratio": 1,
-     "pairs": 2704
+     "pairs": 2946
     }
    },
    "bands": {
     "over100": {
      "MP": {
       "ratio": 0.65,
-      "pairs": 28
+      "pairs": 34
      },
      "LP": {
-      "ratio": 0.83,
-      "pairs": 25
+      "ratio": 0.84,
+      "pairs": 30
      },
      "HP": {
       "ratio": 0.5,
-      "pairs": 4
+      "pairs": 5
      },
      "DMG": {
-      "ratio": 0.36,
-      "pairs": 3
+      "ratio": 0.35,
+      "pairs": 4
      }
     },
     "10to100": {
      "MP": {
       "ratio": 0.65,
-      "pairs": 431
+      "pairs": 544
      },
      "HP": {
       "ratio": 0.5,
-      "pairs": 66
+      "pairs": 85
      },
      "DMG": {
       "ratio": 0.3,
-      "pairs": 46
+      "pairs": 56
      },
      "LP": {
-      "ratio": 0.9,
-      "pairs": 303
+      "ratio": 0.88,
+      "pairs": 410
      }
     },
     "under10": {
      "MP": {
       "ratio": 1,
-      "pairs": 2192
+      "pairs": 2250
      },
      "HP": {
       "ratio": 0.6,
-      "pairs": 225
+      "pairs": 231
      },
      "LP": {
       "ratio": 1,
-      "pairs": 2376
+      "pairs": 2506
      },
      "DMG": {
       "ratio": 0.5,
-      "pairs": 134
+      "pairs": 150
      }
     }
    }
