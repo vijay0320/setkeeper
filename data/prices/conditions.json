@@ -2,75 +2,75 @@
  "updatedAt": "2026-10-30",
  "overall": {
   "LP": {
-   "ratio": 0.95,
-   "pairs": 619
+   "ratio": 1,
+   "pairs": 2687
   },
   "MP": {
    "ratio": 0.87,
-   "pairs": 369
+   "pairs": 2640
   },
   "HP": {
-   "ratio": 0.6,
-   "pairs": 99
+   "ratio": 0.57,
+   "pairs": 293
   },
   "DMG": {
    "ratio": 0.5,
-   "pairs": 74
+   "pairs": 180
   }
  },
  "bands": {
   "under10": {
    "LP": {
-    "ratio": 0.95,
-    "pairs": 501
+    "ratio": 1,
+    "pairs": 2373
    },
    "MP": {
-    "ratio": 0.87,
-    "pairs": 312
+    "ratio": 1,
+    "pairs": 2191
    },
    "HP": {
     "ratio": 0.6,
-    "pairs": 81
+    "pairs": 225
    },
    "DMG": {
-    "ratio": 0.51,
-    "pairs": 64
+    "ratio": 0.5,
+    "pairs": 134
    }
   },
   "10to100": {
    "LP": {
-    "ratio": 0.95,
-    "pairs": 105
+    "ratio": 0.89,
+    "pairs": 290
    },
    "MP": {
-    "ratio": 0.87,
-    "pairs": 51
+    "ratio": 0.65,
+    "pairs": 421
    },
    "HP": {
-    "ratio": 0.6,
-    "pairs": 17
+    "ratio": 0.5,
+    "pairs": 64
    },
    "DMG": {
-    "ratio": 0.5,
-    "pairs": 9
+    "ratio": 0.3,
+    "pairs": 43
    }
   },
   "over100": {
    "LP": {
-    "ratio": 0.87,
-    "pairs": 13
+    "ratio": 0.81,
+    "pairs": 24
    },
    "MP": {
-    "ratio": 0.72,
-    "pairs": 6
+    "ratio": 0.65,
+    "pairs": 28
    },
    "HP": {
-    "ratio": 0.53,
-    "pairs": 1
+    "ratio": 0.5,
+    "pairs": 4
    },
    "DMG": {
-    "ratio": 0.44,
-    "pairs": 1
+    "ratio": 0.36,
+    "pairs": 3
    }
   }
  },
@@ -78,76 +78,76 @@
   {
    "day": "2026-10-30",
    "overall": {
-    "LP": {
-     "ratio": 0.95,
-     "pairs": 619
-    },
     "MP": {
      "ratio": 0.87,
-     "pairs": 369
+     "pairs": 2640
+    },
+    "HP": {
+     "ratio": 0.57,
+     "pairs": 293
     },
     "DMG": {
      "ratio": 0.5,
-     "pairs": 74
+     "pairs": 180
     },
-    "HP": {
-     "ratio": 0.6,
-     "pairs": 99
+    "LP": {
+     "ratio": 1,
+     "pairs": 2687
     }
    },
    "bands": {
-    "under10": {
-     "LP": {
-      "ratio": 0.95,
-      "pairs": 501
-     },
+    "over100": {
      "MP": {
-      "ratio": 0.87,
-      "pairs": 312
+      "ratio": 0.65,
+      "pairs": 28
      },
-     "DMG": {
-      "ratio": 0.51,
-      "pairs": 64
+     "LP": {
+      "ratio": 0.81,
+      "pairs": 24
      },
      "HP": {
-      "ratio": 0.6,
-      "pairs": 81
+      "ratio": 0.5,
+      "pairs": 4
+     },
+     "DMG": {
+      "ratio": 0.36,
+      "pairs": 3
      }
     },
     "10to100": {
-     "LP": {
-      "ratio": 0.95,
-      "pairs": 105
-     },
      "MP": {
-      "ratio": 0.87,
-      "pairs": 51
+      "ratio": 0.65,
+      "pairs": 421
+     },
+     "HP": {
+      "ratio": 0.5,
+      "pairs": 64
      },
      "DMG": {
-      "ratio": 0.5,
-      "pairs": 9
+      "ratio": 0.3,
+      "pairs": 43
+     },
+     "LP": {
+      "ratio": 0.89,
+      "pairs": 290
+     }
+    },
+    "under10": {
+     "MP": {
+      "ratio": 1,
+      "pairs": 2191
      },
      "HP": {
       "ratio": 0.6,
-      "pairs": 17
-     }
-    },
-    "over100": {
-     "MP": {
-      "ratio": 0.72,
-      "pairs": 6
+      "pairs": 225
      },
      "LP": {
-      "ratio": 0.87,
-      "pairs": 13
-     },
-     "HP": {
-      "ratio": 0.53,
-      "pairs": 1
+      "ratio": 1,
+      "pairs": 2373
      },
      "DMG": {
-      "ratio": 0.44,
-      "pairs": 1
+      "ratio": 0.5,
+      "pairs": 134
      }
     }
    }
