@@ -33,7 +33,8 @@ const sellers = new Map<string, Seller>();
 
 for (const store of cfg.shopify ?? []) {
   try {
-    const ls = await fetchShopify(store, set);
+    const stats = { products: 0, matched: 0, soldOut: 0, unmatched: [] as string[] };
+    const ls = await fetchShopify(store, set, fetch, 40, stats);
     sellers.set(store.id, {
       id: store.id, name: store.name, country: store.country, currency: store.currency, kind: "store", url: `https://${store.domain}`, shipping: store.shipping,
       ...(store.province ? { province: store.province } : {}), ...(store.carrier ? { carrier: store.carrier } : {}),
@@ -44,7 +45,12 @@ for (const store of cfg.shopify ?? []) {
     snap.sources!.push({ name: store.name, ok: true, listings: ls.length });
     console.log(`${store.name}: ${ls.length} listings`);
     // a GitHub annotation, readable from the run page without opening the log
-    if (process.env.GITHUB_ACTIONS) console.log(`::notice title=Scout::${store.name}: ${ls.length} listings`);
+    const why = `${stats.products} products, ${stats.matched} matched to cards (${stats.soldOut} of them sold out), ${ls.length} listings`;
+    console.log(`  ${why}${stats.unmatched.length ? `; not recognised: ${stats.unmatched.join(" | ")}` : ""}`);
+    if (process.env.GITHUB_ACTIONS) {
+      console.log(`::notice title=Scout::${store.name}: ${why}`);
+      if (stats.unmatched.length) console.log(`::notice title=Not recognised (${store.name})::${stats.unmatched.join(" | ").replace(/[\r\n]/g, " ")}`);
+    }
   } catch (e) {
     snap.sources!.push({ name: store.name, ok: false, listings: 0, error: (e as Error).message });
     console.warn(`${store.name}: ${(e as Error).message}`);
