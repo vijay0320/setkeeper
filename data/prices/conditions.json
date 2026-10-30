@@ -2,75 +2,75 @@
  "updatedAt": "2026-10-30",
  "overall": {
   "LP": {
-   "ratio": 1,
-   "pairs": 2946
+   "ratio": 0.91,
+   "pairs": 3095
   },
   "MP": {
-   "ratio": 0.87,
-   "pairs": 2828
+   "ratio": 0.69,
+   "pairs": 2930
   },
   "HP": {
-   "ratio": 0.56,
-   "pairs": 321
+   "ratio": 0.51,
+   "pairs": 345
   },
   "DMG": {
-   "ratio": 0.5,
-   "pairs": 210
+   "ratio": 0.35,
+   "pairs": 218
   }
  },
  "bands": {
   "under10": {
    "LP": {
-    "ratio": 1,
-    "pairs": 2506
+    "ratio": 0.91,
+    "pairs": 2661
    },
    "MP": {
-    "ratio": 1,
-    "pairs": 2250
+    "ratio": 0.69,
+    "pairs": 2326
    },
    "HP": {
-    "ratio": 0.6,
-    "pairs": 231
+    "ratio": 0.51,
+    "pairs": 247
    },
    "DMG": {
-    "ratio": 0.5,
-    "pairs": 150
+    "ratio": 0.49,
+    "pairs": 154
    }
   },
   "10to100": {
    "LP": {
-    "ratio": 0.88,
-    "pairs": 410
+    "ratio": 0.9,
+    "pairs": 394
    },
    "MP": {
     "ratio": 0.65,
-    "pairs": 544
+    "pairs": 565
    },
    "HP": {
     "ratio": 0.5,
-    "pairs": 85
+    "pairs": 90
    },
    "DMG": {
     "ratio": 0.3,
-    "pairs": 56
+    "pairs": 59
    }
   },
   "over100": {
    "LP": {
-    "ratio": 0.84,
-    "pairs": 30
+    "ratio": 0.85,
+    "pairs": 40
    },
    "MP": {
     "ratio": 0.65,
-    "pairs": 34
+    "pairs": 39
    },
    "HP": {
     "ratio": 0.5,
-    "pairs": 5
+    "pairs": 8
    },
    "DMG": {
     "ratio": 0.35,
-    "pairs": 4
+    "pairs": 5
    }
   }
  },
@@ -79,78 +79,79 @@
    "day": "2026-10-30",
    "overall": {
     "MP": {
-     "ratio": 0.87,
-     "pairs": 2828
+     "ratio": 0.69,
+     "pairs": 2930
     },
     "HP": {
-     "ratio": 0.56,
-     "pairs": 321
+     "ratio": 0.51,
+     "pairs": 345
     },
     "DMG": {
-     "ratio": 0.5,
-     "pairs": 210
+     "ratio": 0.35,
+     "pairs": 218
     },
     "LP": {
-     "ratio": 1,
-     "pairs": 2946
+     "ratio": 0.91,
+     "pairs": 3095
     }
    },
    "bands": {
     "over100": {
      "MP": {
       "ratio": 0.65,
-      "pairs": 34
+      "pairs": 39
      },
      "LP": {
-      "ratio": 0.84,
-      "pairs": 30
+      "ratio": 0.85,
+      "pairs": 40
      },
      "HP": {
       "ratio": 0.5,
-      "pairs": 5
+      "pairs": 8
      },
      "DMG": {
       "ratio": 0.35,
-      "pairs": 4
+      "pairs": 5
      }
     },
     "10to100": {
      "MP": {
       "ratio": 0.65,
-      "pairs": 544
+      "pairs": 565
      },
      "HP": {
       "ratio": 0.5,
-      "pairs": 85
+      "pairs": 90
      },
      "DMG": {
       "ratio": 0.3,
-      "pairs": 56
+      "pairs": 59
      },
      "LP": {
-      "ratio": 0.88,
-      "pairs": 410
+      "ratio": 0.9,
+      "pairs": 394
      }
     },
     "under10": {
      "MP": {
-      "ratio": 1,
-      "pairs": 2250
+      "ratio": 0.69,
+      "pairs": 2326
      },
      "HP": {
-      "ratio": 0.6,
-      "pairs": 231
+      "ratio": 0.51,
+      "pairs": 247
      },
      "LP": {
-      "ratio": 1,
-      "pairs": 2506
+      "ratio": 0.91,
+      "pairs": 2661
      },
      "DMG": {
-      "ratio": 0.5,
-      "pairs": 150
+      "ratio": 0.49,
+      "pairs": 154
      }
     }
-   }
+   },
+   "priced": "shop-currency"
   }
  ],
  "note": "Share of the Near Mint price, measured from shops listing the same card in NM and a played condition (last 30 days, weighted by pairs). Used once a condition has at least 8 pairs; otherwise SetKeeper's estimates apply."
