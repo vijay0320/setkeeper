@@ -1,6 +1,157 @@
 {
- "overall": {},
- "bands": {},
- "days": [],
- "note": "Share of the Near Mint price, measured from shops listing the same card in NM and a played condition (last 30 days, weighted by pairs). Used once a condition has at least 8 pairs; otherwise SetKeeper's estimates apply. Filled in by the daily scout."
+ "updatedAt": "2026-10-30",
+ "overall": {
+  "LP": {
+   "ratio": 0.95,
+   "pairs": 619
+  },
+  "MP": {
+   "ratio": 0.87,
+   "pairs": 369
+  },
+  "HP": {
+   "ratio": 0.6,
+   "pairs": 99
+  },
+  "DMG": {
+   "ratio": 0.5,
+   "pairs": 74
+  }
+ },
+ "bands": {
+  "under10": {
+   "LP": {
+    "ratio": 0.95,
+    "pairs": 501
+   },
+   "MP": {
+    "ratio": 0.87,
+    "pairs": 312
+   },
+   "HP": {
+    "ratio": 0.6,
+    "pairs": 81
+   },
+   "DMG": {
+    "ratio": 0.51,
+    "pairs": 64
+   }
+  },
+  "10to100": {
+   "LP": {
+    "ratio": 0.95,
+    "pairs": 105
+   },
+   "MP": {
+    "ratio": 0.87,
+    "pairs": 51
+   },
+   "HP": {
+    "ratio": 0.6,
+    "pairs": 17
+   },
+   "DMG": {
+    "ratio": 0.5,
+    "pairs": 9
+   }
+  },
+  "over100": {
+   "LP": {
+    "ratio": 0.87,
+    "pairs": 13
+   },
+   "MP": {
+    "ratio": 0.72,
+    "pairs": 6
+   },
+   "HP": {
+    "ratio": 0.53,
+    "pairs": 1
+   },
+   "DMG": {
+    "ratio": 0.44,
+    "pairs": 1
+   }
+  }
+ },
+ "days": [
+  {
+   "day": "2026-10-30",
+   "overall": {
+    "LP": {
+     "ratio": 0.95,
+     "pairs": 619
+    },
+    "MP": {
+     "ratio": 0.87,
+     "pairs": 369
+    },
+    "DMG": {
+     "ratio": 0.5,
+     "pairs": 74
+    },
+    "HP": {
+     "ratio": 0.6,
+     "pairs": 99
+    }
+   },
+   "bands": {
+    "under10": {
+     "LP": {
+      "ratio": 0.95,
+      "pairs": 501
+     },
+     "MP": {
+      "ratio": 0.87,
+      "pairs": 312
+     },
+     "DMG": {
+      "ratio": 0.51,
+      "pairs": 64
+     },
+     "HP": {
+      "ratio": 0.6,
+      "pairs": 81
+     }
+    },
+    "10to100": {
+     "LP": {
+      "ratio": 0.95,
+      "pairs": 105
+     },
+     "MP": {
+      "ratio": 0.87,
+      "pairs": 51
+     },
+     "DMG": {
+      "ratio": 0.5,
+      "pairs": 9
+     },
+     "HP": {
+      "ratio": 0.6,
+      "pairs": 17
+     }
+    },
+    "over100": {
+     "MP": {
+      "ratio": 0.72,
+      "pairs": 6
+     },
+     "LP": {
+      "ratio": 0.87,
+      "pairs": 13
+     },
+     "HP": {
+      "ratio": 0.53,
+      "pairs": 1
+     },
+     "DMG": {
+      "ratio": 0.44,
+      "pairs": 1
+     }
+    }
+   }
+  }
+ ],
+ "note": "Share of the Near Mint price, measured from shops listing the same card in NM and a played condition (last 30 days, weighted by pairs). Used once a condition has at least 8 pairs; otherwise SetKeeper's estimates apply."
 }
