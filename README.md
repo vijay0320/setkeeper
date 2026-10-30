@@ -65,6 +65,15 @@ The scout's adapters are tested against recorded response formats (`npm test`), 
 
 Push to `main`. The included workflow (`.github/workflows/pages.yml`) runs the tests, builds `dist/` and publishes it. In the repo settings, set **Pages → Source** to **GitHub Actions** once.
 
+## The dataset
+
+Everything the scouts collect stays private in Supabase (Canada Central), built to last on the free tier:
+
+- **Shop listings, as changes only** (`listing_changes`): a row when a card's price, stock or number of copies changes at a shop, per printing and condition. Any past day can be rebuilt from it, and drops in copies give sales estimates (`card_sales`). Today's listings per set (`latest_snapshots`) are what the app reads.
+- **Market prices** (`card_prices`): TCGplayer and Cardmarket figures for every printing of the tracked sets, daily.
+- **Raw archive**: each scout run, gzipped, in the private `scout-archive` storage bucket, exactly as collected.
+- `select * from public.dataset_stats;` in the SQL editor shows shops, cards, sets, days of history, rows, copies sold in the last 30 days and database size.
+
 ## Fair prices: printing × condition
 
 A card's price depends on its **printing** (Normal, Holofoil, Reverse Holofoil, 1st Edition… are different products) and its **condition** (NM, LP, MP, HP, DMG), so SetKeeper never compares a played reverse holo with a Near Mint holo.

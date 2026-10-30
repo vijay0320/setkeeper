@@ -75,7 +75,8 @@ export function listingsFromProducts(store: ShopifyStore, products: Product[], r
       // keep a sold-out marker (qty 0) so the app can say "sold out at <shop>" instead of guessing;
       // the cart and price checks only use listings with stock
       const prices = p.variants.map((v) => Number(v.price)).filter((x) => x > 0);
-      if (prices.length) out.push({ sellerId: store.id, setId: r.setId, cardId: r.cardId, price: Math.min(...prices), qty: 0, url: `https://${store.domain}/products/${p.handle}`, title: p.title });
+      const pr = printingFromText(p.title);
+      if (prices.length) out.push({ sellerId: store.id, setId: r.setId, cardId: r.cardId, price: Math.min(...prices), qty: 0, ...(pr ? { printing: pr } : {}), url: `https://${store.domain}/products/${p.handle}`, title: p.title });
     }
   }
   return out;
@@ -93,12 +94,15 @@ export async function getWithRetry(fetchFn: typeof fetch, url: string, waits = [
   }
 }
 
-/** A shop's Pokémon singles collection(s), from its public collection list (titles only). */
+/**
+ * A shop's Pokémon singles collections, from its public collection list (titles only): an
+ * "in stock" collection first (it holds what matters), then the biggest, then the rest (often
+ * split by era), so a shop past Shopify's ~25,000-product paging limit is still covered.
+ */
 export function singlesCollections(cols: { handle: string; title: string; products_count?: number }[]): string[] {
-  const pick = cols.filter((c) => /pok[eé]mon/i.test(c.title) && /single/i.test(c.title) && !/japan|chinese|korean|sealed|graded|slab|bulk|lot/i.test(c.title))
-    .sort((a, b) => (b.products_count ?? 0) - (a.products_count ?? 0));
-  // the biggest "Pokémon singles" collection usually holds them all; keep one more in case it's split
-  return pick.slice(0, 2).map((c) => c.handle);
+  const pick = cols.filter((c) => /pok[eé]mon/i.test(c.title) && /single/i.test(c.title) && !/japan|chinese|korean|sealed|graded|slab|bulk|lot/i.test(c.title));
+  const inStock = (c: { title: string; handle: string }) => /in[\s-]?stock|available/i.test(`${c.title} ${c.handle}`);
+  return pick.sort((a, b) => Number(inStock(b)) - Number(inStock(a)) || (b.products_count ?? 0) - (a.products_count ?? 0)).slice(0, 12).map((c) => c.handle);
 }
 
 export async function collectionsFor(store: ShopifyStore, fetchFn: typeof fetch = fetch): Promise<string[]> {
@@ -119,7 +123,7 @@ export async function collectionsFor(store: ShopifyStore, fetchFn: typeof fetch 
   return [...set];
 }
 
-export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetchFn: typeof fetch = fetch, maxPages = 200, stats?: ScanStats): Promise<{ listings: Listing[]; collections: string[] }> {
+export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetchFn: typeof fetch = fetch, maxPages = 360, stats?: ScanStats): Promise<{ listings: Listing[]; collections: string[] }> {
   // robots.txt is checked every run, so a shop that asks bots to stay out is left alone from that day
   const rb = await fetchFn(`https://${store.domain}/robots.txt`, { headers: { "User-Agent": UA } }).catch(() => undefined);
   const rules = rb?.ok ? robotsRules(await rb.text()) : [];
@@ -131,8 +135,10 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
   const bases = handles.length ? handles.map((h) => ({ h, url: `https://${store.domain}/collections/${h}/products.json` })) : [{ h: "", url: `https://${store.domain}/products.json` }];
   const all: Listing[] = [];
   const seen = new Set<string>();
+  let budget = maxPages; // pages per shop per run, across all its collections
   for (const b of bases) {
-    for (let page = 1; page <= maxPages; page++) {
+    if (budget <= 0) { stats?.notes.push(`page budget used up before ${b.h}`); break; }
+    for (let page = 1; page <= 100 && budget > 0; page++, budget--) {
       const res = await getWithRetry(fetchFn, `${b.url}?limit=250&page=${page}`);
       if (!res.ok) {
         // Shopify stops paging deep collections (about 25,000 products); keep what was read

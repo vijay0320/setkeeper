@@ -10,6 +10,7 @@
 // snapshot per set. Without them (local runs), it writes data/listings/<set>.json,
 // which .gitignore keeps out of git.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { gzipSync } from "node:zlib";
 import type { CardSet } from "../src/lib/types.ts";
 import type { Listing, MarketSnapshot, Seller } from "../src/lib/market.ts";
 import { fetchShopify, newStats, type Resolver, type ShopifyStore } from "./scout/shopify.ts";
@@ -55,6 +56,8 @@ const fetchedAt = new Date().toISOString();
 const listings: Listing[] = [];
 const sources: { name: string; ok: boolean; listings: number; error?: string }[] = [];
 const sellers = new Map<string, Seller>();
+const complete = new Map<string, boolean>(); // shop read to the end (no paging limit hit)
+const report: string[] = [], placeNotes: string[] = [];
 
 for (const store of cfg.shopify ?? []) {
   try {
@@ -72,14 +75,14 @@ for (const store of cfg.shopify ?? []) {
     const misses = Object.entries(stats.misses).map(([k, v]) => `${v} ${k}`).join(", ");
     const why = `${r.collections.length ? `collections ${r.collections.join(", ")}: ` : ""}${stats.products} products, ${stats.matched} matched to cards (${stats.soldOut} sold out), ${inStock} listings in stock${misses ? `; skipped: ${misses}` : ""}`;
     console.log(`${store.name}: ${why}`);
-    notice("Scout", `${store.name}: ${why}`);
+    complete.set(store.id, stats.notes.length === 0);
+    report.push(`${store.name}: ${why}${stats.notes.length ? ` [${stats.notes.join("; ")}]` : ""}`);
     const ex = Object.entries(stats.examples).filter(([k]) => k !== "excluded").map(([k, v]) => `${k}: ${v.join(" | ")}`).join(" ;; ");
-    if (ex) notice(`Not placed (${store.name})`, ex);
-    for (const n of stats.notes) notice(`Paging (${store.name})`, n, "warning");
+    if (ex) placeNotes.push(`${store.name} → ${ex}`);
   } catch (e) {
     sources.push({ name: store.name, ok: false, listings: 0, error: (e as Error).message });
     console.warn(`${store.name}: ${(e as Error).message}`);
-    notice("Scout", `${store.name}: ${(e as Error).message}`, "warning");
+    report.push(`${store.name}: FAILED ${(e as Error).message}`);
   }
 }
 
@@ -135,20 +138,48 @@ const rows = [...bySet].map(([setId, ls]) => {
   return { set_id: setId, fetched_at: fetchedAt, snapshot: snap };
 });
 const total = listings.filter((l) => l.qty > 0).length;
-notice("Scout", `${total} listings in stock across ${rows.length} sets`);
+// GitHub shows only 10 annotations per step, so the report is combined into a few
+notice("Scout", `${total} listings in stock across ${rows.length} sets ⟶ ${report.join(" ‖ ")}`);
+if (placeNotes.length) notice("Not placed", placeNotes.join(" ‖ "));
 
 const sbUrl = process.env.SUPABASE_URL?.replace(/\/$/, ""), sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const sb = (path: string, body: unknown, prefer = "return=minimal") => fetch(`${sbUrl}/rest/v1/${path}`, {
+  method: "POST", headers: { apikey: sbKey!, Authorization: `Bearer ${sbKey}`, "Content-Type": "application/json", Prefer: prefer }, body: JSON.stringify(body),
+});
 if (!rows.length) console.log("no listings today");
 else if (sbUrl && sbKey) {
+  // 1. today's listings, one row per set, replaced each run (what the app reads)
   for (let i = 0; i < rows.length; i += 50) {
-    const res = await fetch(`${sbUrl}/rest/v1/price_snapshots`, {
-      method: "POST",
-      headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-      body: JSON.stringify(rows.slice(i, i + 50)),
-    });
-    if (!res.ok) { console.error(`Saving to Supabase failed: HTTP ${res.status} ${await res.text()}`); process.exit(1); }
+    const res = await sb("latest_snapshots?on_conflict=set_id", rows.slice(i, i + 50), "resolution=merge-duplicates,return=minimal");
+    if (!res.ok) { console.error(`Saving today's listings failed: HTTP ${res.status} ${await res.text()}`); process.exit(1); }
   }
-  console.log(`saved ${rows.length} set snapshots to Supabase (${total} listings in stock)`);
+  // 2. history as changes only: a row when a card's price or stock changes at a shop
+  const day = fetchedAt.slice(0, 10);
+  let changed = 0, gone = 0;
+  for (const st of [...sellers.values()].filter((x) => x.kind === "store")) {
+    const mine = listings.filter((l) => l.sellerId === st.id).map((l) => ({
+      set_id: l.setId ?? BUNDLED, card_id: l.cardId, printing: l.printing ?? "", condition: l.qty > 0 ? l.condition ?? "" : "", price: l.price, in_stock: l.qty > 0, qty: l.qty,
+    }));
+    let ok = true;
+    for (let i = 0; i < mine.length; i += 3000) {
+      const res = await sb("rpc/record_listings", { p_seller: st.id, p_day: day, p_rows: mine.slice(i, i + 3000) }, "return=representation");
+      if (!res.ok) { ok = false; console.error(`${st.name}: saving changes failed, HTTP ${res.status} ${await res.text()}`); process.exitCode = 1; break; }
+      changed += Number(await res.json()) || 0;
+    }
+    // only a complete read can tell that a listing disappeared
+    if (ok && complete.get(st.id)) {
+      const res = await sb("rpc/close_listings", { p_seller: st.id, p_day: day }, "return=representation");
+      if (res.ok) gone += Number(await res.json()) || 0;
+    }
+  }
+  // 3. the raw run, gzipped, to a private storage bucket: everything exactly as collected
+  const raw = gzipSync(JSON.stringify({ fetchedAt, sellers: [...sellers.values()], sources, listings }));
+  const path = `${fetchedAt.slice(0, 4)}/${fetchedAt.slice(5, 7)}/${fetchedAt.slice(0, 10)}T${fetchedAt.slice(11, 16).replace(":", "")}.json.gz`;
+  const up = await fetch(`${sbUrl}/storage/v1/object/scout-archive/${path}`, {
+    method: "POST", headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}`, "Content-Type": "application/gzip", "x-upsert": "true" }, body: raw,
+  });
+  const archived = up.ok ? `archived ${(raw.length / 1e6).toFixed(1)} MB` : `archive failed (HTTP ${up.status}: ${(await up.text()).slice(0, 120)})`;
+  notice("Saved", `${rows.length} sets of today's listings; history: ${changed} price, stock or quantity changes, ${gone} listings gone; ${archived}`);
 } else {
   mkdirSync("data/listings", { recursive: true });
   for (const r of rows) writeFileSync(`data/listings/${r.set_id}.json`, JSON.stringify(r.snapshot));

@@ -10,7 +10,7 @@ export interface CatalogCard { id: string; localId: string; name: string; setId:
 export interface CatalogSet { id: string; name: string; official: number; total: number }
 
 export const EXCLUDE = /\b(psa|bgs|cgc|tag|ace grading|graded|slab|proxy|custom|orica|replica|fake|japanese|jpn|korean|chinese|lot of|bundle|empty|code card|online code|booster|etb|elite trainer|tin|box|pack|sleeves?|binder|playmat|deck box|display|case)\b/i;
-export const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9♀♂ ]/g, " ").replace(/\s+/g, " ").trim();
+export const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 const SUFFIX = new Set(["ex", "gx", "v", "vmax", "vstar", "lv", "x", "break", "prime", "legend", "the", "of", "and", "s"]);
 /** Words of a card's name that must appear in a title ("Umbreon ex" → ["umbreon"]). */
 export const nameWords = (name: string) => {
@@ -62,6 +62,11 @@ export function matchCard(title: string, idx: CardIndex, extra = ""): Match {
   if (!sawNumber) return { reason: "no number" };
   if (!named.length) return { reason: sawCard ? "name differs" : "no card" };
   if (named.length === 1) return { card: named[0] };
+  // "Charizard ex 006/165" (151) vs "Charizard 6/165" (Expedition): the ex/GX/V suffix decides
+  const tags = (x: string) => ["ex", "gx", "v", "vmax", "vstar", "break", "prime", "legend"].filter((k) => x.split(" ").includes(k)).join(",");
+  const sameTags = named.filter((c) => tags(norm(c.name)) === tags(t));
+  if (sameTags.length === 1) return { card: sameTags[0] };
+  if (sameTags.length > 1) named = sameTags;
   // several sets print this number with this name: the set's name decides
   // the longest set name found in the text wins ("Base Set 2" over "Base Set")
   const words = ` ${hint} `;

@@ -166,3 +166,21 @@ test("places one-letter and gendered names", () => {
   assert.equal(matchCard("N (105/124) [XY: Fates Collide]", i2).card?.id, "xy10-105");
   assert.equal(matchCard("Nidoran (55/102) (Male) [Base Set Unlimited]", i2).card?.id, "base1-55");
 });
+
+test("tells ex cards from older cards with the same number", () => {
+  const i3 = buildIndex([
+    { id: "sv03.5-006", localId: "006", name: "Charizard ex", setId: "sv03.5" },
+    { id: "ecard1-6", localId: "6", name: "Charizard", setId: "ecard1" },
+  ], [{ id: "sv03.5", name: "151", official: 165, total: 207 }, { id: "ecard1", name: "Expedition Base Set", official: 165, total: 165 }]);
+  assert.equal(matchCard("Charizard ex - 006/165 - Double Rare", i3).card?.id, "sv03.5-006");
+  assert.equal(matchCard("Charizard - 6/165 - Holo", i3).card?.id, "ecard1-6");
+  assert.equal(matchCard("Nidoran♀ - 029/165 - Common", buildIndex([{ id: "sv03.5-029", localId: "029", name: "Nidoran♀", setId: "sv03.5" }], [{ id: "sv03.5", name: "151", official: 165, total: 207 }])).card?.id, "sv03.5-029");
+});
+
+test("reads an in-stock collection first", () => {
+  assert.deepEqual(singlesCollections([
+    { handle: "pokemon-singles-all", title: "Pokemon Singles All", products_count: 90000 },
+    { handle: "pokemon-singles-instock", title: "Pokemon Singles In Stock", products_count: 5000 },
+    { handle: "pokemon-sv-singles", title: "Pokemon Scarlet & Violet Singles", products_count: 12000 },
+  ]), ["pokemon-singles-instock", "pokemon-singles-all", "pokemon-sv-singles"]);
+});
