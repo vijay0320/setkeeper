@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Instrument+Serif&display=swap">
 <style>
+  code { font-size: 0.9em; background: var(--sheet); padding: 1px 5px; border-radius: 5px; }
   :root { --paper: #e9e8e4; --sheet: #f4f3f0; --ink: #141414; --muted: #5d5b56; --line: rgb(20 20 20 / 0.14); }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
@@ -39,7 +40,7 @@
   <a class="back" href="./">← Back to SetKeeper</a>
   <h1>Privacy policy</h1>
   <p class="lede">SetKeeper is a free, open-source tracker for Pokémon card collectors. It's built to keep your data on your own device, and to collect as little as possible when you choose to sync.</p>
-  <p class="date">Effective October 28, 2026</p>
+  <p class="date">Effective October 30, 2026 · See also the <a href="terms.html">Terms of service</a></p>
 
   <div class="summary">
     <b>The short version</b>
@@ -49,6 +50,7 @@
       <li>No ads, no tracking, no analytics, no selling or sharing your data.</li>
       <li>Card scans and centering photos are processed on your device and never uploaded.</li>
       <li>You can download all your data or delete your account at any time from the app.</li>
+      <li>Shop prices and stock shown in SetKeeper come from the stores' public websites. That information, and the stores' names and products, belong to the stores.</li>
     </ul>
   </div>
 
@@ -60,7 +62,8 @@
   <h3>What we store</h3>
   <ul>
     <li><b>Your email address</b>, used only to send your sign-in links. There's no password.</li>
-    <li><b>Your collection data:</b> binders and their names, card statuses and copies, notes, priorities, stores and dates you recorded, prices you entered or paid, grading notes, pack logs and listings you imported.</li>
+    <li><b>Your collection data:</b> binders and their names, card statuses, copies, printings and conditions, notes, priorities, stores and dates you recorded, prices you entered or paid, prices you logged at shops, grading notes, pack logs and listings you imported.</li>
+    <li><b>Your settings</b>, such as the province you ship to, your card's foreign-exchange fee and your own condition percentages, so prices are worked out the same way on every device.</li>
     <li><b>Technical records the sign-in service keeps</b> to run accounts securely, such as when you last signed in.</li>
   </ul>
   <h3>What we don't store</h3>
@@ -68,11 +71,27 @@
     <li>Photos from the scanner or centering tool. They're analysed in your browser and discarded.</li>
     <li>Card databases, images and price caches, which are downloaded fresh on each device.</li>
     <li>Your name, address, payment details, location or contacts.</li>
+    <li>Which cards, prices or shops you look at. When you're signed in, the app fetches today's shop listings, price history and alerts for the set you're viewing; those requests aren't logged against you or used to profile you.</li>
   </ul>
   <h3>How it's protected</h3>
   <p>Your synced data is stored in Canada with <a href="https://supabase.com/privacy" rel="noopener">Supabase</a>, which provides the database and sign-in. Each person's data is a separate record protected by row-level security: the database only returns a record to the account that owns it. Connections are encrypted (HTTPS). Sign-in emails are sent through our email provider.</p>
   <h3>Why we use it</h3>
   <p>Only to sign you in and sync your collection between your devices. We don't use it for marketing, profiling or anything else, and we don't sell, rent or share it.</p>
+
+  <h2>Shop and market prices</h2>
+  <p>This isn't personal information, but you should know where SetKeeper's prices come from and who owns them.</p>
+  <h3>Prices and stock from card shops</h3>
+  <p>Once a day, SetKeeper's price scout reads the public product listings of a list of Canadian card shops: the card's name, its price, condition and printing, whether it's in stock (and how many copies, when the shop shows it), and the link to the product page. It reads only what any visitor can see on the shop's website, follows each shop's <code>robots.txt</code> instructions, reads slowly, and collects nothing about the shops' customers or orders. It doesn't buy anything, add anything to a cart or sign in.</p>
+  <ul>
+    <li><b>Ownership.</b> The listings, prices, product names, descriptions and images, and the shops' names and trademarks, belong to the shops. SetKeeper shows them to help collectors find cards and always links to the shop's own page. SetKeeper isn't affiliated with, endorsed by or paid by any shop, and doesn't sell cards.</li>
+    <li><b>Accuracy.</b> Prices and stock are a snapshot from the last daily check and change often. The price, stock and terms on the shop's own website are the ones that count.</li>
+    <li><b>History.</b> SetKeeper keeps a private record of how these prices and stock levels change over time. It isn't sold or shared. Only overall statistics derived from it, such as how much cheaper a lightly played card usually is than a near-mint one, may be shown in the app or published.</li>
+    <li><b>Shops can opt out.</b> A shop that doesn't want to be included, or wants a listing corrected or removed, can ask using the contact below, and it will be taken out promptly.</li>
+  </ul>
+  <h3>Market prices and exchange rates</h3>
+  <p>Market prices come from <a href="https://tcgdex.dev" rel="noopener">TCGdex</a>, which publishes TCGplayer (US) and Cardmarket (Europe) figures. They're converted to Canadian dollars with the Bank of Canada's daily exchange rates. Fair values, condition prices and "price at your door" totals (shipping, sales tax, duty and fees) are SetKeeper's own estimates.</p>
+  <h3>Prices you log</h3>
+  <p>If you record a price you saw at a shop, it stays in your collection: on your device, and in your synced copy if you're signed in. It isn't shown to anyone else.</p>
 
   <h2>Services your browser connects to</h2>
   <p>SetKeeper is a website that runs in your browser. To show cards and prices, your browser loads content from these services, which, like any website, receive your IP address and browser details when it does:</p>
@@ -86,7 +105,7 @@
       <tr><td>Supabase</td><td>Only if you sign in: sign-in and sync. <a href="https://supabase.com/privacy" rel="noopener">Supabase privacy policy</a></td></tr>
     </tbody>
   </table>
-  <p>Links to TCGplayer, PriceCharting and eBay are ordinary links. Nothing is sent to those sites unless you click one.</p>
+  <p>Links to card shops, TCGplayer, PriceCharting and eBay are ordinary links. Nothing is sent to those sites unless you click one, and then their own privacy policies apply.</p>
 
   <h2>Cookies and storage</h2>
   <p>SetKeeper doesn't use cookies, ads or analytics. It uses your browser's local storage to save your collection and settings, and, if you sign in, to keep you signed in on that device.</p>
@@ -114,9 +133,9 @@
   <p>If this policy changes, the new version will be posted here with a new effective date. Significant changes will also be noted in the app.</p>
 
   <h2>Contact</h2>
-  <p>SetKeeper is run by an individual developer in British Columbia, Canada. For privacy questions or requests, open an issue at <a href="https://github.com/vijay0320/setkeeper/issues" rel="noopener">github.com/vijay0320/setkeeper/issues</a>. Please don't include personal details in a public issue; ask for a private contact instead.</p>
+  <p>SetKeeper is run by an individual developer in British Columbia, Canada. For privacy questions or requests, and for shops asking to be removed or corrected, open an issue at <a href="https://github.com/vijay0320/setkeeper/issues" rel="noopener">github.com/vijay0320/setkeeper/issues</a>. Please don't include personal details in a public issue; ask for a private contact instead.</p>
 
-  <footer>SetKeeper is an unofficial fan project and isn't affiliated with or endorsed by The Pokémon Company, Nintendo, Creatures or Game Freak.</footer>
+  <footer>SetKeeper is an unofficial fan project and isn't affiliated with or endorsed by The Pokémon Company, Nintendo, Creatures or Game Freak, or by any card shop. Pokémon and its trademarks belong to their owners. · <a href="terms.html">Terms of service</a></footer>
 </div>
 </body>
 </html>

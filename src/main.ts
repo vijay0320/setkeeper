@@ -2234,7 +2234,7 @@ function syncPanel(download: (text: string, name: string, type: string) => () =>
             if (!armed) { armed = true; b.textContent = "Tap again: deletes your account and cloud copy; this device keeps its data"; return; }
             await deleteCloudCopy(); toast("Account and cloud copy deleted"); render();
           } }, "Delete my account"); return b; })()),
-        h("p", { class: "hint small" }, h("a", { href: "privacy.html" }, "Privacy policy")));
+        h("p", { class: "hint small" }, h("a", { href: "privacy.html" }, "Privacy policy"), " · ", h("a", { href: "terms.html" }, "Terms of service")));
     }
     kids.push(h("h3", {}, "Backup file"), h("p", { class: "hint" }, "One file with all your binders and card data. Keep it somewhere safe; restoring replaces what's on this device."), backupRow);
     panel.replaceChildren(...kids);
@@ -2270,7 +2270,7 @@ function signInDialog() {
       h("button", { class: "close", value: "close", "aria-label": "Close" }, "×")),
     h("div", { class: "sheet-pad" },
       h("p", { class: "hint" }, "No password. Enter your email and open the link we send you on this device. Your binders then sync automatically across your phone, tablet and computer."),
-      h("p", { class: "hint small" }, "We store your email and your collection data to sync it, and nothing else. ", h("a", { href: "privacy.html", target: "_blank", rel: "noopener" }, "Privacy policy")),
+      h("p", { class: "hint small" }, "We store your email and your collection data to sync it, and nothing else. By signing in you agree to the ", h("a", { href: "terms.html", target: "_blank", rel: "noopener" }, "Terms of service"), ". ", h("a", { href: "privacy.html", target: "_blank", rel: "noopener" }, "Privacy policy")),
       h("div", { class: "row", onsubmit: (e: Event) => e.preventDefault() }, email, send), msg)));
   send.onclick = async (e: Event) => {
     e.preventDefault();
