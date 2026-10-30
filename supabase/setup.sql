@@ -129,6 +129,9 @@ begin
     from _in i
     where i.in_stock = false and i.condition = '' and s.seller = p_seller and s.card_id = i.card_id and s.printing = i.printing
       and s.condition <> '' and s.in_stock
+      -- only copies from an earlier run: another product for the same card in stock today stays in stock
+      and s.seen < p_day
+      and not exists (select 1 from _in j where j.card_id = i.card_id and j.printing = i.printing and j.condition = s.condition and j.in_stock)
     returning s.set_id, s.card_id, s.printing, s.condition, s.price
   )
   insert into listing_changes (day, seller, set_id, card_id, printing, condition, price, in_stock, qty)
