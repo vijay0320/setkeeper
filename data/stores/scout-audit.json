@@ -1,5 +1,5 @@
 {
- "checkedAt": "2026-10-29T20:52:54.985Z",
+ "checkedAt": "2026-10-30T01:50:02.719Z",
  "note": "Which shops the price scout may read, and which collection. Titles and counts only; no inventory.",
  "shops": [
   {
@@ -455,7 +455,7 @@
      {
       "handle": "pokemon-30th-celebration",
       "title": "Pokemon 30th Celebration",
-      "count": 44,
+      "count": 45,
       "readable": true
      }
     ]
