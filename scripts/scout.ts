@@ -10,7 +10,7 @@
 // snapshot per set. Without them (local runs), it writes data/listings/<set>.json,
 // which .gitignore keeps out of git.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { gzipSync } from "node:zlib";
+import { packArchive } from "./scout/archive.ts";
 import type { CardSet } from "../src/lib/types.ts";
 import type { Listing, MarketSnapshot, Seller } from "../src/lib/market.ts";
 import { fetchShopify, newStats, type Resolver, type ShopifyStore } from "./scout/shopify.ts";
@@ -48,7 +48,7 @@ const resolve: Resolver = (title, extra, collection) => {
     if (id) return { setId: BUNDLED, cardId: id };
   }
   if (!idx) return { miss: "no card" };
-  const m = matchCard(title, idx, extra);
+  const m = matchCard(title, idx, `${extra} ${collection.replace(/-/g, " ")}`);
   return m.card ? appCard(m.card) : { miss: m.reason ?? "no card" };
 };
 
@@ -172,11 +172,12 @@ else if (sbUrl && sbKey) {
       if (res.ok) gone += Number(await res.json()) || 0;
     }
   }
-  // 3. the raw run, gzipped, to a private storage bucket: everything exactly as collected
-  const raw = gzipSync(JSON.stringify({ fetchedAt, sellers: [...sellers.values()], sources, listings }));
-  const path = `${fetchedAt.slice(0, 4)}/${fetchedAt.slice(5, 7)}/${fetchedAt.slice(0, 10)}T${fetchedAt.slice(11, 16).replace(":", "")}.json.gz`;
+  // 3. the raw run, packed, to a private storage bucket: everything exactly as collected
+  // (packed columns + Brotli; read back with unpackArchive in scripts/scout/archive.ts)
+  const raw = packArchive(fetchedAt, [...sellers.values()], sources, listings);
+  const path = `${fetchedAt.slice(0, 4)}/${fetchedAt.slice(5, 7)}/${fetchedAt.slice(0, 10)}T${fetchedAt.slice(11, 16).replace(":", "")}.listings.br`;
   const up = await fetch(`${sbUrl}/storage/v1/object/scout-archive/${path}`, {
-    method: "POST", headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}`, "Content-Type": "application/gzip", "x-upsert": "true" }, body: raw,
+    method: "POST", headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}`, "Content-Type": "application/octet-stream", "x-upsert": "true" }, body: raw,
   });
   const archived = up.ok ? `archived ${(raw.length / 1e6).toFixed(1)} MB` : `archive failed (HTTP ${up.status}: ${(await up.text()).slice(0, 120)})`;
   notice("Saved", `${rows.length} sets of today's listings; history: ${changed} price, stock or quantity changes, ${gone} listings gone; ${archived}`);

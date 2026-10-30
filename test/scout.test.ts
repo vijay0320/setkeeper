@@ -184,3 +184,70 @@ test("reads an in-stock collection first", () => {
     { handle: "pokemon-sv-singles", title: "Pokemon Scarlet & Violet Singles", products_count: 12000 },
   ]), ["pokemon-singles-instock", "pokemon-singles-all", "pokemon-sv-singles"]);
 });
+
+// shapes from the shops' real titles (Oct 30 run)
+const ix = buildIndex([
+  { id: "pop5-17", localId: "17", name: "Umbreon ★", setId: "pop5" },
+  { id: "ex8-107", localId: "107", name: "Rayquaza ★", setId: "ex8" },
+  { id: "sv03.5-006", localId: "006", name: "Charizard ex", setId: "sv03.5" },
+  { id: "base1-19", localId: "19", name: "Dugtrio", setId: "base1" },
+  { id: "swsh12tg-TG05", localId: "TG05", name: "Gardevoir", setId: "swsh12tg" },
+  { id: "swsh10tg-TG05", localId: "TG05", name: "Gardevoir", setId: "swsh10tg" },
+  { id: "swsh12tg-TG30", localId: "TG30", name: "Lugia VSTAR", setId: "swsh12tg" },
+  { id: "swsh10tg-TG30", localId: "TG30", name: "Origin Forme Palkia VSTAR", setId: "swsh10tg" },
+  { id: "swsh12pt5gg-GG27", localId: "GG27", name: "Swablu", setId: "swsh12pt5gg" },
+  { id: "swsh12pt5gg-GG70", localId: "GG70", name: "Mewtwo VSTAR", setId: "swsh12pt5gg" },
+  { id: "swshp-SWSH291", localId: "SWSH291", name: "Lucario VSTAR", setId: "swshp" },
+  { id: "svp-053", localId: "053", name: "Mew ex", setId: "svp" },
+  { id: "svp-051", localId: "051", name: "Snorlax", setId: "svp" },
+  { id: "sv01-051", localId: "051", name: "Snorlax", setId: "sv01" },
+  { id: "xyp-XY60", localId: "XY60", name: "Gyarados", setId: "xyp" },
+  { id: "sv06-168", localId: "168", name: "Bloodmoon Ursaluna ex", setId: "sv06" },
+  { id: "sv01-257", localId: "257", name: "Basic Lightning Energy", setId: "sv01" },
+], [
+  { id: "pop5", name: "POP Series 5", official: 17, total: 17 },
+  { id: "ex8", name: "Deoxys", official: 107, total: 111 },
+  { id: "sv03.5", name: "151", official: 165, total: 207 },
+  { id: "base1", name: "Base Set", official: 102, total: 102 },
+  { id: "swsh12tg", name: "Silver Tempest Trainer Gallery", official: 0, total: 30 },
+  { id: "swsh10tg", name: "Astral Radiance Trainer Gallery", official: 0, total: 30 },
+  { id: "swsh12pt5gg", name: "Crown Zenith Galarian Gallery", official: 0, total: 70 },
+  { id: "swshp", name: "SWSH Black Star Promos", official: 307, total: 307 },
+  { id: "svp", name: "SVP Black Star Promos", official: 200, total: 200 },
+  { id: "sv01", name: "Scarlet & Violet", official: 198, total: 258 },
+  { id: "xyp", name: "XY Black Star Promos", official: 211, total: 211 },
+  { id: "sv06", name: "Twilight Masquerade", official: 167, total: 226 },
+]);
+
+test("places set codes, promo codes, subsets and lone numbers", () => {
+  assert.equal(matchCard("Umbreon ★ [POP5-17]", ix).card?.id, "pop5-17");
+  assert.equal(matchCard("Rayquaza ★ [EX8-107]", ix).card?.id, "ex8-107");
+  assert.equal(matchCard("Charizard ex - Double Rare [sv035-006] [Ultra]", ix).card?.id, "sv03.5-006");
+  assert.equal(matchCard("Dugtrio - Rare - Unlimited [base1U-19] [Non-Holo]", ix).card?.id, "base1-19");
+  assert.equal(matchCard("Gardevoir (TG05/TG30) [Sword & Shield: Silver Tempest]", ix).card?.id, "swsh12tg-TG05");
+  assert.equal(matchCard("Gardevoir (TG05/TG30) [Sword & Shield: Astral Radiance]", ix).card?.id, "swsh10tg-TG05");
+  assert.equal(matchCard("Swablu GG27/70 - SWSH Crown Zenith Galarian Gallery Holofoil", ix).card?.id, "swsh12pt5gg-GG27");
+  assert.equal(matchCard("Lucario VSTAR (SWSH291) [Sword & Shield: Black Star Promos]", ix).card?.id, "swshp-SWSH291");
+  assert.equal(matchCard("Mew ex (SVP053) [Scarlet & Violet: Black Star Promos]", ix).card?.id, "svp-053");
+  assert.equal(matchCard("Gyarados (XY60) (Prerelease Promo) [XY: Black Star Promos]", ix).card?.id, "xyp-XY60");
+  assert.equal(matchCard("Snorlax (051) [Scarlet & Violet: Black Star Promos]", ix).card?.id, "svp-051");
+  assert.equal(matchCard("Snorlax (051)", ix).reason, "ambiguous"); // promo or base set: can't tell
+  assert.equal(matchCard("Bloodmoon Ursaluna ex (168) - Holofoil - Special Illustration Rare", ix).card?.id, "sv06-168");
+  assert.equal(matchCard("Lightning Energy (257/198) [Scarlet & Violet: Base Set]", ix).card?.id, "sv01-257");
+  assert.equal(matchCard("Pikachu (Holofoil) [Non-Holo]", ix).reason, "no number");
+});
+
+test("the daily archive packs small and gives back exactly what was collected", async () => {
+  const { packArchive, unpackArchive } = await import("../scripts/scout/archive.ts");
+  const sellers = [{ id: "s", name: "Shop", country: "CA", currency: "CAD" as const, kind: "store" as const, url: "https://shop.example" }];
+  const ls = [
+    { sellerId: "s", setId: "sv08.5", cardId: "sv08.5-161", price: 389.99, qty: 1, condition: "NM", printing: "holofoil", url: "https://shop.example/products/umbreon-ex-161-131", title: "Umbreon ex - 161/131" },
+    { sellerId: "s", setId: "sv08.5", cardId: "sv08.5-161", price: 350, qty: 0, url: "https://shop.example/products/umbreon-ex-161-131-1", title: "Umbreon ex - 161/131" },
+    { sellerId: "s", cardId: "092", price: 6.49, qty: 3, condition: "LP", url: "https://elsewhere.example/x", title: "Odd" },
+    { sellerId: "s", cardId: "093", price: 1.1, qty: 1, shipping: 2 },
+  ];
+  const back = unpackArchive(packArchive("2026-10-30T10:00:00Z", sellers, [], ls));
+  const key = (x: object) => JSON.stringify(x, Object.keys(x).sort());
+  assert.deepEqual(back.listings.map(key).sort(), ls.map(key).sort());
+  assert.equal(back.fetchedAt, "2026-10-30T10:00:00Z");
+});
