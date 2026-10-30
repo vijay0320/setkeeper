@@ -1,4 +1,4 @@
-import { latestListings, priceHistory, cardsTotalByDay, initSync, onSyncChange, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
+import { latestListings, priceHistory, cardsTotalByDay, myAlerts, type Alert, initSync, onSyncChange, syncEnabled, state as syncState, syncNow, sendLink, signOut, deleteCloudCopy, backupText, restore, hasPreSyncCopy, preSyncText, persistStorage } from "./syncRuntime.ts";
 import setData from "../data/sets/30th-celebration.json";
 import fpData from "../data/sets/30th-celebration.fingerprints.json";
 import type { Card, CardSet, Collection, Entry, Priority, Status } from "./lib/types.ts";
@@ -14,6 +14,7 @@ import sampleMarket from "../data/listings/sample.json";
 import { listingsFromRows, type MarketSnapshot, type ShippingRule } from "./lib/market.ts";
 import { optimizeCart, type CartPlan, type Want } from "./lib/cart.ts";
 import { loadMarket, saveMarket, withOverrides as withShippingOverrides, type MarketState } from "./lib/marketStore.ts";
+import { cheapestAtDoor, fillDays } from "./lib/cheapest.ts";
 import { CHECK_SHOPS, SIGHTING_DAYS, addSighting, searchUrl, withSightings, type DirectoryShop, type Sighting } from "./lib/sightings.ts";
 import { parseCSV } from "./lib/transfer.ts";
 import { readXlsx } from "./lib/xlsx.ts";
@@ -1560,7 +1561,18 @@ function whereToBuy(c: Card): HTMLElement {
           h("a", { class: "btn small ghost", href: searchUrl(st as unknown as DirectoryShop, c), target: "_blank", rel: "noopener" }, read.has(st.id) ? "Open" : "Check"),
           read.has(st.id) ? null : h("button", { class: "linkish", type: "button", onclick: () => logForm(st) }, "Log price")));
     });
-    box.replaceChildren(h("h3", {}, "Where to buy"),
+    // the cheapest copy at your door, in your condition (or better) and printing
+    const want = (entry(c.id).condition ?? "NM") as CardCondition;
+    const okConds = CONDITIONS.slice(0, CONDITIONS.indexOf(want) + 1);
+    const door = cheapestAtDoor(snap, c.id, usdCad(), { conditions: okConds, printing: printingOf(c.id), ...(B.landed ? { landed: { province: B.province, rules: RULES, fxFee: B.fxFee } } : {}) });
+    const best = door[0];
+    const cheapest = best
+      ? h("p", { class: "cheapest" }, h("span", {}, `Cheapest at your door (${want}${want === "NM" ? "" : " or better"})`),
+          h("strong", {}, formatCAD(best.total)),
+          h("small", {}, ` ${best.seller.name} · ${formatCAD(best.price)} ${best.listing.condition ?? ""}${best.shipping ? ` + ${formatCAD(best.shipping)} shipping` : " + free shipping"}${B.landed ? ", tax incl." : ""}`),
+          door.length > 1 ? h("small", { class: "next" }, ` · next: ${door.slice(1, 3).map((d) => `${d.seller.name} ${formatCAD(d.total)}`).join(", ")}`) : null)
+      : snap ? h("p", { class: "cheapest none" }, `Not in stock at the shops SetKeeper checks (${when}).`) : null;
+    box.replaceChildren(h("h3", {}, "Where to buy"), cheapest ?? "",
       h("ul", { class: "where-list" }, ...rows),
       h("p", { class: "fine" }, `Stock and prices before you click come from SetKeeper's daily check${when ? ` (last ${when})` : ""}. Shops it doesn't check open their own search for this card; prices you log join your Buy tab for ${SIGHTING_DAYS} days.`),
       form);
@@ -1685,7 +1697,8 @@ function historyBox(c: Card, printing: string, cond: string): HTMLElement {
   if (!syncState.email) { box.append(h("p", { class: "hint small" }, "Sign in to see this card's price history.")); return box; }
   box.append(h("p", { class: "hint small" }, "Loading price history…"));
   void priceHistory(id, 90).then((rows) => {
-    const r = (rows ?? []).filter((x) => (printing === "default" ? x.is_default : x.printing === printing));
+    // prices are stored as changes: each day takes the latest value on or before it
+    const r = fillDays((rows ?? []).filter((x) => (printing === "default" ? x.is_default : x.printing === printing)), localDay());
     const pts: TrendPoint[] = [];
     for (const x of r) {
       const fv = fairValue({ printing, tcg: x.tcg_market != null ? { market: Number(x.tcg_market) } : undefined, cm: { trend: x.cm_trend != null ? Number(x.cm_trend) : undefined, avg30: x.cm_avg30 != null ? Number(x.cm_avg30) : undefined } }, fx());
@@ -1818,6 +1831,33 @@ function wantsFor(scope: "all" | "priority"): Want[] {
     });
 }
 
+/** Restocks and price drops for the cards you're missing in this set, from the shops' history. */
+function alertsPanel(): HTMLElement | null {
+  if (__ARTIFACT__ || !syncState.email) return null;
+  const ids = SET.cards.filter((c) => missing(statusOf(c.id))).map((c) => c.id);
+  if (!ids.length) return null;
+  const panel = h("div", { class: "panel alerts" }, h("h2", {}, "Alerts"), h("p", { class: "hint" }, "Checking the shops for restocks and price drops…"));
+  void myAlerts(ids, 7).then((rows) => {
+    const name = (id: string) => market.snapshot?.sellers.find((s) => s.id === id)?.name ?? STORES.stores.find((s) => s.id === id)?.name ?? id;
+    const label: Record<Alert["kind"], string> = { restock: "Back in stock", price_drop: "Price drop", new: "Newly listed" };
+    const list = (rows ?? []).filter((a) => BY_ID.has(a.card_id));
+    panel.replaceChildren(h("h2", {}, "Alerts"),
+      list.length
+        ? h("ul", { class: "alert-list" }, ...list.slice(0, 25).map((a) => {
+          const c = BY_ID.get(a.card_id)!;
+          return h("li", { class: `k-${a.kind}` },
+            h("span", { class: "badge" }, label[a.kind]),
+            h("button", { class: "linkish", onclick: () => openCard(c.id) }, `${c.name} ${c.number}`),
+            h("span", {}, ` · ${name(a.seller)} · ${formatCAD(Number(a.price))} ${a.condition}${a.printing ? ` ${printingLabel(a.printing)}` : ""}`),
+            a.was != null ? h("s", { class: "was" }, ` ${formatCAD(Number(a.was))}`) : null,
+            h("small", {}, ` · ${new Date(a.day + "T12:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })}`));
+        }))
+        : h("p", { class: "hint" }, "No restocks or price drops for your missing cards in the last 7 days."),
+      h("p", { class: "fine" }, "From SetKeeper's daily check of the shops: back in stock, 5% or more off, or newly listed."));
+  });
+  return panel;
+}
+
 function buy(): Node {
   void ensureMarket();
   const snap = withOverrides(market);
@@ -1828,6 +1868,8 @@ function buy(): Node {
     actions: [h("a", { href: "#shop", class: "btn ghost" }, "Budget planner")],
     scene: { kind: "stack", cards: missingTop(4).map((c) => ({ ...stageCard(c), ghost: false })) },
   }));
+  const alerts = alertsPanel();
+  if (alerts) wrap.append(alerts);
   if (!snap) {
     wrap.append(
       h("div", { class: "panel" },

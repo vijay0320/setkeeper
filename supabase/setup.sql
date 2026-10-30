@@ -158,6 +158,33 @@ end $$;
 revoke execute on function public.record_listings(text, date, jsonb) from public, anon, authenticated;
 revoke execute on function public.close_listings(text, date) from public, anon, authenticated;
 
+-- Alerts for a collector's wanted cards (signed in): back in stock, a price drop of 5% or more,
+-- or newly listed at a shop, over the last few days. Newest first.
+create or replace function public.my_alerts(p_cards text[], p_days int default 7)
+returns table (day date, kind text, seller text, set_id text, card_id text, printing text, condition text, price numeric, was numeric)
+language sql stable security definer set search_path = public as $$
+  with w as (
+    select c.*, lag(c.in_stock) over k as prev_stock, lag(c.price) over k as prev_price,
+      c.day > (select min(f.day) from public.listing_changes f where f.seller = c.seller) as after_first_run
+    from public.listing_changes c
+    where c.card_id = any(p_cards[1:2000])
+    window k as (partition by c.seller, c.card_id, c.printing, c.condition order by c.day, c.id)
+  )
+  select day,
+    case when prev_stock is null then
+           -- a condition seen for the first time on a product that was sold out is a restock
+           case when exists (select 1 from public.listing_changes o where o.seller = w.seller and o.card_id = w.card_id and o.printing = w.printing
+                             and o.condition = '' and not o.in_stock and o.day < w.day) then 'restock' else 'new' end
+         when not prev_stock then 'restock' else 'price_drop' end,
+    seller, set_id, card_id, printing, condition, price, case when prev_stock then prev_price end
+  from w
+  where in_stock and condition <> '' and day >= current_date - least(greatest(p_days, 1), 30)
+    and ((prev_stock is null and after_first_run) or prev_stock = false or (prev_stock and price < prev_price * 0.95))
+  order by day desc, price limit 100
+$$;
+revoke execute on function public.my_alerts(text[], int) from public;
+grant execute on function public.my_alerts(text[], int) to authenticated;
+
 -- Copies sold, estimated from drops in a shop's stock between one change and the next
 -- (a restock shows as a rise and isn't counted). Run in the SQL editor, e.g.
 --   select card_id, sum(sold) from public.card_sales where day > current_date - 30 group by 1 order by 2 desc limit 20;
@@ -217,32 +244,80 @@ create index if not exists card_prices_set_day on public.card_prices (set_id, da
 alter table public.card_prices enable row level security;
 revoke all on public.card_prices from anon, authenticated;
 
--- One card's daily prices, every printing, up to a year back.
+-- Market prices are stored as changes only: card_prices gets a row for a card's printing on a
+-- day only when one of its figures changed (card_prices_latest holds the last known values).
+-- A card's price on any day is its latest row on or before that day.
+create table if not exists public.card_prices_latest (
+  card_id text not null, printing text not null, set_id text not null, is_default boolean not null default false,
+  tcg_low numeric, tcg_mid numeric, tcg_market numeric, tcg_high numeric, cm_low numeric, cm_trend numeric, cm_avg30 numeric,
+  day date not null,
+  primary key (card_id, printing)
+);
+alter table public.card_prices_latest enable row level security;
+revoke all on public.card_prices_latest from anon, authenticated;
+insert into public.card_prices_latest
+  select distinct on (card_id, printing) card_id, printing, set_id, is_default, tcg_low, tcg_mid, tcg_market, tcg_high, cm_low, cm_trend, cm_avg30, day
+  from public.card_prices order by card_id, printing, day desc
+on conflict (card_id, printing) do nothing;
+create index if not exists card_prices_default_card_day on public.card_prices (card_id, day desc) where is_default;
+
+-- Called by scripts/price-history.ts (service role) in chunks. Returns how many changed.
+create or replace function public.record_prices(p_day date, p_rows jsonb) returns int
+language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  create temp table _p on commit drop as
+    select * from jsonb_to_recordset(p_rows) as x(card_id text, printing text, set_id text, is_default boolean,
+      tcg_low numeric, tcg_mid numeric, tcg_market numeric, tcg_high numeric, cm_low numeric, cm_trend numeric, cm_avg30 numeric);
+  insert into card_prices (card_id, printing, set_id, day, is_default, tcg_low, tcg_mid, tcg_market, tcg_high, cm_low, cm_trend, cm_avg30)
+    select i.card_id, i.printing, i.set_id, p_day, i.is_default, i.tcg_low, i.tcg_mid, i.tcg_market, i.tcg_high, i.cm_low, i.cm_trend, i.cm_avg30
+    from _p i left join card_prices_latest l on l.card_id = i.card_id and l.printing = i.printing
+    where l.card_id is null
+       or (i.is_default, i.tcg_low, i.tcg_mid, i.tcg_market, i.tcg_high, i.cm_low, i.cm_trend, i.cm_avg30)
+          is distinct from (l.is_default, l.tcg_low, l.tcg_mid, l.tcg_market, l.tcg_high, l.cm_low, l.cm_trend, l.cm_avg30)
+  on conflict (card_id, printing, day) do update set is_default = excluded.is_default, tcg_low = excluded.tcg_low, tcg_mid = excluded.tcg_mid,
+    tcg_market = excluded.tcg_market, tcg_high = excluded.tcg_high, cm_low = excluded.cm_low, cm_trend = excluded.cm_trend, cm_avg30 = excluded.cm_avg30;
+  get diagnostics n = row_count;
+  insert into card_prices_latest select card_id, printing, set_id, is_default, tcg_low, tcg_mid, tcg_market, tcg_high, cm_low, cm_trend, cm_avg30, p_day from _p
+  on conflict (card_id, printing) do update set set_id = excluded.set_id, is_default = excluded.is_default, tcg_low = excluded.tcg_low, tcg_mid = excluded.tcg_mid,
+    tcg_market = excluded.tcg_market, tcg_high = excluded.tcg_high, cm_low = excluded.cm_low, cm_trend = excluded.cm_trend, cm_avg30 = excluded.cm_avg30, day = excluded.day;
+  return n;
+end $$;
+revoke execute on function public.record_prices(date, jsonb) from public, anon, authenticated;
+
+-- One card's prices, every printing, up to a year back: each change, plus the value in force
+-- when the window starts (the app fills in the days between).
 create or replace function public.price_history(p_card text, p_days int default 90)
 returns table (day date, printing text, is_default boolean, tcg_low numeric, tcg_market numeric, cm_trend numeric, cm_avg30 numeric)
 language sql stable security definer set search_path = public as $$
-  select day, printing, is_default, tcg_low, coalesce(tcg_market, tcg_mid), cm_trend, cm_avg30 from public.card_prices
-  where card_id = p_card and day >= current_date - least(greatest(p_days, 1), 365)
-  order by day, printing
+  with w as (select current_date - least(greatest(p_days, 1), 365) as start)
+  select * from (
+    select greatest(cp.day, w.start), cp.printing, cp.is_default, cp.tcg_low, coalesce(cp.tcg_market, cp.tcg_mid), cp.cm_trend, cp.cm_avg30
+    from w, lateral (select distinct on (printing) * from public.card_prices where card_id = p_card and day < w.start order by printing, day desc) cp
+    union all
+    select cp.day, cp.printing, cp.is_default, cp.tcg_low, coalesce(cp.tcg_market, cp.tcg_mid), cp.cm_trend, cp.cm_avg30
+    from w, public.card_prices cp where cp.card_id = p_card and cp.day >= w.start
+  ) x order by 1, 2
 $$;
 
 -- Daily total fair Near Mint value (CAD) of a list of cards (e.g. a collector's missing
--- cards → "cost to finish" trend), in each card's usual printing. Fair value is the same
--- rule as src/lib/prices.ts: the mean of TCGplayer market (USD→CAD) and Cardmarket's
--- trend / 30-day average (EUR→CAD), whichever exist. Rates come from the caller.
+-- cards → "cost to finish" trend), in each card's usual printing, using each card's price in
+-- force that day. Fair value is the same rule as src/lib/prices.ts: the mean of TCGplayer
+-- market (USD→CAD) and Cardmarket's trend / 30-day average (EUR→CAD), whichever exist.
 create or replace function public.cards_total_by_day(p_cards text[], p_days int default 90, p_usdcad numeric default 1.38, p_eurcad numeric default 1.6)
 returns table (day date, total_cad numeric, priced int)
 language sql stable security definer set search_path = public as $$
-  with v as (
-    select day,
-      coalesce(tcg_market, tcg_mid) * p_usdcad as t,
-      coalesce((cm_trend + cm_avg30) / 2, cm_trend, cm_avg30) * p_eurcad as c
-    from public.card_prices
-    where is_default and card_id = any(p_cards[1:400]) and day >= current_date - least(greatest(p_days, 1), 365)
+  with days as (select generate_series(current_date - least(greatest(p_days, 1), 365), current_date, interval '1 day')::date as day),
+  v as (
+    select d.day, x.t, x.c from days d
+    cross join unnest(p_cards[1:400]) as card(id)
+    cross join lateral (
+      select coalesce(tcg_market, tcg_mid) * p_usdcad as t, coalesce((cm_trend + cm_avg30) / 2, cm_trend, cm_avg30) * p_eurcad as c
+      from public.card_prices cp where cp.card_id = card.id and cp.is_default and cp.day <= d.day order by cp.day desc limit 1
+    ) x
   )
-  select day, round(sum(case when t is not null and c is not null then (t + c) / 2 else coalesce(t, c) end), 2),
-    count(coalesce(t, c))::int
-  from v group by day order by day
+  select day, round(sum(case when t is not null and c is not null then (t + c) / 2 else coalesce(t, c) end), 2), count(coalesce(t, c))::int
+  from v group by day having count(coalesce(t, c)) > 0 order by day
 $$;
 revoke execute on function public.price_history(text, int) from public;
 revoke execute on function public.cards_total_by_day(text[], int, numeric, numeric) from public;

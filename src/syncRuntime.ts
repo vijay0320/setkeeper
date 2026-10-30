@@ -206,5 +206,8 @@ export interface PricePoint { day: string; printing: string; is_default: boolean
 /** A card's daily price history from SetKeeper's own records (signed-in collectors). */
 export const priceHistory = (cardId: string, days = 90) => rpc<PricePoint[]>("price_history", { p_card: cardId, p_days: days });
 /** Daily total fair NM value (CAD) of a list of cards in their usual printing, e.g. everything still missing: the "cost to finish" trend. */
+/** Restocks, price drops and new listings for these cards at the shops, last few days (signed in). */
+export interface Alert { day: string; kind: "restock" | "price_drop" | "new"; seller: string; set_id: string; card_id: string; printing: string; condition: string; price: number; was: number | null }
+export const myAlerts = (cardIds: string[], days = 7) => rpc<Alert[]>("my_alerts", { p_cards: cardIds.slice(0, 2000), p_days: days });
 export const cardsTotalByDay = (cardIds: string[], fx: { usdcad: number; eurcad: number }, days = 90) =>
   rpc<{ day: string; total_cad: number; priced: number }[]>("cards_total_by_day", { p_cards: cardIds.slice(0, 400), p_days: days, p_usdcad: fx.usdcad, p_eurcad: fx.eurcad });

@@ -70,7 +70,9 @@ Push to `main`. The included workflow (`.github/workflows/pages.yml`) runs the t
 Everything the scouts collect stays private in Supabase (Canada Central), built to last on the free tier:
 
 - **Shop listings, as changes only** (`listing_changes`): a row when a card's price, stock or number of copies changes at a shop, per printing and condition. Any past day can be rebuilt from it, and drops in copies give sales estimates (`card_sales`). Today's listings per set (`latest_snapshots`) are what the app reads.
-- **Market prices** (`card_prices`): TCGplayer and Cardmarket figures for every printing of the tracked sets, daily.
+- **Market prices** (`card_prices`): TCGplayer and Cardmarket figures for every printing of every English card, saved as changes only (a row when a figure changes); the tracked sets are checked first each night.
+- **Alerts** (`my_alerts`): restocks, price drops of 5% or more and new listings at the shops for a collector's missing cards, shown on the Buy tab.
+- **Cheapest at your door**: each card's best in-stock offer across the shops, with the shop's shipping and your province's tax, on the card sheet.
 - **Raw archive**: each scout run, packed (columns + Brotli, about a quarter of gzipped JSON), in the private `scout-archive` storage bucket, exactly as collected; `unpackArchive` in `scripts/scout/archive.ts` reads it back.
 - `select * from public.dataset_stats;` in the SQL editor shows shops, cards, sets, days of history, rows, copies sold in the last 30 days and database size.
 
