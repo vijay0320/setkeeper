@@ -251,3 +251,24 @@ test("the daily archive packs small and gives back exactly what was collected", 
   assert.deepEqual(back.listings.map(key).sort(), ls.map(key).sort());
   assert.equal(back.fetchedAt, "2026-10-30T10:00:00Z");
 });
+
+test("skips graded slabs and reads more title shapes", () => {
+  const iy = buildIndex([
+    { id: "base1-4", localId: "4", name: "Charizard", setId: "base1" },
+    { id: "bw11-RC22", localId: "RC22", name: "Reshiram", setId: "bw11" },
+    { id: "bw11-RC32", localId: "RC32", name: "Gardevoir", setId: "bw11" },
+    { id: "sv08-036", localId: "036", name: "Ceruledge ex", setId: "sv08" },
+    { id: "sv08.5-141", localId: "141", name: "Ortega", setId: "sv08.5" },
+  ], [
+    { id: "base1", name: "Base Set", official: 102, total: 102 },
+    { id: "bw11", name: "Legendary Treasures", official: 113, total: 140 },
+    { id: "sv08", name: "Surging Sparks", official: 191, total: 252 },
+    { id: "sv08.5", name: "Prismatic Evolutions", official: 131, total: 180 },
+  ]);
+  assert.equal(matchCard("CHARIZARD (4) - POKEMON GAME - 1ST EDITION - HOLO - EX 5", iy).reason, "excluded");
+  assert.equal(matchCard("Charizard - 4/102 - Holo - NM-MT 8", iy).reason, "excluded");
+  assert.equal(matchCard("Charizard - 4/102 - Holo Rare", iy).card?.id, "base1-4");
+  assert.equal(matchCard("Reshiram (Full Art) (RC22/113) - Holofoil - Ultra Rare", iy).card?.id, "bw11-RC22");
+  assert.equal(matchCard("Ceruledge ex 36 - SV08 Surging Sparks Holofoil", iy).card?.id, "sv08-036");
+  assert.equal(matchCard("Ortega 141 - SV Prismatic Evolutions Holofoil", iy).card?.id, "sv08.5-141");
+});

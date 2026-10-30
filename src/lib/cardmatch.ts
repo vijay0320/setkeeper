@@ -12,6 +12,8 @@ export interface CatalogCard { id: string; localId: string; name: string; setId:
 export interface CatalogSet { id: string; name: string; official: number; total: number }
 
 export const EXCLUDE = /\b(psa|bgs|cgc|tag|ace grading|graded|slab|proxy|custom|orica|replica|fake|japanese|jpn|korean|chinese|lot of|bundle|empty|code card|online code|booster|etb|elite trainer|tin|box|pack|sleeves?|binder|playmat|deck box|display|case)\b/i;
+/** Graded slabs written the way some shops do: "… - HOLO - NM-MT 8", "… - GEM MT 10", "… - EX 5". */
+export const GRADED = /\s-\s(gem\s*mt|gem\s*mint|pristine|mint|nm[\s-]*mt|nm|ex[\s-]*mt|ex|vg[\s-]*ex|vg|good|fair|poor|pr|mnt\s*fair|authentic)\s*\+?\s*\d{1,2}(\.5)?\s*$/i;
 export const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 const SUFFIX = new Set(["ex", "gx", "v", "vmax", "vstar", "lv", "x", "break", "prime", "legend", "the", "of", "and", "s", "basic"]);
 /** Words of a card's name that must appear in a title ("Umbreon ex" → ["umbreon"], "Basic Lightning Energy" → ["lightning", "energy"]). */
@@ -60,6 +62,8 @@ export function buildIndex(cards: CatalogCard[], sets: CatalogSet[]): CardIndex 
     if (/^\d+$/.test(c.localId) && s.official > 0) add(byNumber, numKey(c.localId, String(s.official)), c);
     const m = c.localId.match(/^([A-Z]+)(\d+)$/i);
     if (m) add(byNumber, numKey(c.localId, `${m[1]}${subsetSize.get(`${c.setId}|${m[1].toUpperCase()}`)}`), c);
+    // some subsets print the main set's size instead: Radiant Collection "RC22/113"
+    if (m && s.official > 0) add(byNumber, numKey(c.localId, String(s.official)), c);
     if (/promo/i.test(s.name) || PROMO_PREFIX[s.id]) {
       if (m) add(byPromo, localKey(c.localId), c);
       else if (/^\d+$/.test(c.localId) && PROMO_PREFIX[s.id]) add(byPromo, `${PROMO_PREFIX[s.id]}${Number(c.localId)}`, c);
@@ -94,7 +98,7 @@ export interface Match { card?: CatalogCard; reason?: "excluded" | "no number" |
 
 /** The card a listing title refers to. `extra` is other text the shop gives (tags, product type, collection). */
 export function matchCard(title: string, idx: CardIndex, extra = ""): Match {
-  if (EXCLUDE.test(title)) return { reason: "excluded" };
+  if (EXCLUDE.test(title) || GRADED.test(title)) return { reason: "excluded" };
   const t = norm(title), tw = new Set(t.split(" ")), hint = norm(`${title} ${extra}`);
   const named = (cs: CatalogCard[]) => cs.filter((c) => { const w = nameWords(c.name); return w.length > 0 && w.every((x) => tw.has(x)); });
   let sawNumber = false, sawCard = false;
@@ -121,6 +125,19 @@ export function matchCard(title: string, idx: CardIndex, extra = ""): Match {
       }
     }
   }
+  // 2b. a number then the set's code: "Ceruledge ex 36 - SV08 Surging Sparks"
+  for (const m of title.matchAll(/(?:^|\s)([A-Z]{0,3}\d{1,3})\s-\s([A-Za-z]{1,5}\d{1,3}(?:\.\d|pt\d)?[a-z]?)(?![A-Za-z0-9])/g)) {
+    sawNumber = true;
+    for (const set of setCodeVariants(m[2])) {
+      if (!idx.sets.has(set)) continue;
+      for (const l of new Set([m[1], String(Number(m[1])), m[1].padStart(3, "0")])) {
+        const c = idx.byId.get(`${set}-${l}`.toLowerCase());
+        if (!c) continue;
+        sawCard = true;
+        if (named([c]).length) return { card: c };
+      }
+    }
+  }
   // 3. promo codes: SVP053, SWSH291, XY60, SM228, BW93
   for (const m of title.matchAll(/(?:^|[^A-Za-z0-9])(SVP|MEP|SWSH|SM|XY|BW|DP|HGSS|NP)\s?-?\s?(\d{1,3})(?![0-9])/gi)) {
     sawNumber = true;
@@ -130,7 +147,7 @@ export function matchCard(title: string, idx: CardIndex, extra = ""): Match {
     if (n.length) return decide(n, t, hint, idx);
   }
   // 4. a lone number, "(168)" or "- 051": the name, then the set's name, must single it out
-  for (const m of title.matchAll(/(?:\(|#|\s-\s)\s*([A-Z]{0,4}\d{1,3})\s*(?:\)|\s-\s|$|\s)/gi)) {
+  for (const m of title.matchAll(/(?:\(|#|\s-\s|\s)\s*([A-Z]{0,4}\d{1,3})\s*(?:\)|\s-\s|$)/gi)) {
     sawNumber = true;
     const cands = idx.byLocal.get(localKey(m[1])) ?? [];
     if (cands.length) sawCard = true;

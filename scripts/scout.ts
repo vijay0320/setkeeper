@@ -42,7 +42,8 @@ const idx = await catalog();
 
 /** 30th Celebration titles go through its own matcher (RGB Mew, Classic Collection numbers); everything else through the full card list. */
 const resolve: Resolver = (title, extra, collection) => {
-  const in30th = /30th|celebration/i.test(collection);
+  // RGB Mew ("Mew - R/RGB") exists only in the 30th Celebration set
+  const in30th = /30th|celebration/i.test(collection) || /\bmew\b.*\b[RGB]\s*\/\s*RGB\b/i.test(title);
   if (in30th || /30th|celebration/i.test(`${title} ${extra}`)) {
     const id = matchTitle(title, set, in30th);
     if (id) return { setId: BUNDLED, cardId: id };
