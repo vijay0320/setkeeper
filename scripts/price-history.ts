@@ -46,3 +46,4 @@ for (const setId of sets) {
   console.log(`${setId}: ${priced}/${cards.length} cards, ${rows.length} printings`);
 }
 console.log(`saved ${saved} printing prices for ${cardsSaved} cards on ${day}`);
+if (process.env.GITHUB_ACTIONS) console.log(`::notice title=Price history::${saved} printing prices for ${cardsSaved} cards saved for ${day}`);

@@ -1706,12 +1706,17 @@ let market: MarketState = loadMarket(SET.id);
 let scoutTried = false;
 
 async function ensureMarket() {
-  if (market.snapshot || scoutTried || __ARTIFACT__) return;
+  // the collector's own imported sheet wins; sample data never hides real shop listings
+  if ((market.snapshot && market.source !== "sample") || scoutTried || __ARTIFACT__) return;
   scoutTried = true;
   try {
     // only the newest snapshot is readable; the price history stays private in Supabase
     const snap = await latestListings(SET.id) as MarketSnapshot | null;
-    if (snap?.listings?.length) { market = { ...market, source: "scout", snapshot: snap }; if (currentView() === "buy") render(); }
+    if (snap?.listings?.length) {
+      market = { ...market, source: "scout", snapshot: snap };
+      saveMarket(SET.id, { ...market, snapshot: undefined, source: "none" }); // forget the sample, keep preferences
+      if (currentView() === "buy") render();
+    }
   } catch { /* no scout data available */ }
 }
 
@@ -1751,7 +1756,8 @@ function buy(): Node {
         h("h2", {}, "Add price data"),
         h("p", { class: "hint" }, __ARTIFACT__
           ? "Import a listings sheet (Seller, Card #, Price, Qty, Condition, Shipping, Free over) on the Data tab, or try it with sample data."
-          : "Run the price scout (see README) to pull listings from your shops and eBay, import a listings sheet on the Data tab, or try it with sample data."),
+          : !syncState.email ? "Sign in to see today's listings from Canadian shops, import your own listings sheet on the Data tab, or try it with sample data."
+          : "No shop listings for this set yet. Import a listings sheet on the Data tab, or try it with sample data."),
         h("div", { class: "row" }, SET.id === BUNDLED.id ? h("button", { class: "btn", onclick: useSample }, "Try with sample data") : null, h("a", { class: "btn ghost", href: "#data" }, "Import listings"))));
     return wrap;
   }

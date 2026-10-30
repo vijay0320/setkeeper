@@ -23,11 +23,17 @@ export interface ShopifyStore {
 
 interface Product { title: string; handle: string; variants: { title: string; price: string; available?: boolean; inventory_quantity?: number }[] }
 
-export function listingsFromProducts(store: ShopifyStore, products: Product[], set: CardSet): Listing[] {
+/** Why products were or weren't used, for the run summary. */
+export interface ScanStats { products: number; matched: number; soldOut: number; unmatched: string[] }
+
+export function listingsFromProducts(store: ShopifyStore, products: Product[], set: CardSet, stats?: ScanStats): Listing[] {
   const out: Listing[] = [];
   for (const p of products) {
+    if (stats) stats.products++;
     const cardId = matchTitle(p.title, set, !!store.collection);
-    if (!cardId) continue;
+    if (!cardId) { if (stats && stats.unmatched.length < 6) stats.unmatched.push(p.title); continue; }
+    if (stats) stats.matched++;
+    const before = out.length;
     for (const v of p.variants) {
       const qty = v.inventory_quantity != null ? Math.max(0, v.inventory_quantity) : v.available ? 1 : 0;
       const price = Number(v.price);
@@ -41,11 +47,12 @@ export function listingsFromProducts(store: ShopifyStore, products: Product[], s
         url: `https://${store.domain}/products/${p.handle}`, title: p.title,
       });
     }
+    if (stats && out.length === before) stats.soldOut++;
   }
   return out;
 }
 
-export async function fetchShopify(store: ShopifyStore, set: CardSet, fetchFn: typeof fetch = fetch, maxPages = 40): Promise<Listing[]> {
+export async function fetchShopify(store: ShopifyStore, set: CardSet, fetchFn: typeof fetch = fetch, maxPages = 40, stats?: ScanStats): Promise<Listing[]> {
   const base = store.collection ? `https://${store.domain}/collections/${store.collection}/products.json` : `https://${store.domain}/products.json`;
   const all: Listing[] = [];
   for (let page = 1; page <= maxPages; page++) {
@@ -53,7 +60,7 @@ export async function fetchShopify(store: ShopifyStore, set: CardSet, fetchFn: t
     if (!res.ok) throw new Error(`${store.name}: HTTP ${res.status}`);
     const { products } = (await res.json()) as { products: Product[] };
     if (!products?.length) break;
-    all.push(...listingsFromProducts(store, products, set));
+    all.push(...listingsFromProducts(store, products, set, stats));
     await new Promise((r) => setTimeout(r, 600)); // be polite
   }
   return all;

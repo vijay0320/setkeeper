@@ -43,9 +43,12 @@ for (const store of cfg.shopify ?? []) {
     snap.listings.push(...ls);
     snap.sources!.push({ name: store.name, ok: true, listings: ls.length });
     console.log(`${store.name}: ${ls.length} listings`);
+    // a GitHub annotation, readable from the run page without opening the log
+    if (process.env.GITHUB_ACTIONS) console.log(`::notice title=Scout::${store.name}: ${ls.length} listings`);
   } catch (e) {
     snap.sources!.push({ name: store.name, ok: false, listings: 0, error: (e as Error).message });
     console.warn(`${store.name}: ${(e as Error).message}`);
+    if (process.env.GITHUB_ACTIONS) console.log(`::warning title=Scout::${store.name}: ${(e as Error).message}`);
   }
 }
 
@@ -84,6 +87,7 @@ snap.sellers = [...sellers.values()];
     mkdirSync("data/prices", { recursive: true });
     writeFileSync(file, JSON.stringify(rollConditions(prev, new Date().toISOString().slice(0, 10), m), null, 1) + "\n");
   }
+  if (process.env.GITHUB_ACTIONS) console.log(`::notice title=Conditions::${pairs} NM-vs-played pairs measured today`);
   console.log(`condition pairs today: ${pairs} (${Object.entries(m.overall).map(([c, f]) => `${c} ${f!.ratio} × ${f!.pairs}`).join(", ") || "none"})`);
 }
 const sbUrl = process.env.SUPABASE_URL?.replace(/\/$/, ""), sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
