@@ -3,30 +3,30 @@
  "overall": {
   "LP": {
    "ratio": 1,
-   "pairs": 2687
+   "pairs": 2704
   },
   "MP": {
    "ratio": 0.87,
-   "pairs": 2640
+   "pairs": 2651
   },
   "HP": {
    "ratio": 0.57,
-   "pairs": 293
+   "pairs": 295
   },
   "DMG": {
    "ratio": 0.5,
-   "pairs": 180
+   "pairs": 183
   }
  },
  "bands": {
   "under10": {
    "LP": {
     "ratio": 1,
-    "pairs": 2373
+    "pairs": 2376
    },
    "MP": {
     "ratio": 1,
-    "pairs": 2191
+    "pairs": 2192
    },
    "HP": {
     "ratio": 0.6,
@@ -39,26 +39,26 @@
   },
   "10to100": {
    "LP": {
-    "ratio": 0.89,
-    "pairs": 290
+    "ratio": 0.9,
+    "pairs": 303
    },
    "MP": {
     "ratio": 0.65,
-    "pairs": 421
+    "pairs": 431
    },
    "HP": {
     "ratio": 0.5,
-    "pairs": 64
+    "pairs": 66
    },
    "DMG": {
     "ratio": 0.3,
-    "pairs": 43
+    "pairs": 46
    }
   },
   "over100": {
    "LP": {
-    "ratio": 0.81,
-    "pairs": 24
+    "ratio": 0.83,
+    "pairs": 25
    },
    "MP": {
     "ratio": 0.65,
@@ -80,19 +80,19 @@
    "overall": {
     "MP": {
      "ratio": 0.87,
-     "pairs": 2640
+     "pairs": 2651
     },
     "HP": {
      "ratio": 0.57,
-     "pairs": 293
+     "pairs": 295
     },
     "DMG": {
      "ratio": 0.5,
-     "pairs": 180
+     "pairs": 183
     },
     "LP": {
      "ratio": 1,
-     "pairs": 2687
+     "pairs": 2704
     }
    },
    "bands": {
@@ -102,8 +102,8 @@
       "pairs": 28
      },
      "LP": {
-      "ratio": 0.81,
-      "pairs": 24
+      "ratio": 0.83,
+      "pairs": 25
      },
      "HP": {
       "ratio": 0.5,
@@ -117,25 +117,25 @@
     "10to100": {
      "MP": {
       "ratio": 0.65,
-      "pairs": 421
+      "pairs": 431
      },
      "HP": {
       "ratio": 0.5,
-      "pairs": 64
+      "pairs": 66
      },
      "DMG": {
       "ratio": 0.3,
-      "pairs": 43
+      "pairs": 46
      },
      "LP": {
-      "ratio": 0.89,
-      "pairs": 290
+      "ratio": 0.9,
+      "pairs": 303
      }
     },
     "under10": {
      "MP": {
       "ratio": 1,
-      "pairs": 2191
+      "pairs": 2192
      },
      "HP": {
       "ratio": 0.6,
@@ -143,7 +143,7 @@
      },
      "LP": {
       "ratio": 1,
-      "pairs": 2373
+      "pairs": 2376
      },
      "DMG": {
       "ratio": 0.5,
