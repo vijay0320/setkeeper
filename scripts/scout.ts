@@ -1,88 +1,112 @@
-// Price scout: collects in-stock singles from configured shops and eBay for the app's
-// cart optimizer. Run daily by .github/workflows/scout.yml.
+// Price scout: collects in-stock Pokémon singles, every English set, from the shops it may
+// read (data/stores/scout-audit.json; the list itself is the SCOUT_SELLERS secret) and, with
+// API keys, eBay. Listings are matched to cards with the full TCGdex card list and saved as one
+// snapshot per set, so each set's Buy tab gets its own listings. Run daily by
+// .github/workflows/scout.yml.
 //
 // Price history is the project's dataset, so it never goes into the public repo. With
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY set, each run is appended to the private
 // price_snapshots table (see supabase/setup.sql); the app can read only the newest
 // snapshot per set. Without them (local runs), it writes data/listings/<set>.json,
-// which .gitignore keeps out of git. The shop list can come from the SCOUT_SELLERS
-// secret so the sources stay private too.
-// Usage: node scripts/scout.ts [--set 30th-celebration] [--only-missing collection.json]
+// which .gitignore keeps out of git.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import type { CardSet } from "../src/lib/types.ts";
-import type { MarketSnapshot, Seller } from "../src/lib/market.ts";
-import { fetchShopify, type ShopifyStore } from "./scout/shopify.ts";
+import type { Listing, MarketSnapshot, Seller } from "../src/lib/market.ts";
+import { fetchShopify, newStats, type Resolver, type ShopifyStore } from "./scout/shopify.ts";
+import { matchTitle } from "./scout/match.ts";
+import { buildIndex, matchCard, appCard, type CardIndex, type CatalogCard, type CatalogSet } from "../src/lib/cardmatch.ts";
 import { ebayToken, fetchEbay, type EbayConfig } from "./scout/ebay.ts";
 import { measureConditions, rollConditions, type ConditionData } from "../src/lib/prices.ts";
 
-const arg = (k: string) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined; };
-const setId = arg("--set") ?? "30th-celebration";
-const set = JSON.parse(readFileSync(`data/sets/${setId}.json`, "utf8")) as CardSet;
+const BUNDLED = "30th-celebration";
+const set = JSON.parse(readFileSync(`data/sets/${BUNDLED}.json`, "utf8")) as CardSet;
 const cfgPath = existsSync("data/sellers.json") ? "data/sellers.json" : "data/sellers.example.json";
 const cfg = JSON.parse(process.env.SCOUT_SELLERS || readFileSync(cfgPath, "utf8")) as { shopify: ShopifyStore[]; ebay?: EbayConfig & { enabled: boolean } };
+const notice = (title: string, msg: string, level = "notice") => { if (process.env.GITHUB_ACTIONS) console.log(`::${level} title=${title}::${msg.replace(/[\r\n]+/g, " ")}`); };
 
-let cards = set.cards.filter((c) => c.section !== "Basic Energy");
-const missingFrom = arg("--only-missing");
-if (missingFrom) {
-  const col = JSON.parse(readFileSync(missingFrom, "utf8"));
-  cards = cards.filter((c) => !["have", "upgrade"].includes(col.entries?.[c.id]?.status));
+// every English card, so a listing from any set can be placed
+async function catalog(): Promise<CardIndex | undefined> {
+  try {
+    const T = "https://api.tcgdex.net/v2/en";
+    const [cards, sets] = await Promise.all([fetch(`${T}/cards`).then((r) => r.json()), fetch(`${T}/sets`).then((r) => r.json())]) as
+      [{ id: string; localId: string; name: string }[], { id: string; name: string; cardCount?: { official?: number; total?: number } }[]];
+    const S: CatalogSet[] = sets.map((s) => ({ id: s.id, name: s.name, official: s.cardCount?.official ?? 0, total: s.cardCount?.total ?? 0 }));
+    const ids = new Set(S.map((s) => s.id));
+    const C: CatalogCard[] = cards.map((c) => ({ ...c, setId: c.id.slice(0, c.id.length - c.localId.length - 1) })).filter((c) => ids.has(c.setId));
+    console.log(`card list: ${C.length} cards in ${S.length} sets`);
+    return buildIndex(C, S);
+  } catch (e) { notice("Scout", `Card list unavailable (${(e as Error).message}); matching 30th Celebration only`, "warning"); return undefined; }
 }
+const idx = await catalog();
 
-const snap: MarketSnapshot = { fetchedAt: new Date().toISOString(), sellers: [], listings: [], sources: [] };
+/** 30th Celebration titles go through its own matcher (RGB Mew, Classic Collection numbers); everything else through the full card list. */
+const resolve: Resolver = (title, extra, collection) => {
+  const in30th = /30th|celebration/i.test(collection);
+  if (in30th || /30th|celebration/i.test(`${title} ${extra}`)) {
+    const id = matchTitle(title, set, in30th);
+    if (id) return { setId: BUNDLED, cardId: id };
+  }
+  if (!idx) return { miss: "no card" };
+  const m = matchCard(title, idx, extra);
+  return m.card ? appCard(m.card) : { miss: m.reason ?? "no card" };
+};
+
+const fetchedAt = new Date().toISOString();
+const listings: Listing[] = [];
+const sources: { name: string; ok: boolean; listings: number; error?: string }[] = [];
 const sellers = new Map<string, Seller>();
 
 for (const store of cfg.shopify ?? []) {
   try {
-    const stats = { products: 0, matched: 0, soldOut: 0, unmatched: [] as string[] };
-    const ls = await fetchShopify(store, set, fetch, 40, stats);
+    const stats = newStats();
+    const r = await fetchShopify(store, resolve, fetch, 200, stats);
     sellers.set(store.id, {
       id: store.id, name: store.name, country: store.country, currency: store.currency, kind: "store", url: `https://${store.domain}`, shipping: store.shipping,
       ...(store.province ? { province: store.province } : {}), ...(store.carrier ? { carrier: store.carrier } : {}),
       ...(store.taxAt ? { taxAt: store.taxAt } : {}), ...(store.chargesPst != null ? { chargesPst: store.chargesPst } : {}),
       ...(store.note ? { note: store.note } : {}),
     });
-    snap.listings.push(...ls);
-    snap.sources!.push({ name: store.name, ok: true, listings: ls.length });
-    console.log(`${store.name}: ${ls.length} listings`);
-    // a GitHub annotation, readable from the run page without opening the log
-    const why = `${stats.products} products, ${stats.matched} matched to cards (${stats.soldOut} of them sold out), ${ls.length} listings`;
-    console.log(`  ${why}${stats.unmatched.length ? `; not recognised: ${stats.unmatched.join(" | ")}` : ""}`);
-    if (process.env.GITHUB_ACTIONS) {
-      console.log(`::notice title=Scout::${store.name}: ${why}`);
-      if (stats.unmatched.length) console.log(`::notice title=Not recognised (${store.name})::${stats.unmatched.join(" | ").replace(/[\r\n]/g, " ")}`);
-    }
+    listings.push(...r.listings);
+    const inStock = r.listings.filter((l) => l.qty > 0).length;
+    sources.push({ name: store.name, ok: true, listings: inStock });
+    const misses = Object.entries(stats.misses).map(([k, v]) => `${v} ${k}`).join(", ");
+    const why = `${r.collections.length ? `collections ${r.collections.join(", ")}: ` : ""}${stats.products} products, ${stats.matched} matched to cards (${stats.soldOut} sold out), ${inStock} listings in stock${misses ? `; skipped: ${misses}` : ""}`;
+    console.log(`${store.name}: ${why}`);
+    notice("Scout", `${store.name}: ${why}`);
+    if (stats.unmatched.length) notice(`Not placed (${store.name})`, stats.unmatched.join(" | "));
   } catch (e) {
-    snap.sources!.push({ name: store.name, ok: false, listings: 0, error: (e as Error).message });
+    sources.push({ name: store.name, ok: false, listings: 0, error: (e as Error).message });
     console.warn(`${store.name}: ${(e as Error).message}`);
-    if (process.env.GITHUB_ACTIONS) console.log(`::warning title=Scout::${store.name}: ${(e as Error).message}`);
+    notice("Scout", `${store.name}: ${(e as Error).message}`, "warning");
   }
 }
 
 if (cfg.ebay?.enabled) {
   const id = process.env.EBAY_CLIENT_ID, secret = process.env.EBAY_CLIENT_SECRET;
-  if (!id || !secret) snap.sources!.push({ name: "eBay", ok: false, listings: 0, error: "EBAY_CLIENT_ID / EBAY_CLIENT_SECRET not set" });
+  if (!id || !secret) console.log("eBay: EBAY_CLIENT_ID / EBAY_CLIENT_SECRET not set; skipped");
   else {
     try {
+      // eBay is searched card by card, so it covers the 30th Celebration set for now (daily API limits)
+      const cards = set.cards.filter((c) => c.section !== "Basic Energy");
       const r = await fetchEbay(set, cards, await ebayToken(id, secret), cfg.ebay);
       r.sellers.forEach((s) => sellers.set(s.id, s));
-      snap.listings.push(...r.listings);
-      snap.sources!.push({ name: "eBay", ok: true, listings: r.listings.length });
-      console.log(`eBay: ${r.listings.length} listings from ${r.sellers.length} sellers`);
+      listings.push(...r.listings.map((l) => ({ ...l, setId: BUNDLED })));
+      sources.push({ name: "eBay", ok: true, listings: r.listings.length });
+      notice("Scout", `eBay: ${r.listings.length} listings from ${r.sellers.length} sellers`);
     } catch (e) {
-      snap.sources!.push({ name: "eBay", ok: false, listings: 0, error: (e as Error).message });
-      console.warn(`eBay: ${(e as Error).message}`);
+      sources.push({ name: "eBay", ok: false, listings: 0, error: (e as Error).message });
+      notice("Scout", `eBay: ${(e as Error).message}`, "warning");
     }
   }
 }
 
-snap.sellers = [...sellers.values()];
 
 // Condition discounts measured from these listings (a shop's NM vs played price for the same
 // card and printing). Only the aggregate ratios are published, never the listings.
 {
   const fx = JSON.parse(readFileSync("data/landed/fx.json", "utf8")) as { usdcad: number };
-  const cur = new Map(snap.sellers.map((x) => [x.id, x.currency]));
-  const m = measureConditions(snap.listings.filter((l) => l.qty > 0).map((l) => ({
+  const cur = new Map([...sellers.values()].map((x) => [x.id, x.currency]));
+  const m = measureConditions(listings.filter((l) => l.qty > 0).map((l) => ({
     sellerId: l.sellerId, cardId: l.cardId, printing: l.printing, condition: l.condition,
     cad: cur.get(l.sellerId) === "USD" ? l.price * fx.usdcad : l.price,
   })));
@@ -93,20 +117,38 @@ snap.sellers = [...sellers.values()];
     mkdirSync("data/prices", { recursive: true });
     writeFileSync(file, JSON.stringify(rollConditions(prev, new Date().toISOString().slice(0, 10), m), null, 1) + "\n");
   }
-  if (process.env.GITHUB_ACTIONS) console.log(`::notice title=Conditions::${pairs} NM-vs-played pairs measured today`);
+  notice("Conditions", `${pairs} NM-vs-played pairs measured today`);
   console.log(`condition pairs today: ${pairs} (${Object.entries(m.overall).map(([c, f]) => `${c} ${f!.ratio} × ${f!.pairs}`).join(", ") || "none"})`);
 }
+// one snapshot per set: the app reads the newest one for the set a collector is working on
+const bySet = new Map<string, Listing[]>();
+for (const l of listings) { const k = l.setId ?? BUNDLED; const { setId: _s, title: _t, ...rest } = l; (bySet.get(k) ?? bySet.set(k, []).get(k)!).push(rest); }
+const rows = [...bySet].map(([setId, ls]) => {
+  const ids = new Set(ls.map((l) => l.sellerId));
+  const snap: MarketSnapshot = {
+    fetchedAt, sellers: [...sellers.values()].filter((s) => ids.has(s.id)), listings: ls,
+    sources: sources.filter((x) => !x.ok || [...sellers.values()].some((s) => s.name === x.name && ids.has(s.id)))
+      .map((x) => ({ ...x, listings: ls.filter((l) => l.qty > 0 && sellers.get(l.sellerId)?.name === x.name).length })),
+  };
+  return { set_id: setId, fetched_at: fetchedAt, snapshot: snap };
+});
+const total = listings.filter((l) => l.qty > 0).length;
+notice("Scout", `${total} listings in stock across ${rows.length} sets`);
+
 const sbUrl = process.env.SUPABASE_URL?.replace(/\/$/, ""), sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (sbUrl && sbKey) {
-  const res = await fetch(`${sbUrl}/rest/v1/price_snapshots`, {
-    method: "POST",
-    headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-    body: JSON.stringify({ set_id: setId, fetched_at: snap.fetchedAt, snapshot: snap }),
-  });
-  if (!res.ok) { console.error(`Saving to Supabase failed: HTTP ${res.status} ${await res.text()}`); process.exit(1); }
-  console.log(`saved ${setId} snapshot to Supabase: ${snap.listings.length} listings, ${snap.sellers.length} sellers`);
+if (!rows.length) console.log("no listings today");
+else if (sbUrl && sbKey) {
+  for (let i = 0; i < rows.length; i += 50) {
+    const res = await fetch(`${sbUrl}/rest/v1/price_snapshots`, {
+      method: "POST",
+      headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify(rows.slice(i, i + 50)),
+    });
+    if (!res.ok) { console.error(`Saving to Supabase failed: HTTP ${res.status} ${await res.text()}`); process.exit(1); }
+  }
+  console.log(`saved ${rows.length} set snapshots to Supabase (${total} listings in stock)`);
 } else {
   mkdirSync("data/listings", { recursive: true });
-  writeFileSync(`data/listings/${setId}.json`, JSON.stringify(snap));
-  console.log(`wrote data/listings/${setId}.json (kept out of git): ${snap.listings.length} listings, ${snap.sellers.length} sellers`);
+  for (const r of rows) writeFileSync(`data/listings/${r.set_id}.json`, JSON.stringify(r.snapshot));
+  console.log(`wrote ${rows.length} files to data/listings/ (kept out of git), ${total} listings in stock`);
 }

@@ -39,6 +39,7 @@ export interface Entry {
   paid?: number; // CAD
   printing?: string; // normal, holofoil, reverse-holofoil… (unset = the card's usual printing)
   condition?: "NM" | "LP" | "MP" | "HP" | "DMG"; // of the copy owned, or wanted (unset = NM)
+  sightings?: import("./sightings.ts").Sighting[]; // prices the collector saw at shops, newest first
   notes?: string;
   grade?: { company: string; centering: string; measuredOn: string };
   graded?: {

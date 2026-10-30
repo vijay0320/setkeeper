@@ -1,0 +1,138 @@
+{
+ "shopify": [
+  {
+   "id": "facetoface",
+   "name": "Face to Face Games",
+   "domain": "www.facetofacegames.com",
+   "pokemonSingles": true,
+   "collections": [
+    "pokemon-30th-celebration"
+   ],
+   "currency": "CAD",
+   "country": "CA",
+   "province": "QC",
+   "shipping": {
+    "base": 5,
+    "freeOver": 200
+   },
+   "note": "Shipping shows at checkout, so $5 is an estimate. Free from $200."
+  },
+  {
+   "id": "401games",
+   "name": "401 Games",
+   "domain": "store.401games.ca",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "ON",
+   "shipping": {
+    "base": 3,
+    "freeOver": 30
+   }
+  },
+  {
+   "id": "3dragons",
+   "name": "3 Dragons",
+   "domain": "www.3dragons.ca",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "QC",
+   "shipping": {
+    "base": 6,
+    "freeOver": 200
+   },
+   "note": "Shipping shows at checkout, so $6 is an estimate. Free from $200."
+  },
+  {
+   "id": "hobbiesville",
+   "name": "Hobbiesville",
+   "domain": "hobbiesville.com",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "ON",
+   "shipping": {
+    "base": 6,
+    "freeOver": 175
+   },
+   "note": "Shipping shows at checkout, so $6 is an estimate. Free from $175."
+  },
+  {
+   "id": "kanzengames",
+   "name": "KanZen Games",
+   "domain": "kanzengames.com",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "ON",
+   "shipping": {
+    "base": 1.49,
+    "freeOver": 300
+   }
+  },
+  {
+   "id": "danireon",
+   "name": "Danireon Cards & Games",
+   "domain": "www.danireon.com",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "ON",
+   "shipping": {
+    "base": 6
+   },
+   "note": "Shipping shows at checkout, so $6 is an estimate."
+  },
+  {
+   "id": "fusiongaming",
+   "name": "Fusion Gaming",
+   "domain": "fusiongamingonline.com",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "MB",
+   "shipping": {
+    "base": 6
+   },
+   "note": "Shipping shows at checkout, so $6 is an estimate."
+  },
+  {
+   "id": "pokejeux",
+   "name": "Poké Jeux",
+   "domain": "www.pokejeux.ca",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "QC",
+   "shipping": {
+    "base": 6,
+    "freeOver": 200
+   },
+   "note": "Shipping shows at checkout, so $6 is an estimate. Free from $200."
+  },
+  {
+   "id": "remicardtrader",
+   "name": "Rémi Card Trader",
+   "domain": "remicardtrader.ca",
+   "pokemonSingles": true,
+   "currency": "CAD",
+   "country": "CA",
+   "province": "QC",
+   "shipping": {
+    "base": 15,
+    "freeOver": 175
+   }
+  }
+ ],
+ "ebay": {
+  "enabled": true,
+  "marketplace": "EBAY_CA",
+  "deliveryCountry": "CA",
+  "perCard": 30,
+  "sellerCountries": [
+   "CA",
+   "US"
+  ]
+ }
+}

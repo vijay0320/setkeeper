@@ -31,6 +31,7 @@ export interface Listing {
   qty: number; // units available (0 = sold out)
   condition?: string; // NM, LP, MP, HP, DMG
   printing?: string; // normal, holofoil, reverse-holofoil… (TCGdex names); unset = the card's usual printing
+  setId?: string; // scout only: which app set the card belongs to (listings are saved per set)
   url?: string;
   shipping?: number; // per-listing shipping (marketplaces), seller's currency
   title?: string;

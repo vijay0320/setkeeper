@@ -13,7 +13,8 @@ import { fileToCanvas, canvasToRGBA } from "./vision/browser.ts";
 import sampleMarket from "../data/listings/sample.json";
 import { listingsFromRows, type MarketSnapshot, type ShippingRule } from "./lib/market.ts";
 import { optimizeCart, type CartPlan, type Want } from "./lib/cart.ts";
-import { loadMarket, saveMarket, withOverrides, type MarketState } from "./lib/marketStore.ts";
+import { loadMarket, saveMarket, withOverrides as withShippingOverrides, type MarketState } from "./lib/marketStore.ts";
+import { CHECK_SHOPS, SIGHTING_DAYS, addSighting, searchUrl, withSightings, type DirectoryShop, type Sighting } from "./lib/sightings.ts";
 import { parseCSV } from "./lib/transfer.ts";
 import { readXlsx } from "./lib/xlsx.ts";
 import { CONDITION_LABEL, TIER_LABEL, compareCompanies, reopenedSince, worstFrom, isOpen, type Condition, type ServicesFile, type TierStatus } from "./lib/grading.ts";
@@ -913,6 +914,7 @@ function openCard(id: string) {
           priceGuide(c, refreshVerdict),
           h("div", { class: "two" }, field("Asking price (CAD)", numIn("priceSeen")), field("Your own value (CAD, optional)", (() => { const i = numIn("market"); i.setAttribute("placeholder", AUTO[id] != null ? `fair ${formatCAD(AUTO[id])}` : ""); return i; })())),
           verdict,
+          whereToBuy(c),
           h("p", { class: "lookup" }, "Look up market value: ",
             h("a", { href: `https://www.tcgplayer.com/search/pokemon/product?q=${q}`, target: "_blank", rel: "noopener" }, "TCGplayer"), " · ",
             h("a", { href: `https://www.pricecharting.com/search-products?q=${q}&type=prices`, target: "_blank", rel: "noopener" }, "PriceCharting"), " · ",
@@ -1520,6 +1522,74 @@ function data(): Node {
     h("p", { class: "fine" }, `Card list and images: ${SET.sources[0]}. Unofficial fan tool, not affiliated with The Pokémon Company. Your data stays in this browser.`));
 }
 
+// ---------- where to buy (card sheet) ----------
+/**
+ * The directory shops that stock this set, each with a link to its own search for the card.
+ * Shops SetKeeper may read (the scout) show stock and price before you click; for the rest the
+ * collector looks on the shop's site and can log what they saw. SetKeeper never fetches them.
+ */
+function whereToBuy(c: Card): HTMLElement {
+  const box = h("div", { class: "where" });
+  const shops = CHECK_SHOPS.map((id) => STORES.stores.find((x) => x.id === id)).filter((x): x is StoreInfo => !!x);
+  const draw = () => {
+    const snap = market.source === "scout" ? market.snapshot : undefined;
+    const read = new Set(snap?.sellers.map((x) => x.id) ?? []);
+    const when = snap ? new Date(snap.fetchedAt).toLocaleDateString("en-CA", { month: "short", day: "numeric" }) : "";
+    const B = buyer();
+    const sorted = [...shops].sort((a, b) => Number(read.has(b.id)) - Number(read.has(a.id)) || Number(b.province === B.province) - Number(a.province === B.province) || a.name.localeCompare(b.name));
+    const e = entry(c.id);
+    const rows = sorted.map((st) => {
+      let status: Node;
+      if (read.has(st.id)) {
+        const ls = snap!.listings.filter((l) => l.sellerId === st.id && l.cardId === c.id);
+        const stock = ls.filter((l) => l.qty > 0).sort((a, b) => a.price - b.price);
+        status = stock.length
+          ? h("span", { class: "st in" }, `In stock · ${stock.slice(0, 3).map((l) => `${formatCAD(l.price)} ${l.condition ?? ""}${l.printing ? ` ${printingLabel(l.printing)}` : ""}`.trim()).join(", ")}`, h("small", {}, ` checked ${when}`))
+          : ls.length ? h("span", { class: "st out" }, "Sold out", h("small", {}, ` checked ${when}`))
+          : h("span", { class: "st none" }, "Not listed", h("small", {}, ` checked ${when}`));
+      } else {
+        const seen = e.sightings?.find((x) => x.shop === st.id);
+        status = seen
+          ? h("span", { class: "st seen" }, `You saw ${formatCAD(seen.price)} ${seen.condition ?? "NM"}${seen.printing ? ` ${printingLabel(seen.printing)}` : ""}`, h("small", {}, ` on ${new Date(seen.date + "T12:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })}`))
+          : h("span", { class: "st unknown" }, "Check their site");
+      }
+      return h("li", {},
+        h("span", { class: "shop" }, h("b", {}, st.name), h("small", {}, ` ${st.province ?? st.country}`)),
+        status,
+        h("span", { class: "acts" },
+          h("a", { class: "btn small ghost", href: searchUrl(st as unknown as DirectoryShop, c), target: "_blank", rel: "noopener" }, read.has(st.id) ? "Open" : "Check"),
+          read.has(st.id) ? null : h("button", { class: "linkish", type: "button", onclick: () => logForm(st) }, "Log price")));
+    });
+    box.replaceChildren(h("h3", {}, "Where to buy"),
+      h("ul", { class: "where-list" }, ...rows),
+      h("p", { class: "fine" }, `Stock and prices before you click come from SetKeeper's daily check${when ? ` (last ${when})` : ""}. Shops it doesn't check open their own search for this card; prices you log join your Buy tab for ${SIGHTING_DAYS} days.`),
+      form);
+  };
+  const form = h("div", { class: "log-form" });
+  function logForm(st: StoreInfo) {
+    const price = h("input", { type: "number", min: "0", step: "0.01", inputmode: "decimal", placeholder: "Price (CAD)", "aria-label": `Price at ${st.name}` }) as HTMLInputElement;
+    const cond = h("select", { "aria-label": "Condition" }, ...CONDITIONS.map((k) => h("option", { value: k, selected: k === (entry(c.id).condition ?? "NM") }, k))) as HTMLSelectElement;
+    const ps = printingsOf(c.id);
+    const pr = ps.length > 1 ? h("select", { "aria-label": "Printing" }, ...ps.map((p) => h("option", { value: p.printing, selected: p.printing === printingOf(c.id) }, printingLabel(p.printing)))) as HTMLSelectElement : null;
+    form.replaceChildren(h("p", {}, h("b", {}, `What did ${st.name} have?`)),
+      h("div", { class: "row" }, price, cond, pr,
+        h("button", { class: "btn small", type: "button", onclick: () => {
+          const v = Number(price.value);
+          if (!(v > 0)) { price.focus(); return; }
+          const s: Sighting = { shop: st.id, price: v, condition: cond.value as CardCondition, date: localDay(),
+            ...(pr && pr.value !== defaultPrinting(ps) ? { printing: pr.value } : {}) };
+          updateEntry(col, c.id, { sightings: addSighting(entry(c.id).sightings, s), store: st.name, priceSeen: v, seenOn: s.date });
+          persist(); form.replaceChildren(); draw();
+          toast(`Saved: ${st.name} ${formatCAD(v)} ${s.condition}`);
+        } }, "Save"),
+        h("button", { class: "linkish", type: "button", onclick: () => form.replaceChildren() }, "Cancel")));
+    price.focus();
+  }
+  draw();
+  if (market.source !== "scout") void ensureMarket().then(draw);
+  return box;
+}
+
 // ---------- condition discounts (Data tab) ----------
 function conditionPanel(): HTMLElement {
   const own = col.settings.conditionFactors ?? {};
@@ -1703,6 +1773,14 @@ function priceOf(id: string): ValueFor | undefined { return valueFor(fairOf(id),
 function factorOf(cond: string | undefined, nm?: number) { return conditionFactor(cond, conditionsData as unknown as ConditionData, nm, col.settings.conditionFactors); }
 
 let market: MarketState = loadMarket(SET.id);
+/** Today's date in the collector's time zone, YYYY-MM-DD. */
+function localDay() { return new Date().toLocaleDateString("en-CA"); }
+/** Listings for the Buy tab: shops' (scout, import or sample) plus the collector's own recent sightings. */
+function withOverrides(m: MarketState) {
+  const sightings: Record<string, Sighting[] | undefined> = {};
+  for (const [id, e] of Object.entries(col.entries)) if (e.sightings?.length) sightings[id] = e.sightings;
+  return withSightings(withShippingOverrides(m), sightings, STORES.stores as unknown as DirectoryShop[], localDay());
+}
 let scoutTried = false;
 
 async function ensureMarket() {
@@ -1746,7 +1824,7 @@ function buy(): Node {
   const wrap = h("section", { class: "view" }, masthead({
     kicker: "Buy", title: "The cheapest way to finish.",
     lede: "Every shop's in-stock singles, split across sellers so shipping doesn't eat the savings. Cheap cards that would cost more to ship than they're worth wait for a better order.",
-    meta: [["Missing", String(SET.cards.filter((c) => missing(statusOf(c.id)) && c.section !== "Basic Energy").length)], ["Sellers", String(snap?.sellers.length ?? 0)], ["Listings", String(snap?.listings.length ?? 0)], ["Prices in", "CAD"]],
+    meta: [["Missing", String(SET.cards.filter((c) => missing(statusOf(c.id)) && c.section !== "Basic Energy").length)], ["Sellers", String(snap?.sellers.length ?? 0)], ["Listings in stock", String(snap?.listings.filter((l) => l.qty > 0).length ?? 0)], ["Prices in", "CAD"]],
     actions: [h("a", { href: "#shop", class: "btn ghost" }, "Budget planner")],
     scene: { kind: "stack", cards: missingTop(4).map((c) => ({ ...stageCard(c), ghost: false })) },
   }));

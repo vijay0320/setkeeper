@@ -963,3 +963,21 @@ table.slabs label.inline span { font-size: 0.72rem; color: var(--muted); }
 .cond-table .n { text-align: right; font-variant-numeric: tabular-nums; }
 .cond-table input { width: 5.5em; min-height: 36px; }
 @media (max-width: 560px) { .cond-table th:nth-child(2), .cond-table td:nth-child(2) { display: none; } }
+
+/* where to buy (card sheet) */
+.where { display: grid; gap: 6px; }
+.where h3 { margin: 0; font-size: 1rem; }
+.where-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.where-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "shop acts" "st acts"; gap: 2px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.where-list .shop { grid-area: shop; } .where-list .shop small { color: var(--muted); }
+.where-list .st { grid-area: st; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.where-list .st small { color: var(--muted); }
+.where-list .st.in { color: #2f7d4f; font-weight: 600; } .where-list .st.out { color: #b8432f; }
+.where-list .st.none, .where-list .st.unknown { color: var(--muted); } .where-list .st.seen { color: var(--ink); }
+.where-list .acts { grid-area: acts; display: flex; gap: 10px; align-items: center; }
+.btn.small { padding: 6px 12px; min-height: 34px; font-size: 0.86rem; }
+.log-form:empty { display: none; }
+.log-form { display: grid; gap: 6px; padding: 10px; border-radius: 10px; background: rgb(255 255 255 / 0.6); }
+.log-form p { margin: 0; }
+.log-form .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.log-form input { width: 9em; } .log-form select { width: auto; }
