@@ -141,3 +141,28 @@ test("titles in a shop's set collection needn't name the set", () => {
   assert.equal(matchTitle("Umbreon ex - 092/128 - Special Illustration Rare", set, true), "092");
   assert.equal(matchTitle("Umbreon ex 092/128 Booster Box", set, true), undefined);
 });
+
+test("keeps what it read when Shopify stops paging, and retries a busy shop", async () => {
+  const many = Array.from({ length: 250 }, (_, i) => ({ title: `Thing ${i}`, handle: `t${i}`, variants: [] }));
+  let calls = 0;
+  const fake = (async (url: string) => {
+    if (url.endsWith("robots.txt")) return new Response("");
+    calls++;
+    if (calls === 1) return new Response("busy", { status: 503, headers: { "retry-after": "0.001" } });
+    if (url.includes("page=1")) return new Response(JSON.stringify({ products: [...many.slice(0, 249), products[0]] }));
+    return new Response("too deep", { status: 400 });
+  }) as unknown as typeof fetch;
+  const stats = newStats();
+  const { listings: ls } = await fetchShopify({ ...store, collection: "big" }, resolve30, fake, 200, stats);
+  assert.ok(ls.some((l) => l.cardId === "092"));
+  assert.match(stats.notes[0], /stopped at page 2/);
+});
+
+test("places one-letter and gendered names", () => {
+  const i2 = buildIndex([
+    { id: "xy10-105", localId: "105", name: "N", setId: "xy10" },
+    { id: "base1-55", localId: "55", name: "Nidoran♂", setId: "base1" },
+  ], [{ id: "xy10", name: "Fates Collide", official: 124, total: 125 }, { id: "base1", name: "Base Set", official: 102, total: 102 }]);
+  assert.equal(matchCard("N (105/124) [XY: Fates Collide]", i2).card?.id, "xy10-105");
+  assert.equal(matchCard("Nidoran (55/102) (Male) [Base Set Unlimited]", i2).card?.id, "base1-55");
+});

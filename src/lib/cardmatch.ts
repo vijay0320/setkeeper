@@ -13,7 +13,11 @@ export const EXCLUDE = /\b(psa|bgs|cgc|tag|ace grading|graded|slab|proxy|custom|
 export const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9♀♂ ]/g, " ").replace(/\s+/g, " ").trim();
 const SUFFIX = new Set(["ex", "gx", "v", "vmax", "vstar", "lv", "x", "break", "prime", "legend", "the", "of", "and", "s"]);
 /** Words of a card's name that must appear in a title ("Umbreon ex" → ["umbreon"]). */
-export const nameWords = (name: string) => norm(name.replace(/\(.*?\)/g, " ")).split(" ").filter((w) => w.length > 1 && !SUFFIX.has(w));
+export const nameWords = (name: string) => {
+  const all = norm(name.replace(/\(.*?\)/g, " ").replace(/[♀♂]/g, " ")).split(" ").filter(Boolean);
+  const w = all.filter((x) => x.length > 1 && !SUFFIX.has(x));
+  return w.length ? w : all; // one-letter names like "N"
+};
 const setWords = (name: string) => norm(name.replace(/^(scarlet & violet|sword & shield|sun & moon|mega evolution)\s*[—–:-]?\s*/i, "")).split(" ").filter((w) => w.length > 2 && !["the", "and", "pokemon", "tcg"].includes(w));
 
 export interface CardIndex { byNumber: Map<string, CatalogCard[]>; sets: Map<string, CatalogSet> }

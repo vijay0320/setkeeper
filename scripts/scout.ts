@@ -73,7 +73,9 @@ for (const store of cfg.shopify ?? []) {
     const why = `${r.collections.length ? `collections ${r.collections.join(", ")}: ` : ""}${stats.products} products, ${stats.matched} matched to cards (${stats.soldOut} sold out), ${inStock} listings in stock${misses ? `; skipped: ${misses}` : ""}`;
     console.log(`${store.name}: ${why}`);
     notice("Scout", `${store.name}: ${why}`);
-    if (stats.unmatched.length) notice(`Not placed (${store.name})`, stats.unmatched.join(" | "));
+    const ex = Object.entries(stats.examples).filter(([k]) => k !== "excluded").map(([k, v]) => `${k}: ${v.join(" | ")}`).join(" ;; ");
+    if (ex) notice(`Not placed (${store.name})`, ex);
+    for (const n of stats.notes) notice(`Paging (${store.name})`, n, "warning");
   } catch (e) {
     sources.push({ name: store.name, ok: false, listings: 0, error: (e as Error).message });
     console.warn(`${store.name}: ${(e as Error).message}`);

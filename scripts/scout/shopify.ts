@@ -36,8 +36,8 @@ export interface Product {
 export type Resolver = (title: string, extra: string, collection: string) => { setId: string; cardId: string } | { miss: string };
 
 /** Why products were or weren't used, for the run summary. */
-export interface ScanStats { products: number; matched: number; soldOut: number; misses: Record<string, number>; unmatched: string[] }
-export const newStats = (): ScanStats => ({ products: 0, matched: 0, soldOut: 0, misses: {}, unmatched: [] });
+export interface ScanStats { products: number; matched: number; soldOut: number; misses: Record<string, number>; unmatched: string[]; examples: Record<string, string[]>; notes: string[] }
+export const newStats = (): ScanStats => ({ products: 0, matched: 0, soldOut: 0, misses: {}, unmatched: [], examples: {}, notes: [] });
 
 export function listingsFromProducts(store: ShopifyStore, products: Product[], resolve: Resolver, collection = "", stats?: ScanStats): Listing[] {
   const out: Listing[] = [];
@@ -48,6 +48,8 @@ export function listingsFromProducts(store: ShopifyStore, products: Product[], r
     if ("miss" in r) {
       if (stats) {
         stats.misses[r.miss] = (stats.misses[r.miss] ?? 0) + 1;
+        const ex = (stats.examples[r.miss] ??= []);
+        if (ex.length < 3) ex.push(p.title);
         // sealed product and accessories are expected; show examples of cards we couldn't place
         if (!["excluded", "no number"].includes(r.miss) && stats.unmatched.length < 6) stats.unmatched.push(p.title);
       }
@@ -82,6 +84,14 @@ export function listingsFromProducts(store: ShopifyStore, products: Product[], r
 const UA = "SetKeeper price scout (+https://github.com/vijay0320/setkeeper)";
 const PAUSE = 700;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** One request, retried after a pause when the shop is briefly busy (429 or 5xx). */
+export async function getWithRetry(fetchFn: typeof fetch, url: string, waits = [5000, 20000]): Promise<Response> {
+  for (let i = 0; ; i++) {
+    const r = await fetchFn(url, { headers: { "User-Agent": UA } });
+    if ((r.status === 429 || r.status >= 500) && i < waits.length) { await sleep(Number(r.headers.get("retry-after")) * 1000 || waits[i]); continue; }
+    return r;
+  }
+}
 
 /** A shop's Pokémon singles collection(s), from its public collection list (titles only). */
 export function singlesCollections(cols: { handle: string; title: string; products_count?: number }[]): string[] {
@@ -95,8 +105,8 @@ export async function collectionsFor(store: ShopifyStore, fetchFn: typeof fetch 
   const set = new Set([...(store.collections ?? []), ...(store.collection ? [store.collection] : [])]);
   if (store.pokemonSingles) {
     const cols: { handle: string; title: string; products_count?: number }[] = [];
-    for (let page = 1; page <= 4; page++) {
-      const r = await fetchFn(`https://${store.domain}/collections.json?limit=250&page=${page}`, { headers: { "User-Agent": UA } });
+    for (let page = 1; page <= 20; page++) {
+      const r = await getWithRetry(fetchFn, `https://${store.domain}/collections.json?limit=250&page=${page}`);
       if (!r.ok) break;
       const j = (await r.json()) as { collections?: typeof cols };
       if (!j.collections?.length) break;
@@ -123,8 +133,12 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
   const seen = new Set<string>();
   for (const b of bases) {
     for (let page = 1; page <= maxPages; page++) {
-      const res = await fetchFn(`${b.url}?limit=250&page=${page}`, { headers: { "User-Agent": UA } });
-      if (!res.ok) throw new Error(`${store.name}: HTTP ${res.status}`);
+      const res = await getWithRetry(fetchFn, `${b.url}?limit=250&page=${page}`);
+      if (!res.ok) {
+        // Shopify stops paging deep collections (about 25,000 products); keep what was read
+        if (page > 1) { stats?.notes.push(`${b.h || "catalogue"} stopped at page ${page} (HTTP ${res.status}), ${(page - 1) * 250} products read`); break; }
+        throw new Error(`HTTP ${res.status}`);
+      }
       const { products } = (await res.json()) as { products: Product[] };
       if (!products?.length) break;
       const fresh = products.filter((p) => !seen.has(p.handle));
