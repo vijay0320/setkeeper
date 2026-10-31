@@ -1,5 +1,5 @@
 {
- "checkedAt": "2026-10-30",
+ "checkedAt": "2026-10-31",
  "source": "https://tcg.pokemon.com/en-us/all-galleries/",
  "note": "Official Pokémon TCG card galleries. Card numbers per category are stored as ranges. Updated daily by scripts/gallery-scout.ts.",
  "imageHost": "https://dz3we2x72f7ol.cloudfront.net/expansions/",

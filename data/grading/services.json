@@ -1,6 +1,6 @@
 {
   "currency": "USD",
-  "checkedAt": "2026-10-30",
+  "checkedAt": "2026-10-31",
   "note": "Prices are per card for direct US submissions, before shipping, insurance and add-ons. Turnarounds are the companies' own estimates. The price scout refreshes this file daily; tiers change often, so confirm on the company's site before you ship.",
   "companies": [
     {
@@ -125,7 +125,7 @@
         55,
         60
       ],
-      "checkedAt": "2026-10-30",
+      "checkedAt": "2026-10-31",
       "source": "https://www.cgccards.com/submit/services-fees/cgc-grading/",
       "tiers": [
         {
@@ -178,7 +178,7 @@
         55,
         60
       ],
-      "checkedAt": "2026-10-30",
+      "checkedAt": "2026-10-31",
       "source": "https://taggrading.com/pages/pricing",
       "tiers": [
         {
