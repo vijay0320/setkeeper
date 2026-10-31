@@ -306,3 +306,19 @@ test("switches a shop to Canada through its country picker when cookies aren't e
   assert.ok(picked);
   assert.equal(listings.length, 3);
 });
+
+test("reads a shop's Canadian address when it prices by country", async () => {
+  const urls: string[] = [];
+  const fake = (async (url: string) => {
+    urls.push(url);
+    if (url.endsWith("robots.txt")) return new Response("");
+    if (url.endsWith("/localization")) return new Response("", { status: 302 });
+    if (url.endsWith("cart.js")) return new Response(JSON.stringify({ currency: url.includes("/en-ca/") ? "CAD" : "USD" }));
+    return new Response(JSON.stringify({ products }));
+  }) as unknown as typeof fetch;
+  const stats = newStats();
+  const { listings } = await fetchShopify({ ...store, collection: "thirty" }, resolve30, fake, 360, stats);
+  assert.equal(listings.length, 3);
+  assert.ok(urls.some((u) => u === "https://shop.example/en-ca/collections/thirty/products.json?limit=250&page=1&currency=CAD"));
+  assert.match(stats.notes[0], /read from shop\.example\/en-ca/);
+});

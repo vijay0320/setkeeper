@@ -113,12 +113,12 @@ export function singlesCollections(cols: { handle: string; title: string; produc
   return pick.sort((a, b) => Number(inStock(b)) - Number(inStock(a)) || (b.products_count ?? 0) - (a.products_count ?? 0)).slice(0, 12).map((c) => c.handle);
 }
 
-export async function collectionsFor(store: ShopifyStore, fetchFn: typeof fetch = fetch): Promise<string[]> {
+export async function collectionsFor(store: ShopifyStore, fetchFn: typeof fetch = fetch, origin = `https://${store.domain}`, headers = localeHeaders(store)): Promise<string[]> {
   const set = new Set([...(store.collections ?? []), ...(store.collection ? [store.collection] : [])]);
   if (store.pokemonSingles) {
     const cols: { handle: string; title: string; products_count?: number }[] = [];
     for (let page = 1; page <= 20; page++) {
-      const r = await getWithRetry(fetchFn, `https://${store.domain}/collections.json?limit=250&page=${page}`, undefined, localeHeaders(store));
+      const r = await getWithRetry(fetchFn, `${origin}/collections.json?limit=250&page=${page}`, undefined, headers);
       if (!r.ok) break;
       const j = (await r.json()) as { collections?: typeof cols };
       if (!j.collections?.length) break;
@@ -139,8 +139,9 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
   if (no) throw new Error(`robots.txt asks bots not to read the catalogue (Disallow: ${no}); skipped`);
   // prices must come back in the shop's own currency, or nothing from this shop is saved
   let headers = localeHeaders(store);
+  let origin = `https://${store.domain}`;
   const currency = async () => {
-    const cart = await getWithRetry(fetchFn, `https://${store.domain}/cart.js`, undefined, headers).catch(() => undefined);
+    const cart = await getWithRetry(fetchFn, `${origin}/cart.js`, undefined, headers).catch(() => undefined);
     return cart?.ok ? ((await cart.json().catch(() => ({}))) as { currency?: string }).currency : undefined;
   };
   let cur = await currency();
@@ -156,11 +157,23 @@ export async function fetchShopify(store: ShopifyStore, resolve: Resolver, fetch
     if (jar.length) headers = { ...headers, Cookie: [headers.Cookie, ...jar].filter(Boolean).join("; ") };
     cur = await currency();
   }
-  if (cur && cur !== store.currency) throw new Error(`prices came back in ${cur}, not ${store.currency}; skipped`);
-  const handles = await collectionsFor(store, fetchFn);
+  if (cur && cur !== store.currency) {
+    // some shops serve each country from its own address: /en-ca/…, /fr-ca/…
+    const lang = store.country.toLowerCase();
+    for (const prefix of [`/en-${lang}`, `/fr-${lang}`, `/${lang}`]) {
+      if (blocked(`${prefix}/collections/x/products.json`, rules)) continue;
+      origin = `https://${store.domain}${prefix}`;
+      cur = await currency();
+      if (cur === store.currency) break;
+    }
+    if (cur !== store.currency) origin = `https://${store.domain}`;
+  }
+  if (cur && cur !== store.currency) throw new Error(`prices came back in ${cur}, not ${store.currency}, even after choosing ${store.country} and trying its ${store.country} address; skipped`);
+  if (origin !== `https://${store.domain}`) stats?.notes.push(`read from ${origin.slice(8)} for ${store.currency} prices`);
+  const handles = await collectionsFor(store, fetchFn, origin, headers);
   // never fall back to a shop's whole catalogue when its Pokémon singles collection wasn't found
   if (!handles.length && store.pokemonSingles) throw new Error("no Pokémon singles collection found; skipped");
-  const bases = handles.length ? handles.map((h) => ({ h, url: `https://${store.domain}/collections/${h}/products.json` })) : [{ h: "", url: `https://${store.domain}/products.json` }];
+  const bases = handles.length ? handles.map((h) => ({ h, url: `${origin}/collections/${h}/products.json` })) : [{ h: "", url: `${origin}/products.json` }];
   const all: Listing[] = [];
   const seen = new Set<string>();
   let budget = maxPages; // pages per shop per run, across all its collections

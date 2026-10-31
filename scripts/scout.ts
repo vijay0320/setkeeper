@@ -76,7 +76,7 @@ for (const store of cfg.shopify ?? []) {
     const misses = Object.entries(stats.misses).map(([k, v]) => `${v} ${k}`).join(", ");
     const why = `${r.collections.length ? `collections ${r.collections.join(", ")}: ` : ""}${stats.products} products, ${stats.matched} matched to cards (${stats.soldOut} sold out), ${inStock} listings in stock${misses ? `; skipped: ${misses}` : ""}`;
     console.log(`${store.name}: ${why}`);
-    complete.set(store.id, stats.notes.length === 0);
+    complete.set(store.id, !stats.notes.some((n) => /stopped at page|budget used up/.test(n))); // read to the end
     report.push(`${store.name}: ${why}${stats.notes.length ? ` [${stats.notes.join("; ")}]` : ""}`);
     const ex = Object.entries(stats.examples).filter(([k]) => k !== "excluded").map(([k, v]) => `${k}: ${v.join(" | ")}`).join(" ;; ");
     if (ex) placeNotes.push(`${store.name} → ${ex}`);
