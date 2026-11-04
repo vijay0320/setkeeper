@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/store-check.ts
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: store-check-report
           path: data/stores/check-report.json
