@@ -1,6 +1,6 @@
 {
   "currency": "USD",
-  "checkedAt": "2026-11-10",
+  "checkedAt": "2026-11-11",
   "note": "Prices are per card for direct US submissions, before shipping, insurance and add-ons. Turnarounds are the companies' own estimates. The price scout refreshes this file daily; tiers change often, so confirm on the company's site before you ship.",
   "companies": [
     {
@@ -178,7 +178,7 @@
         55,
         60
       ],
-      "checkedAt": "2026-11-10",
+      "checkedAt": "2026-11-11",
       "source": "https://taggrading.com/pages/pricing",
       "tiers": [
         {
@@ -238,7 +238,7 @@
   "log": [
     "PSA: couldn't read https://www.psacard.com/services/tradingcardgrading (HTTP 403); kept data from 2026-10-16",
     "Beckett: couldn't read https://www.beckett.com/grading (HTTP 403); kept data from 2026-10-15",
-    "CGC: no changes",
+    "CGC: couldn't read https://www.cgccards.com/submit/services-fees/cgc-grading/ (HTTP 504); kept data from 2026-11-10",
     "TAG: no changes"
   ]
 }
